@@ -1,0 +1,135 @@
+Quiz App (Quizlet Clone) - Flutter/Dart + Firebase Build Process
+
+1. Project Setup
+
+-   Install Flutter SDK and Dart.
+-   Set up Firebase project in Firebase Console (Authentication,
+    Firestore, Storage, Hosting if needed).
+-   Integrate Firebase with Flutter using firebase_core,
+    cloud_firestore, firebase_auth, firebase_storage.
+-   Install necessary packages: provider or riverpod (state management),
+    google_fonts, flutter_hooks, animations.
+
+2. App Architecture
+
+-   Use MVVM or Clean Architecture.
+-   Layers:
+    -   Data Layer: Firebase Firestore, Storage, Authentication.
+    -   Repository Layer: Handles communication between Data and Domain.
+    -   Domain Layer: Business logic (Quiz, User, Results).
+    -   Presentation Layer: Flutter UI with state management.
+
+3. Core Features
+
+1.  User Authentication
+    -   Sign up / Login (Email & Password, Google Sign-In).
+    -   Password reset functionality.
+    -   Store user profiles in Firestore.
+2.  Quiz Management
+    -   Create Quiz (Title, Description, Tags, Public/Private option).
+    -   Add questions (Multiple Choice, True/False, Flashcards).
+    -   Edit/Delete quizzes.
+    -   Save quiz drafts.
+3.  Quiz Participation
+    -   Search and browse quizzes.
+    -   Take quizzes (timed / untimed mode).
+    -   View instant feedback (correct/wrong answers).
+    -   Track progress with score and statistics.
+4.  Study Modes (like Quizlet)
+    -   Flashcard mode: Flip cards for studying.
+    -   Test mode: Auto-generate tests from questions.
+    -   Practice mode: Multiple-choice practice.
+5.  User Profile & Dashboard
+    -   View user’s quizzes created.
+    -   Track quiz history and performance stats.
+    -   Achievements/Badges system (optional).
+6.  Social & Sharing (Optional)
+    -   Share quiz links with friends.
+    -   Allow collaborative quiz creation.
+    -   Like/Save quizzes.
+
+4. UI/UX Design
+
+-   Clean and modern design using Material 3 / Cupertino widgets.
+-   Light/Dark mode support.
+-   Consistent color palette (primary, secondary, neutral).
+-   Example Screens:
+    -   Splash Screen
+    -   Login / Register Screen
+    -   Home Screen (List of quizzes, search bar)
+    -   Quiz Details Screen
+    -   Quiz Player Screen (questions, timer, next/previous)
+    -   Flashcard Screen (swipe or flip)
+    -   Profile/Dashboard Screen
+
+5. Firebase Database Structure (Example - Firestore)
+
+-   Users Collection
+
+        {
+          "uid": "user123",
+          "name": "John Doe",
+          "email": "john@example.com",
+          "createdAt": "timestamp"
+        }
+
+-   Quizzes Collection
+
+        {
+          "quizId": "quiz123",
+          "title": "Math Quiz",
+          "description": "Basic Algebra",
+          "ownerId": "user123",
+          "createdAt": "timestamp",
+          "isPublic": true
+        }
+
+-   Questions Subcollection
+
+        {
+          "questionId": "q1",
+          "question": "2+2=?",
+          "options": ["2","3","4","5"],
+          "answerIndex": 2
+        }
+
+-   Results Collection
+
+        {
+          "resultId": "res123",
+          "userId": "user123",
+          "quizId": "quiz123",
+          "score": 8,
+          "createdAt": "timestamp"
+        }
+
+6. Implementation Steps
+
+1.  Set up project and Firebase connection.
+2.  Implement Authentication (login, signup, logout).
+3.  Create Firestore models (User, Quiz, Question, Result).
+4.  Build UI for Login/Register, Home, Quiz Details.
+5.  Implement quiz creation and storage in Firestore.
+6.  Implement quiz participation and scoring logic.
+7.  Build flashcard and practice modes.
+8.  Create user profile dashboard with statistics.
+9.  Add optional features (sharing, collaborative editing).
+10. Optimize performance and test.
+
+7. Deployment
+
+-   Use Firebase Hosting for web build (flutter web).
+-   Build APK/IPA for Android and iOS release.
+-   Setup CI/CD with GitHub Actions or Codemagic.
+
+8. Future Improvements
+
+-   AI-based quiz generation from text.
+-   Offline mode with local database (sqflite).
+-   Push notifications (Firebase Messaging).
+-   Monetization: Ads or subscription plans.
+
+------------------------------------------------------------------------
+
+This document serves as a development blueprint for building a
+Flutter/Dart Quiz App with Firebase backend (Quizlet Clone).
