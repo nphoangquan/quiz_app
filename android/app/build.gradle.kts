@@ -16,6 +16,8 @@ dependencies {
 
   // When using the BoM, don't specify versions in Firebase dependencies
 
+  // Add Firebase Core explicitly to fix IDE warnings
+//   implementation("com.google.firebase:firebase-core")
   implementation("com.google.firebase:firebase-analytics")
 
 
