@@ -6,9 +6,16 @@ import 'firebase_options.dart';
 import 'core/themes/app_theme.dart';
 import 'presentation/providers/theme_provider.dart';
 import 'presentation/providers/auth_provider.dart';
+import 'presentation/providers/quiz_provider.dart';
+import 'presentation/providers/quiz_player_provider.dart';
+import 'presentation/providers/result_provider.dart';
 import 'presentation/screens/auth/auth_wrapper.dart';
 import 'data/services/firebase_auth_service.dart';
+import 'data/services/firebase_quiz_service.dart';
+import 'data/services/firebase_result_service.dart';
 import 'data/repositories/auth_repository_impl.dart';
+import 'data/repositories/quiz_repository_impl.dart';
+import 'data/repositories/result_repository_impl.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -30,6 +37,20 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(
           create: (_) =>
               AuthProvider(AuthRepositoryImpl(FirebaseAuthService())),
+        ),
+        ChangeNotifierProvider(
+          create: (_) =>
+              QuizProvider(QuizRepositoryImpl(FirebaseQuizService())),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => QuizPlayerProvider(
+            QuizRepositoryImpl(FirebaseQuizService()),
+            ResultRepositoryImpl(FirebaseResultService()),
+          ),
+        ),
+        ChangeNotifierProvider(
+          create: (_) =>
+              ResultProvider(ResultRepositoryImpl(FirebaseResultService())),
         ),
       ],
       child: Consumer<ThemeProvider>(

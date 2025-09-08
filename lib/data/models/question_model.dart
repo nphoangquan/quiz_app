@@ -15,6 +15,22 @@ class QuestionModel extends QuestionEntity {
     super.timeLimit = 0,
   });
 
+  /// Create QuestionModel from QuestionEntity
+  factory QuestionModel.fromEntity(QuestionEntity entity) {
+    return QuestionModel(
+      questionId: entity.questionId,
+      question: entity.question,
+      type: entity.type,
+      options: entity.options,
+      correctAnswerIndex: entity.correctAnswerIndex,
+      explanation: entity.explanation,
+      imageUrl: entity.imageUrl,
+      order: entity.order,
+      points: entity.points,
+      timeLimit: entity.timeLimit,
+    );
+  }
+
   /// Create QuestionModel from Firestore document
   factory QuestionModel.fromFirestore(DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>;

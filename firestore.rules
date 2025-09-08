@@ -1,0 +1,75 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Users collection
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+      allow read: if request.auth != null; // Allow reading other users' public info
+    }
+    
+    // Quizzes collection
+    match /quizzes/{quizId} {
+      // Allow reading public quizzes
+      allow read: if request.auth != null && 
+        (resource.data.isPublic == true || resource.data.ownerId == request.auth.uid);
+      
+      // Allow creating/updating own quizzes
+      allow create, update: if request.auth != null && 
+        request.auth.uid == resource.data.ownerId;
+      
+      // Allow deleting own quizzes
+      allow delete: if request.auth != null && 
+        request.auth.uid == resource.data.ownerId;
+      
+      // Questions subcollection
+      match /questions/{questionId} {
+        // Allow reading questions if user can read the quiz
+        allow read: if request.auth != null && 
+          (get(/databases/$(database)/documents/quizzes/$(quizId)).data.isPublic == true ||
+           get(/databases/$(database)/documents/quizzes/$(quizId)).data.ownerId == request.auth.uid);
+        
+        // Allow creating/updating questions if user owns the quiz
+        allow create, update, delete: if request.auth != null && 
+          get(/databases/$(database)/documents/quizzes/$(quizId)).data.ownerId == request.auth.uid;
+      }
+    }
+    
+    // Results collection
+    match /results/{resultId} {
+      // Users can read their own results
+      allow read, write: if request.auth != null && 
+        request.auth.uid == resource.data.userId;
+      
+      // Quiz owners can read results for their quizzes (for analytics)
+      allow read: if request.auth != null && 
+        request.auth.uid == get(/databases/$(database)/documents/quizzes/$(resource.data.quizId)).data.ownerId;
+    }
+    
+    // Quiz attempts collection (for saving progress)
+    match /quiz_attempts/{attemptId} {
+      // Users can manage their own attempts
+      allow read, write: if request.auth != null && 
+        request.auth.uid == resource.data.userId;
+      
+      // Auto-delete attempts older than 7 days (handled by Cloud Functions)
+    }
+    
+    // Global leaderboard (optional - for public rankings)
+    match /leaderboard/{userId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // Categories collection (read-only, managed by admin)
+    match /categories/{categoryId} {
+      allow read: if request.auth != null;
+      allow write: if false; // Only admin can modify
+    }
+    
+    // Featured quizzes (managed by admin)
+    match /featured/{featuredId} {
+      allow read: if request.auth != null;
+      allow write: if false; // Only admin can modify
+    }
+  }
+}

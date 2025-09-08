@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/themes/app_colors.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../domain/entities/quiz_entity.dart';
 import '../../widgets/quiz/quiz_card.dart';
+import '../../providers/quiz_provider.dart';
+import '../quiz/quiz_player_screen.dart';
 
 class DiscoverScreen extends StatefulWidget {
   const DiscoverScreen({super.key});
@@ -22,6 +25,13 @@ class _DiscoverScreenState extends State<DiscoverScreen>
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
+
+    // Load public quizzes when screen initializes
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final quizProvider = context.read<QuizProvider>();
+      quizProvider.loadPublicQuizzes();
+      quizProvider.loadFeaturedQuizzes();
+    });
   }
 
   @override
@@ -35,32 +45,36 @@ class _DiscoverScreenState extends State<DiscoverScreen>
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
-        child: Column(
-          children: [
-            // Header
-            _buildHeader(),
+        child: Consumer<QuizProvider>(
+          builder: (context, quizProvider, child) {
+            return Column(
+              children: [
+                // Header
+                _buildHeader(),
 
-            // Search Bar
-            _buildSearchBar(),
+                // Search Bar
+                _buildSearchBar(),
 
-            // Filters
-            _buildFilters(),
+                // Filters
+                _buildFilters(),
 
-            // Tab Bar
-            _buildTabBar(),
+                // Tab Bar
+                _buildTabBar(),
 
-            // Tab Content
-            Expanded(
-              child: TabBarView(
-                controller: _tabController,
-                children: [
-                  _buildAllQuizzes(),
-                  _buildTrendingQuizzes(),
-                  _buildNewQuizzes(),
-                ],
-              ),
-            ),
-          ],
+                // Tab Content
+                Expanded(
+                  child: TabBarView(
+                    controller: _tabController,
+                    children: [
+                      _buildAllQuizzes(quizProvider),
+                      _buildTrendingQuizzes(quizProvider),
+                      _buildNewQuizzes(quizProvider),
+                    ],
+                  ),
+                ),
+              ],
+            );
+          },
         ),
       ),
     );
@@ -107,11 +121,7 @@ class _DiscoverScreenState extends State<DiscoverScreen>
         horizontal: AppConstants.defaultPadding,
       ),
       child: TextField(
-        onChanged: (value) {
-          setState(() {
-            _searchQuery = value;
-          });
-        },
+        onChanged: _onSearchChanged,
         decoration: InputDecoration(
           hintText: 'Tìm kiếm quiz...',
           prefixIcon: const Icon(Icons.search),
@@ -213,16 +223,68 @@ class _DiscoverScreenState extends State<DiscoverScreen>
     );
   }
 
-  Widget _buildAllQuizzes() {
-    return _buildQuizGrid(_sampleAllQuizzes);
+  Widget _buildAllQuizzes(QuizProvider quizProvider) {
+    if (quizProvider.isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (quizProvider.hasError) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.error_outline, size: 64, color: AppColors.error),
+            const SizedBox(height: 16),
+            Text(
+              'Có lỗi xảy ra',
+              style: GoogleFonts.inter(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              quizProvider.errorMessage ?? 'Không thể tải quiz',
+              style: GoogleFonts.inter(fontSize: 14, color: AppColors.grey),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: () {
+                quizProvider.loadPublicQuizzes();
+              },
+              child: const Text('Thử lại'),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return _buildQuizGrid(quizProvider.publicQuizzes);
   }
 
-  Widget _buildTrendingQuizzes() {
-    return _buildQuizGrid(_sampleTrendingQuizzes);
+  Widget _buildTrendingQuizzes(QuizProvider quizProvider) {
+    if (quizProvider.isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    // Sort by total attempts for trending
+    final trendingQuizzes = List<QuizEntity>.from(quizProvider.publicQuizzes)
+      ..sort((a, b) => b.stats.totalAttempts.compareTo(a.stats.totalAttempts));
+
+    return _buildQuizGrid(trendingQuizzes.take(10).toList());
   }
 
-  Widget _buildNewQuizzes() {
-    return _buildQuizGrid(_sampleNewQuizzes);
+  Widget _buildNewQuizzes(QuizProvider quizProvider) {
+    if (quizProvider.isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    // Sort by creation date for newest
+    final newQuizzes = List<QuizEntity>.from(quizProvider.publicQuizzes)
+      ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+
+    return _buildQuizGrid(newQuizzes.take(10).toList());
   }
 
   Widget _buildQuizGrid(List<QuizEntity> quizzes) {
@@ -273,7 +335,11 @@ class _DiscoverScreenState extends State<DiscoverScreen>
             padding: const EdgeInsets.only(bottom: 16),
             child: SizedBox(
               width: double.infinity,
-              child: QuizCard(quiz: filteredQuizzes[index]),
+              child: QuizCard(
+                quiz: filteredQuizzes[index],
+                onTap: () =>
+                    _navigateToQuizPlayer(context, filteredQuizzes[index]),
+              ),
             ),
           );
         },
@@ -303,61 +369,25 @@ class _DiscoverScreenState extends State<DiscoverScreen>
         return 'Tổng hợp';
     }
   }
+
+  void _navigateToQuizPlayer(BuildContext context, QuizEntity quiz) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => QuizPlayerScreen(
+          quizId: quiz.quizId,
+          enableTimer: false, // Can be made configurable based on quiz settings
+        ),
+      ),
+    );
+  }
+
+  void _onSearchChanged(String query) {
+    setState(() {
+      _searchQuery = query;
+    });
+
+    // Trigger search in provider if needed
+    final quizProvider = context.read<QuizProvider>();
+    quizProvider.updateSearchQuery(query);
+  }
 }
-
-// Sample data - will be replaced with real Firestore data
-final List<QuizEntity> _sampleAllQuizzes = [
-  // Mix of all quizzes
-  ..._sampleTrendingQuizzes,
-  ..._sampleNewQuizzes,
-];
-
-final List<QuizEntity> _sampleTrendingQuizzes = [
-  QuizEntity(
-    quizId: 't1',
-    title: 'React Hooks Advanced',
-    description: 'Master advanced React Hooks patterns and best practices',
-    ownerId: 'user_t1',
-    ownerName: 'Sarah Johnson',
-    tags: ['react', 'hooks', 'javascript', 'frontend'],
-    category: QuizCategory.programming,
-    isPublic: true,
-    questionCount: 25,
-    difficulty: QuizDifficulty.advanced,
-    createdAt: DateTime.now().subtract(const Duration(days: 10)),
-    updatedAt: DateTime.now().subtract(const Duration(days: 5)),
-    stats: const QuizStats(
-      totalAttempts: 3456,
-      averageScore: 79.2,
-      likes: 567,
-      rating: 4.9,
-      ratingCount: 789,
-    ),
-  ),
-  // Add more trending quizzes...
-];
-
-final List<QuizEntity> _sampleNewQuizzes = [
-  QuizEntity(
-    quizId: 'n1',
-    title: 'Flutter 3.0 New Features',
-    description: 'Explore the latest features introduced in Flutter 3.0',
-    ownerId: 'user_n1',
-    ownerName: 'Alex Chen',
-    tags: ['flutter', 'dart', 'mobile', 'new'],
-    category: QuizCategory.programming,
-    isPublic: true,
-    questionCount: 18,
-    difficulty: QuizDifficulty.intermediate,
-    createdAt: DateTime.now().subtract(const Duration(hours: 6)),
-    updatedAt: DateTime.now().subtract(const Duration(hours: 2)),
-    stats: const QuizStats(
-      totalAttempts: 23,
-      averageScore: 85.1,
-      likes: 12,
-      rating: 4.7,
-      ratingCount: 8,
-    ),
-  ),
-  // Add more new quizzes...
-];

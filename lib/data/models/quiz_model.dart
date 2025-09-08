@@ -19,6 +19,26 @@ class QuizModel extends QuizEntity {
     required super.stats,
   });
 
+  /// Create QuizModel from QuizEntity
+  factory QuizModel.fromEntity(QuizEntity entity) {
+    return QuizModel(
+      quizId: entity.quizId,
+      title: entity.title,
+      description: entity.description,
+      ownerId: entity.ownerId,
+      ownerName: entity.ownerName,
+      ownerAvatar: entity.ownerAvatar,
+      tags: entity.tags,
+      category: entity.category,
+      isPublic: entity.isPublic,
+      questionCount: entity.questionCount,
+      difficulty: entity.difficulty,
+      createdAt: entity.createdAt,
+      updatedAt: entity.updatedAt,
+      stats: entity.stats,
+    );
+  }
+
   /// Create QuizModel from Firestore document
   factory QuizModel.fromFirestore(DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>;

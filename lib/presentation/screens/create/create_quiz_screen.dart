@@ -1,458 +1,300 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/themes/app_colors.dart';
 import '../../../core/constants/app_constants.dart';
-import '../../../domain/entities/quiz_entity.dart';
+import '../../providers/quiz_provider.dart';
+import '../../providers/auth_provider.dart';
+import 'enhanced_create_quiz_screen.dart';
+import '../profile/my_quizzes_screen.dart';
 
-class CreateQuizScreen extends StatefulWidget {
+class CreateQuizScreen extends StatelessWidget {
   const CreateQuizScreen({super.key});
-
-  @override
-  State<CreateQuizScreen> createState() => _CreateQuizScreenState();
-}
-
-class _CreateQuizScreenState extends State<CreateQuizScreen> {
-  final _titleController = TextEditingController();
-  final _descriptionController = TextEditingController();
-  QuizCategory _selectedCategory = QuizCategory.general;
-  QuizDifficulty _selectedDifficulty = QuizDifficulty.beginner;
-  bool _isPublic = true;
-  final List<String> _tags = [];
-  final _tagController = TextEditingController();
-
-  @override
-  void dispose() {
-    _titleController.dispose();
-    _descriptionController.dispose();
-    _tagController.dispose();
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      appBar: AppBar(
+        title: Text(
+          'Tạo Quiz',
+          style: GoogleFonts.inter(fontWeight: FontWeight.bold),
+        ),
+        automaticallyImplyLeading:
+            false, // Remove back button since this is in a tab
+      ),
       body: SafeArea(
-        child: Column(
-          children: [
-            // Header
-            _buildHeader(),
-
-            // Form
-            Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(AppConstants.defaultPadding),
+        child: Padding(
+          padding: const EdgeInsets.all(AppConstants.defaultPadding),
+          child: Column(
+            children: [
+              // Header section
+              Container(
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      AppColors.primary.withOpacity(0.1),
+                      AppColors.secondary.withOpacity(0.1),
+                    ],
+                  ),
+                  borderRadius: BorderRadius.circular(16),
+                ),
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Coming Soon Message
-                    _buildComingSoonCard(),
-
-                    const SizedBox(height: 24),
-
-                    // Title
-                    _buildTextField(
-                      controller: _titleController,
-                      label: 'Tiêu đề quiz',
-                      hint: 'Nhập tiêu đề cho quiz của bạn',
+                    Icon(Icons.quiz, size: 64, color: AppColors.primary),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Tạo Quiz Mới',
+                      style: GoogleFonts.inter(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.primary,
+                      ),
                     ),
-
-                    const SizedBox(height: 20),
-
-                    // Description
-                    _buildTextField(
-                      controller: _descriptionController,
-                      label: 'Mô tả',
-                      hint: 'Mô tả ngắn gọn về nội dung quiz',
-                      maxLines: 3,
+                    const SizedBox(height: 8),
+                    Text(
+                      'Tạo quiz của riêng bạn và chia sẻ với mọi người',
+                      style: GoogleFonts.inter(
+                        fontSize: 16,
+                        color: AppColors.grey,
+                      ),
+                      textAlign: TextAlign.center,
                     ),
-
-                    const SizedBox(height: 20),
-
-                    // Category
-                    _buildCategorySelector(),
-
-                    const SizedBox(height: 20),
-
-                    // Difficulty
-                    _buildDifficultySelector(),
-
-                    const SizedBox(height: 20),
-
-                    // Public/Private
-                    _buildPrivacyToggle(),
-
-                    const SizedBox(height: 20),
-
-                    // Tags
-                    _buildTagsSection(),
-
-                    const SizedBox(height: 40),
-
-                    // Create Button
-                    _buildCreateButton(),
-
-                    const SizedBox(height: 20),
                   ],
                 ),
               ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 
-  Widget _buildHeader() {
-    return Container(
-      padding: const EdgeInsets.all(AppConstants.defaultPadding),
-      decoration: BoxDecoration(
-        color: Theme.of(context).scaffoldBackgroundColor,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 4,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Text(
-            'Tạo Quiz',
-            style: GoogleFonts.inter(
-              fontSize: 28,
-              fontWeight: FontWeight.bold,
-              color: Theme.of(context).textTheme.headlineLarge?.color,
-            ),
-          ),
-          const Spacer(),
-          IconButton(
-            onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text(
-                    'Tính năng lưu nháp sẽ có trong phiên bản tiếp theo',
-                  ),
-                  duration: Duration(seconds: 2),
+              const SizedBox(height: 32),
+
+              // Action buttons
+              Expanded(
+                child: Column(
+                  children: [
+                    // Create new quiz button
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        onPressed: () => _navigateToCreateQuiz(context),
+                        icon: const Icon(Icons.add, size: 24),
+                        label: Text(
+                          'Tạo Quiz Mới',
+                          style: GoogleFonts.inter(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primary,
+                          foregroundColor: AppColors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    // My quizzes button
+                    SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton.icon(
+                        onPressed: () => _navigateToMyQuizzes(context),
+                        icon: const Icon(Icons.library_books, size: 24),
+                        label: Text(
+                          'Quiz Của Tôi',
+                          style: GoogleFonts.inter(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: AppColors.primary,
+                          side: BorderSide(color: AppColors.primary, width: 2),
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 32),
+
+                    // Quick stats
+                    Consumer<QuizProvider>(
+                      builder: (context, quizProvider, child) {
+                        return Container(
+                          padding: const EdgeInsets.all(20),
+                          decoration: BoxDecoration(
+                            color: Theme.of(context).cardColor,
+                            borderRadius: BorderRadius.circular(16),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.05),
+                                blurRadius: 10,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: Column(
+                            children: [
+                              Text(
+                                'Thống kê của bạn',
+                                style: GoogleFonts.inter(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const SizedBox(height: 16),
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceAround,
+                                children: [
+                                  _buildStatItem(
+                                    'Quiz đã tạo',
+                                    '${quizProvider.userQuizzes.length}',
+                                    Icons.quiz,
+                                    AppColors.primary,
+                                  ),
+                                  _buildStatItem(
+                                    'Câu hỏi',
+                                    '${quizProvider.currentQuestions.length}',
+                                    Icons.help_outline,
+                                    Colors.orange,
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+
+                    const Spacer(),
+
+                    // Tips section
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: AppColors.primary.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.lightbulb_outline,
+                            color: AppColors.primary,
+                            size: 24,
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              'Mẹo: Tạo quiz với nhiều loại câu hỏi khác nhau để tăng tính thú vị!',
+                              style: GoogleFonts.inter(
+                                fontSize: 14,
+                                color: AppColors.primary,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
-              );
-            },
-            icon: Icon(
-              Icons.save_outlined,
-              color: Theme.of(context).textTheme.bodyLarge?.color,
-            ),
+              ),
+            ],
           ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildComingSoonCard() {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            AppColors.primary.withOpacity(0.1),
-            AppColors.primaryLight.withOpacity(0.1),
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.primary.withOpacity(0.3), width: 1),
-      ),
-      child: Column(
-        children: [
-          Icon(Icons.construction, size: 48, color: AppColors.primary),
-          const SizedBox(height: 12),
-          Text(
-            'Tính năng đang phát triển',
-            style: GoogleFonts.inter(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: AppColors.primary,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Tính năng tạo quiz đầy đủ sẽ có trong Giai đoạn 4.\nHiện tại bạn có thể xem trước giao diện.',
-            textAlign: TextAlign.center,
-            style: GoogleFonts.inter(
-              fontSize: 14,
-              color: AppColors.grey,
-              height: 1.5,
-            ),
-          ),
-        ],
       ),
     );
   }
 
-  Widget _buildTextField({
-    required TextEditingController controller,
-    required String label,
-    required String hint,
-    int maxLines = 1,
-  }) {
+  Widget _buildStatItem(
+    String label,
+    String value,
+    IconData icon,
+    Color color,
+  ) {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        Container(
+          width: 48,
+          height: 48,
+          decoration: BoxDecoration(
+            color: color.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Icon(icon, color: color, size: 24),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          value,
+          style: GoogleFonts.inter(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: color,
+          ),
+        ),
         Text(
           label,
-          style: GoogleFonts.inter(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-            color: Theme.of(context).textTheme.bodyLarge?.color,
-          ),
-        ),
-        const SizedBox(height: 8),
-        TextField(
-          controller: controller,
-          maxLines: maxLines,
-          decoration: InputDecoration(
-            hintText: hint,
-            enabled: false, // Disabled for demo
-          ),
+          style: GoogleFonts.inter(fontSize: 12, color: AppColors.grey),
+          textAlign: TextAlign.center,
         ),
       ],
     );
   }
 
-  Widget _buildCategorySelector() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Danh mục',
-          style: GoogleFonts.inter(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-            color: Theme.of(context).textTheme.bodyLarge?.color,
-          ),
-        ),
-        const SizedBox(height: 8),
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          decoration: BoxDecoration(
-            color: Theme.of(context).brightness == Brightness.dark
-                ? AppColors.surfaceDark
-                : AppColors.surfaceLight,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: AppColors.lightGrey.withOpacity(0.5),
-              width: 1,
-            ),
-          ),
-          child: Row(
-            children: [
-              Text(
-                _getCategoryName(_selectedCategory),
-                style: GoogleFonts.inter(fontSize: 16, color: AppColors.grey),
-              ),
-              const Spacer(),
-              Icon(Icons.keyboard_arrow_down, color: AppColors.grey),
-            ],
-          ),
-        ),
-      ],
+  void _navigateToCreateQuiz(BuildContext context) async {
+    final result = await Navigator.of(context).push(
+      MaterialPageRoute(builder: (context) => const EnhancedCreateQuizScreen()),
     );
-  }
 
-  Widget _buildDifficultySelector() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Độ khó',
-          style: GoogleFonts.inter(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-            color: Theme.of(context).textTheme.bodyLarge?.color,
-          ),
-        ),
-        const SizedBox(height: 8),
-        Row(
-          children: QuizDifficulty.values.map((difficulty) {
-            final isSelected = _selectedDifficulty == difficulty;
-            return Expanded(
-              child: Padding(
-                padding: const EdgeInsets.only(right: 8),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                  decoration: BoxDecoration(
-                    color: isSelected
-                        ? AppColors.primary.withOpacity(0.1)
-                        : Colors.transparent,
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(
-                      color: isSelected
-                          ? AppColors.primary
-                          : AppColors.lightGrey,
-                      width: 1,
-                    ),
-                  ),
-                  child: Text(
-                    _getDifficultyName(difficulty),
-                    textAlign: TextAlign.center,
-                    style: GoogleFonts.inter(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: isSelected ? AppColors.primary : AppColors.grey,
-                    ),
-                  ),
-                ),
-              ),
-            );
-          }).toList(),
-        ),
-      ],
-    );
-  }
+    if (result == true) {
+      // Quiz was created successfully, refresh the provider
+      if (context.mounted) {
+        final quizProvider = context.read<QuizProvider>();
+        final authProvider = context.read<AuthProvider>();
 
-  Widget _buildPrivacyToggle() {
-    return Row(
-      children: [
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Quyền riêng tư',
-                style: GoogleFonts.inter(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: Theme.of(context).textTheme.bodyLarge?.color,
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                _isPublic
-                    ? 'Công khai - Mọi người có thể xem'
-                    : 'Riêng tư - Chỉ bạn có thể xem',
-                style: GoogleFonts.inter(fontSize: 14, color: AppColors.grey),
-              ),
-            ],
-          ),
-        ),
-        Switch(
-          value: _isPublic,
-          onChanged: null, // Disabled for demo
-          activeColor: AppColors.primary,
-        ),
-      ],
-    );
-  }
+        // Refresh user quizzes if user is authenticated
+        if (authProvider.user != null) {
+          quizProvider.loadUserQuizzes(authProvider.user!.uid);
+        }
 
-  Widget _buildTagsSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Thẻ (Tags)',
-          style: GoogleFonts.inter(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-            color: Theme.of(context).textTheme.bodyLarge?.color,
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('🎉 Quiz đã được tạo thành công!'),
+            backgroundColor: Colors.green,
+            duration: Duration(seconds: 2),
           ),
-        ),
-        const SizedBox(height: 8),
-        TextField(
-          controller: _tagController,
-          enabled: false, // Disabled for demo
-          decoration: const InputDecoration(
-            hintText: 'Thêm thẻ để dễ tìm kiếm (nhấn Enter để thêm)',
-          ),
-        ),
-        if (_tags.isNotEmpty) ...[
-          const SizedBox(height: 12),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: _tags.map((tag) {
-              return Chip(
-                label: Text(tag),
-                onDeleted: null, // Disabled for demo
-                backgroundColor: AppColors.primary.withOpacity(0.1),
-                labelStyle: GoogleFonts.inter(
-                  fontSize: 12,
-                  color: AppColors.primary,
-                ),
-              );
-            }).toList(),
-          ),
-        ],
-      ],
-    );
-  }
-
-  Widget _buildCreateButton() {
-    return SizedBox(
-      width: double.infinity,
-      height: 56,
-      child: ElevatedButton(
-        onPressed: () {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text(
-                'Tính năng tạo quiz sẽ có trong Giai đoạn 4: Quiz Management',
-              ),
-              duration: Duration(seconds: 3),
-            ),
-          );
-        },
-        style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.grey, // Disabled color
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-        ),
-        child: Text(
-          'Tạo Quiz (Coming Soon)',
-          style: GoogleFonts.inter(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-            color: AppColors.white,
-          ),
-        ),
-      ),
-    );
-  }
-
-  String _getCategoryName(QuizCategory category) {
-    switch (category) {
-      case QuizCategory.programming:
-        return 'Lập trình';
-      case QuizCategory.mathematics:
-        return 'Toán học';
-      case QuizCategory.science:
-        return 'Khoa học';
-      case QuizCategory.history:
-        return 'Lịch sử';
-      case QuizCategory.language:
-        return 'Ngôn ngữ';
-      case QuizCategory.geography:
-        return 'Địa lý';
-      case QuizCategory.sports:
-        return 'Thể thao';
-      case QuizCategory.entertainment:
-        return 'Giải trí';
-      case QuizCategory.general:
-        return 'Tổng hợp';
+        );
+      }
     }
   }
 
-  String _getDifficultyName(QuizDifficulty difficulty) {
-    switch (difficulty) {
-      case QuizDifficulty.beginner:
-        return 'Dễ';
-      case QuizDifficulty.intermediate:
-        return 'Trung bình';
-      case QuizDifficulty.advanced:
-        return 'Khó';
+  void _navigateToMyQuizzes(BuildContext context) {
+    final authProvider = context.read<AuthProvider>();
+    final quizProvider = context.read<QuizProvider>();
+
+    if (authProvider.user != null) {
+      // Load user quizzes first
+      quizProvider.loadUserQuizzes(authProvider.user!.uid);
+
+      // Navigate to My Quizzes screen
+      Navigator.of(
+        context,
+      ).push(MaterialPageRoute(builder: (context) => const MyQuizzesScreen()));
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Vui lòng đăng nhập để xem quiz của bạn!'),
+          backgroundColor: Colors.orange,
+        ),
+      );
     }
   }
 }
