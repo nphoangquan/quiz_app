@@ -9,6 +9,7 @@ import '../../providers/quiz_player_provider.dart';
 import '../../providers/result_provider.dart';
 import '../../widgets/common/confetti_widget.dart';
 import 'quiz_player_screen.dart';
+import 'answer_review_screen.dart';
 
 class QuizResultScreen extends StatefulWidget {
   final ResultEntity result;
@@ -753,11 +754,9 @@ class _QuizResultScreenState extends State<QuizResultScreen>
   }
 
   void _reviewAnswers() {
-    // Navigate to detailed answer review screen
-    // This would be implemented as a separate screen
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Tính năng xem chi tiết đáp án sẽ được cập nhật sớm!'),
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => AnswerReviewScreen(result: widget.result),
       ),
     );
   }

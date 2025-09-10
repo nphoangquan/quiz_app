@@ -5,9 +5,64 @@ import '../../../core/themes/app_colors.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/theme_provider.dart';
+import '../../providers/quiz_provider.dart';
+import 'my_quizzes_screen.dart';
+import 'quiz_history_screen.dart';
+import 'settings_screen.dart';
 
-class ProfileTabScreen extends StatelessWidget {
+class ProfileTabScreen extends StatefulWidget {
   const ProfileTabScreen({super.key});
+
+  @override
+  State<ProfileTabScreen> createState() => _ProfileTabScreenState();
+}
+
+class _ProfileTabScreenState extends State<ProfileTabScreen> {
+  @override
+  void initState() {
+    super.initState();
+    _loadUserStats();
+  }
+
+  void _loadUserStats() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final authProvider = context.read<AuthProvider>();
+      final quizProvider = context.read<QuizProvider>();
+
+      if (authProvider.user != null) {
+        // Load user quizzes to get accurate count
+        quizProvider.loadUserQuizzes(authProvider.user!.uid);
+      }
+    });
+  }
+
+  void _navigateToMyQuizzes() {
+    final authProvider = context.read<AuthProvider>();
+    final quizProvider = context.read<QuizProvider>();
+
+    if (authProvider.user != null) {
+      // Ensure user quizzes are loaded
+      quizProvider.loadUserQuizzes(authProvider.user!.uid);
+
+      // Navigate to My Quizzes screen
+      Navigator.of(
+        context,
+      ).push(MaterialPageRoute(builder: (context) => const MyQuizzesScreen()));
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Vui lòng đăng nhập để xem quiz của bạn!'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+    }
+  }
+
+  void _navigateToHistory() {
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (context) => const QuizHistoryScreen()));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -64,13 +119,8 @@ class ProfileTabScreen extends StatelessWidget {
         const Spacer(),
         IconButton(
           onPressed: () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text(
-                  'Tính năng cài đặt sẽ có trong phiên bản tiếp theo',
-                ),
-                duration: Duration(seconds: 2),
-              ),
+            Navigator.of(context).push(
+              MaterialPageRoute(builder: (context) => const SettingsScreen()),
             );
           },
           icon: Icon(
@@ -179,8 +229,8 @@ class ProfileTabScreen extends StatelessWidget {
   }
 
   Widget _buildStatsCards(BuildContext context) {
-    return Consumer<AuthProvider>(
-      builder: (context, authProvider, child) {
+    return Consumer2<AuthProvider, QuizProvider>(
+      builder: (context, authProvider, quizProvider, child) {
         final user = authProvider.user;
 
         return Row(
@@ -189,7 +239,7 @@ class ProfileTabScreen extends StatelessWidget {
               child: _buildStatCard(
                 context,
                 'Quiz đã tạo',
-                user?.stats.quizzesCreated.toString() ?? '0',
+                quizProvider.userQuizzes.length.toString(),
                 Icons.create,
                 AppColors.primary,
               ),
@@ -209,7 +259,7 @@ class ProfileTabScreen extends StatelessWidget {
               child: _buildStatCard(
                 context,
                 'Điểm số',
-                user?.stats.totalScore.toString() ?? '0',
+                user?.stats.totalScore.toString() ?? '10',
                 Icons.star,
                 Colors.amber,
               ),
@@ -279,16 +329,7 @@ class ProfileTabScreen extends StatelessWidget {
                 'Xem và quản lý quiz',
                 Icons.library_books,
                 AppColors.primary,
-                () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text(
-                        'Tính năng quản lý quiz sẽ có trong Giai đoạn 4',
-                      ),
-                      duration: Duration(seconds: 2),
-                    ),
-                  );
-                },
+                () => _navigateToMyQuizzes(),
               ),
             ),
             const SizedBox(width: 12),
@@ -299,16 +340,7 @@ class ProfileTabScreen extends StatelessWidget {
                 'Xem kết quả đã làm',
                 Icons.history,
                 Colors.orange,
-                () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text(
-                        'Tính năng lịch sử sẽ có trong phiên bản tiếp theo',
-                      ),
-                      duration: Duration(seconds: 2),
-                    ),
-                  );
-                },
+                () => _navigateToHistory(),
               ),
             ),
           ],

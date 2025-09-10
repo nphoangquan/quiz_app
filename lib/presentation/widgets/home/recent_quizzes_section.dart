@@ -57,38 +57,41 @@ class RecentQuizzesSection extends StatelessWidget {
 
         const SizedBox(height: 12),
 
-        // Recent Quiz Cards
-        isLoading
-            ? const Center(child: CircularProgressIndicator())
-            : recentQuizzes.isEmpty
-            ? Center(
-                child: Column(
-                  children: [
-                    Icon(Icons.history, size: 48, color: AppColors.grey),
-                    const SizedBox(height: 12),
-                    Text(
-                      'Chưa có quiz gần đây',
-                      style: GoogleFonts.inter(
-                        fontSize: 16,
-                        color: AppColors.grey,
-                      ),
-                    ),
-                  ],
-                ),
-              )
-            : Column(
-                children: recentQuizzes
-                    .map(
-                      (quiz) => Padding(
-                        padding: const EdgeInsets.only(bottom: 12),
-                        child: QuizCard(
-                          quiz: quiz,
-                          onTap: () => _navigateToQuizPlayer(context, quiz),
+        // Recent Quiz Cards - Horizontal Scrollable
+        SizedBox(
+          height: 220, // Fixed height for horizontal scroll
+          child: isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : recentQuizzes.isEmpty
+              ? Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.history, size: 48, color: AppColors.grey),
+                      const SizedBox(height: 12),
+                      Text(
+                        'Chưa có quiz gần đây',
+                        style: GoogleFonts.inter(
+                          fontSize: 16,
+                          color: AppColors.grey,
                         ),
                       ),
-                    )
-                    .toList(),
-              ),
+                    ],
+                  ),
+                )
+              : ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  itemCount: recentQuizzes.length,
+                  itemBuilder: (context, index) {
+                    return QuizCard(
+                      quiz: recentQuizzes[index],
+                      onTap: () =>
+                          _navigateToQuizPlayer(context, recentQuizzes[index]),
+                    );
+                  },
+                ),
+        ),
       ],
     );
   }

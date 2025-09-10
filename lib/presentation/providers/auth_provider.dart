@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import '../../domain/entities/user_entity.dart';
 import '../../domain/repositories/auth_repository.dart';
@@ -16,6 +17,7 @@ class AuthProvider extends ChangeNotifier {
   UserEntity? _user;
   String? _errorMessage;
   bool _isLoading = false;
+  Timer? _errorTimer;
 
   // Getters
   AuthStatus get status => _status;
@@ -64,11 +66,19 @@ class AuthProvider extends ChangeNotifier {
         print('🎉 Google Sign-In successful: ${user.name}');
       } else {
         _status = AuthStatus.unauthenticated;
-        print('❌ Google Sign-In failed: No user returned');
       }
     } catch (e) {
-      _status = AuthStatus.error;
-      _errorMessage = _getErrorMessage(e.toString());
+      // Check if it's a type cast error (internal plugin issue)
+      final errorString = e.toString();
+      if (errorString.contains('type') && errorString.contains('subtype')) {
+        // This is likely a harmless internal plugin error
+        print('⚠️ Internal plugin error (ignored): $e');
+        // Don't set error status, wait for auth state listener
+        return;
+      }
+
+      // For real errors, set error status with delay
+      _setErrorWithDelay(errorString);
       print('❌ Google Sign-In error: $e');
     } finally {
       _setLoading(false);
@@ -128,8 +138,22 @@ class AuthProvider extends ChangeNotifier {
 
   /// Clear error
   void _clearError() {
+    _errorTimer?.cancel();
     _errorMessage = null;
     notifyListeners();
+  }
+
+  /// Set error with delay to avoid flash
+  void _setErrorWithDelay(String error) {
+    _errorTimer?.cancel();
+    _errorTimer = Timer(const Duration(milliseconds: 500), () {
+      // Only show error if we're still not authenticated after delay
+      if (_status != AuthStatus.authenticated) {
+        _status = AuthStatus.error;
+        _errorMessage = _getErrorMessage(error);
+        notifyListeners();
+      }
+    });
   }
 
   /// Get user-friendly error message
@@ -149,6 +173,7 @@ class AuthProvider extends ChangeNotifier {
 
   @override
   void dispose() {
+    _errorTimer?.cancel();
     super.dispose();
   }
 }

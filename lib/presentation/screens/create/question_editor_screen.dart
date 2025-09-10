@@ -377,7 +377,7 @@ class _QuestionEditorScreenState extends State<QuestionEditorScreen> {
     final isCorrect = _correctAnswerIndex == index;
     final optionLabel = _selectedType == QuestionType.multipleChoice
         ? String.fromCharCode(65 + index) // A, B, C, D...
-        : (index == 0 ? 'Đúng' : 'Sai');
+        : (index == 0 ? '✓' : '✗');
 
     return Row(
       children: [
@@ -389,8 +389,8 @@ class _QuestionEditorScreenState extends State<QuestionEditorScreen> {
             });
           },
           child: Container(
-            width: 40,
-            height: 40,
+            width: 44,
+            height: 44,
             decoration: BoxDecoration(
               color: isCorrect
                   ? Colors.green.withOpacity(0.1)
@@ -405,10 +405,14 @@ class _QuestionEditorScreenState extends State<QuestionEditorScreen> {
               child: Text(
                 optionLabel,
                 style: GoogleFonts.inter(
-                  fontSize: 14,
+                  fontSize: _selectedType == QuestionType.multipleChoice
+                      ? 14
+                      : 16,
                   fontWeight: FontWeight.bold,
                   color: isCorrect ? Colors.green : AppColors.grey,
                 ),
+                textAlign: TextAlign.center,
+                maxLines: 1,
               ),
             ),
           ),
@@ -484,6 +488,7 @@ class _QuestionEditorScreenState extends State<QuestionEditorScreen> {
         ),
         const SizedBox(height: 12),
         Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Expanded(
               child: Column(
@@ -514,6 +519,8 @@ class _QuestionEditorScreenState extends State<QuestionEditorScreen> {
                     decoration: InputDecoration(
                       hintText: '10',
                       suffixText: 'điểm',
+                      helperText: 'Từ 1-100 điểm',
+                      helperStyle: GoogleFonts.inter(fontSize: 10),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),

@@ -19,16 +19,16 @@ class _DiscoverScreenState extends State<DiscoverScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   String _searchQuery = '';
-  QuizCategory? _selectedCategory;
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(length: 2, vsync: this);
 
     // Load public quizzes when screen initializes
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final quizProvider = context.read<QuizProvider>();
+
       quizProvider.loadPublicQuizzes();
       quizProvider.loadFeaturedQuizzes();
     });
@@ -67,7 +67,6 @@ class _DiscoverScreenState extends State<DiscoverScreen>
                     controller: _tabController,
                     children: [
                       _buildAllQuizzes(quizProvider),
-                      _buildTrendingQuizzes(quizProvider),
                       _buildNewQuizzes(quizProvider),
                     ],
                   ),
@@ -141,59 +140,8 @@ class _DiscoverScreenState extends State<DiscoverScreen>
   }
 
   Widget _buildFilters() {
-    return Container(
-      height: 60,
-      margin: const EdgeInsets.symmetric(vertical: 16),
-      child: ListView(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppConstants.defaultPadding,
-        ),
-        children: [
-          _buildFilterChip(
-            'Tất cả',
-            _selectedCategory == null,
-            () => setState(() => _selectedCategory = null),
-          ),
-          const SizedBox(width: 8),
-          ...QuizCategory.values.map((category) {
-            return Padding(
-              padding: const EdgeInsets.only(right: 8),
-              child: _buildFilterChip(
-                _getCategoryName(category),
-                _selectedCategory == category,
-                () => setState(() => _selectedCategory = category),
-              ),
-            );
-          }),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildFilterChip(String label, bool isSelected, VoidCallback onTap) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        decoration: BoxDecoration(
-          color: isSelected ? AppColors.primary : Colors.transparent,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: isSelected ? AppColors.primary : AppColors.lightGrey,
-            width: 1,
-          ),
-        ),
-        child: Text(
-          label,
-          style: GoogleFonts.inter(
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
-            color: isSelected ? AppColors.white : AppColors.grey,
-          ),
-        ),
-      ),
-    );
+    // Simplified filters - removed category buttons for now
+    return const SizedBox(height: 16); // Just spacing
   }
 
   Widget _buildTabBar() {
@@ -216,7 +164,6 @@ class _DiscoverScreenState extends State<DiscoverScreen>
         ),
         tabs: const [
           Tab(text: 'Tất cả'),
-          Tab(text: 'Thịnh hành'),
           Tab(text: 'Mới nhất'),
         ],
       ),
@@ -260,19 +207,18 @@ class _DiscoverScreenState extends State<DiscoverScreen>
       );
     }
 
-    return _buildQuizGrid(quizProvider.publicQuizzes);
-  }
+    // Sort "Tất cả" by category, then title (alphabetical)
+    final sortedQuizzes = List<QuizEntity>.from(quizProvider.publicQuizzes)
+      ..sort((a, b) {
+        // First sort by category
+        final categoryComparison = a.category.name.compareTo(b.category.name);
+        if (categoryComparison != 0) return categoryComparison;
 
-  Widget _buildTrendingQuizzes(QuizProvider quizProvider) {
-    if (quizProvider.isLoading) {
-      return const Center(child: CircularProgressIndicator());
-    }
+        // Then sort by title (alphabetical)
+        return a.title.toLowerCase().compareTo(b.title.toLowerCase());
+      });
 
-    // Sort by total attempts for trending
-    final trendingQuizzes = List<QuizEntity>.from(quizProvider.publicQuizzes)
-      ..sort((a, b) => b.stats.totalAttempts.compareTo(a.stats.totalAttempts));
-
-    return _buildQuizGrid(trendingQuizzes.take(10).toList());
+    return _buildQuizGrid(sortedQuizzes);
   }
 
   Widget _buildNewQuizzes(QuizProvider quizProvider) {
@@ -280,11 +226,11 @@ class _DiscoverScreenState extends State<DiscoverScreen>
       return const Center(child: CircularProgressIndicator());
     }
 
-    // Sort by creation date for newest
+    // Sort "Mới nhất" by creation date (newest first)
     final newQuizzes = List<QuizEntity>.from(quizProvider.publicQuizzes)
       ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
 
-    return _buildQuizGrid(newQuizzes.take(10).toList());
+    return _buildQuizGrid(newQuizzes);
   }
 
   Widget _buildQuizGrid(List<QuizEntity> quizzes) {
@@ -293,9 +239,7 @@ class _DiscoverScreenState extends State<DiscoverScreen>
           _searchQuery.isEmpty ||
           quiz.title.toLowerCase().contains(_searchQuery.toLowerCase()) ||
           quiz.description.toLowerCase().contains(_searchQuery.toLowerCase());
-      final matchesCategory =
-          _selectedCategory == null || quiz.category == _selectedCategory;
-      return matchesSearch && matchesCategory;
+      return matchesSearch;
     }).toList();
 
     if (filteredQuizzes.isEmpty) {
@@ -347,29 +291,6 @@ class _DiscoverScreenState extends State<DiscoverScreen>
     );
   }
 
-  String _getCategoryName(QuizCategory category) {
-    switch (category) {
-      case QuizCategory.programming:
-        return 'Lập trình';
-      case QuizCategory.mathematics:
-        return 'Toán học';
-      case QuizCategory.science:
-        return 'Khoa học';
-      case QuizCategory.history:
-        return 'Lịch sử';
-      case QuizCategory.language:
-        return 'Ngôn ngữ';
-      case QuizCategory.geography:
-        return 'Địa lý';
-      case QuizCategory.sports:
-        return 'Thể thao';
-      case QuizCategory.entertainment:
-        return 'Giải trí';
-      case QuizCategory.general:
-        return 'Tổng hợp';
-    }
-  }
-
   void _navigateToQuizPlayer(BuildContext context, QuizEntity quiz) {
     Navigator.of(context).push(
       MaterialPageRoute(
@@ -386,8 +307,9 @@ class _DiscoverScreenState extends State<DiscoverScreen>
       _searchQuery = query;
     });
 
-    // Trigger search in provider if needed
+    // Trigger search in provider and reload quizzes
     final quizProvider = context.read<QuizProvider>();
     quizProvider.updateSearchQuery(query);
+    quizProvider.loadPublicQuizzes(); // Reload with new search query
   }
 }

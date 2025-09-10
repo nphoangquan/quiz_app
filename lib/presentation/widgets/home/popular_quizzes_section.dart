@@ -57,38 +57,41 @@ class PopularQuizzesSection extends StatelessWidget {
 
         const SizedBox(height: 12),
 
-        // Popular Quiz Cards
-        isLoading
-            ? const Center(child: CircularProgressIndicator())
-            : popularQuizzes.isEmpty
-            ? Center(
-                child: Column(
-                  children: [
-                    Icon(Icons.trending_up, size: 48, color: AppColors.grey),
-                    const SizedBox(height: 12),
-                    Text(
-                      'Chưa có quiz phổ biến',
-                      style: GoogleFonts.inter(
-                        fontSize: 16,
-                        color: AppColors.grey,
-                      ),
-                    ),
-                  ],
-                ),
-              )
-            : Column(
-                children: popularQuizzes
-                    .map(
-                      (quiz) => Padding(
-                        padding: const EdgeInsets.only(bottom: 12),
-                        child: QuizCard(
-                          quiz: quiz,
-                          onTap: () => _navigateToQuizPlayer(context, quiz),
+        // Popular Quiz Cards - Horizontal Scrollable
+        SizedBox(
+          height: 220, // Fixed height for horizontal scroll
+          child: isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : popularQuizzes.isEmpty
+              ? Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.trending_up, size: 48, color: AppColors.grey),
+                      const SizedBox(height: 12),
+                      Text(
+                        'Chưa có quiz phổ biến',
+                        style: GoogleFonts.inter(
+                          fontSize: 16,
+                          color: AppColors.grey,
                         ),
                       ),
-                    )
-                    .toList(),
-              ),
+                    ],
+                  ),
+                )
+              : ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  itemCount: popularQuizzes.length,
+                  itemBuilder: (context, index) {
+                    return QuizCard(
+                      quiz: popularQuizzes[index],
+                      onTap: () =>
+                          _navigateToQuizPlayer(context, popularQuizzes[index]),
+                    );
+                  },
+                ),
+        ),
       ],
     );
   }

@@ -8,8 +8,32 @@ import '../../providers/auth_provider.dart';
 import 'enhanced_create_quiz_screen.dart';
 import '../profile/my_quizzes_screen.dart';
 
-class CreateQuizScreen extends StatelessWidget {
+class CreateQuizScreen extends StatefulWidget {
   const CreateQuizScreen({super.key});
+
+  @override
+  State<CreateQuizScreen> createState() => _CreateQuizScreenState();
+}
+
+class _CreateQuizScreenState extends State<CreateQuizScreen> {
+  @override
+  void initState() {
+    super.initState();
+    // Auto load user statistics when screen initializes
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadUserStatistics();
+    });
+  }
+
+  void _loadUserStatistics() {
+    final authProvider = context.read<AuthProvider>();
+    final quizProvider = context.read<QuizProvider>();
+
+    if (authProvider.user != null) {
+      // Load user quizzes to get statistics
+      quizProvider.loadUserQuizzes(authProvider.user!.uid);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -163,7 +187,7 @@ class CreateQuizScreen extends StatelessWidget {
                                   ),
                                   _buildStatItem(
                                     'Câu hỏi',
-                                    '${quizProvider.currentQuestions.length}',
+                                    '${quizProvider.totalQuestionsCount}',
                                     Icons.help_outline,
                                     Colors.orange,
                                   ),
@@ -276,7 +300,7 @@ class CreateQuizScreen extends StatelessWidget {
     }
   }
 
-  void _navigateToMyQuizzes(BuildContext context) {
+  void _navigateToMyQuizzes(BuildContext context) async {
     final authProvider = context.read<AuthProvider>();
     final quizProvider = context.read<QuizProvider>();
 
@@ -284,10 +308,15 @@ class CreateQuizScreen extends StatelessWidget {
       // Load user quizzes first
       quizProvider.loadUserQuizzes(authProvider.user!.uid);
 
-      // Navigate to My Quizzes screen
-      Navigator.of(
+      // Navigate to My Quizzes screen and wait for result
+      await Navigator.of(
         context,
       ).push(MaterialPageRoute(builder: (context) => const MyQuizzesScreen()));
+
+      // Refresh statistics when coming back
+      if (context.mounted) {
+        _loadUserStatistics();
+      }
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(

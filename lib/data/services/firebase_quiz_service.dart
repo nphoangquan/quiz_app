@@ -86,19 +86,22 @@ class FirebaseQuizService {
       query = query.limit(limit);
 
       return query.snapshots().map((snapshot) {
-        return snapshot.docs.map((doc) => QuizModel.fromFirestore(doc)).where((
-          quiz,
-        ) {
-          if (searchQuery != null && searchQuery.isNotEmpty) {
-            return quiz.title.toLowerCase().contains(
-                  searchQuery.toLowerCase(),
-                ) ||
-                quiz.description.toLowerCase().contains(
-                  searchQuery.toLowerCase(),
-                );
-          }
-          return true;
-        }).toList();
+        final quizzes = snapshot.docs
+            .map((doc) => QuizModel.fromFirestore(doc))
+            .where((quiz) {
+              if (searchQuery != null && searchQuery.isNotEmpty) {
+                return quiz.title.toLowerCase().contains(
+                      searchQuery.toLowerCase(),
+                    ) ||
+                    quiz.description.toLowerCase().contains(
+                      searchQuery.toLowerCase(),
+                    );
+              }
+              return true;
+            })
+            .toList();
+
+        return quizzes;
       });
     } catch (e) {
       throw Exception('Failed to get public quizzes: $e');

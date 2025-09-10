@@ -34,6 +34,7 @@ class FeaturedSection extends StatelessWidget {
             ),
             TextButton(
               onPressed: () {
+                ScaffoldMessenger.of(context).clearSnackBars();
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
                     content: Text(
@@ -59,7 +60,7 @@ class FeaturedSection extends StatelessWidget {
 
         // Horizontal Scrollable Quiz Cards
         SizedBox(
-          height: 200,
+          height: 220, // Consistent height with other sections
           child: isLoading
               ? const Center(child: CircularProgressIndicator())
               : featuredQuizzes.isEmpty
@@ -81,7 +82,9 @@ class FeaturedSection extends StatelessWidget {
                 )
               : ListView.builder(
                   scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(horizontal: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                  ), // Consistent padding
                   itemCount: featuredQuizzes.length,
                   itemBuilder: (context, index) {
                     final quiz = featuredQuizzes[index];

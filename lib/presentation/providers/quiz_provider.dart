@@ -49,6 +49,11 @@ class QuizProvider with ChangeNotifier {
       _currentQuiz!.description.isNotEmpty &&
       _currentQuestions.isNotEmpty;
 
+  /// Get total questions count from all user quizzes
+  int get totalQuestionsCount {
+    return _userQuizzes.fold<int>(0, (sum, quiz) => sum + quiz.questionCount);
+  }
+
   // Set state helper
   void _setState(QuizState newState, [String? error]) {
     _state = newState;
@@ -210,6 +215,9 @@ class QuizProvider with ChangeNotifier {
 
       _setState(QuizState.success);
 
+      // Refresh public quizzes to show the new quiz
+      loadPublicQuizzes();
+
       // Clear current quiz
       _currentQuiz = null;
       _currentQuestions = [];
@@ -314,6 +322,9 @@ class QuizProvider with ChangeNotifier {
 
   /// Load public quizzes
   void loadPublicQuizzes() {
+    print(
+      '🔍 Loading public quizzes with search: $_searchQuery, category: $_selectedCategory',
+    );
     _quizRepository
         .getPublicQuizzes(
           category: _selectedCategory,

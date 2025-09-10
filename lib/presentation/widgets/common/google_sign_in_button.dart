@@ -57,27 +57,19 @@ class GoogleSignInButton extends StatelessWidget {
             : Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  // Google Logo
-                  Image.asset(
-                    'assets/images/google_logo.png',
+                  // Google Logo Icon
+                  Container(
                     width: 24,
                     height: 24,
-                    errorBuilder: (context, error, stackTrace) {
-                      // Fallback to icon if image not found
-                      return Container(
-                        width: 24,
-                        height: 24,
-                        decoration: BoxDecoration(
-                          color: AppColors.primary,
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: const Icon(
-                          Icons.g_mobiledata,
-                          color: AppColors.white,
-                          size: 20,
-                        ),
-                      );
-                    },
+                    decoration: BoxDecoration(
+                      color: AppColors.primary,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Icon(
+                      Icons.g_mobiledata,
+                      color: AppColors.white,
+                      size: 20,
+                    ),
                   ),
                   const SizedBox(width: 12),
                   Text(

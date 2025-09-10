@@ -53,9 +53,7 @@ class _QuizPlayerScreenState extends State<QuizPlayerScreen>
       enableTimer: widget.enableTimer,
     );
 
-    if (quizPlayer.isReady) {
-      _showStartDialog();
-    }
+    // Quiz will show ready screen, user clicks "Bắt đầu Quiz" button to start
   }
 
   @override
@@ -276,7 +274,7 @@ class _QuizPlayerScreenState extends State<QuizPlayerScreen>
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: () => _startQuiz(quizPlayer),
+                  onPressed: () => _showStartDialog(),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primary,
                     padding: const EdgeInsets.symmetric(vertical: 16),
@@ -375,43 +373,11 @@ class _QuizPlayerScreenState extends State<QuizPlayerScreen>
                 ),
               ),
 
-              // Timer
-              if (widget.enableTimer && quizPlayer.timeRemaining > 0)
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 6,
-                  ),
-                  decoration: BoxDecoration(
-                    color: quizPlayer.timeRemaining <= 10
-                        ? AppColors.error.withOpacity(0.1)
-                        : AppColors.primary.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        Icons.timer,
-                        size: 16,
-                        color: quizPlayer.timeRemaining <= 10
-                            ? AppColors.error
-                            : AppColors.primary,
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        '${quizPlayer.timeRemaining}s',
-                        style: GoogleFonts.inter(
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold,
-                          color: quizPlayer.timeRemaining <= 10
-                              ? AppColors.error
-                              : AppColors.primary,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+              // Timer with circular progress
+              if (widget.enableTimer &&
+                  quizPlayer.currentQuestion != null &&
+                  quizPlayer.currentQuestion!.timeLimit > 0)
+                _buildTimerWidget(quizPlayer),
             ],
           ),
 
@@ -728,6 +694,90 @@ class _QuizPlayerScreenState extends State<QuizPlayerScreen>
     );
   }
 
+  Widget _buildTimerWidget(QuizPlayerProvider quizPlayer) {
+    final currentQuestion = quizPlayer.currentQuestion!;
+    final totalTime = currentQuestion.timeLimit;
+    final remainingTime = quizPlayer.timeRemaining;
+    final progress = totalTime > 0
+        ? (totalTime - remainingTime) / totalTime
+        : 0.0;
+
+    final isUrgent = remainingTime <= 10;
+    final color = isUrgent ? AppColors.error : AppColors.primary;
+
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withOpacity(0.3)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Circular progress timer
+          SizedBox(
+            width: 40,
+            height: 40,
+            child: Stack(
+              children: [
+                // Background circle
+                CircularProgressIndicator(
+                  value: 1.0,
+                  strokeWidth: 3,
+                  backgroundColor: color.withOpacity(0.2),
+                  valueColor: AlwaysStoppedAnimation<Color>(
+                    color.withOpacity(0.2),
+                  ),
+                ),
+                // Progress circle
+                CircularProgressIndicator(
+                  value: progress,
+                  strokeWidth: 3,
+                  backgroundColor: Colors.transparent,
+                  valueColor: AlwaysStoppedAnimation<Color>(color),
+                ),
+                // Time text in center
+                Center(
+                  child: Text(
+                    '$remainingTime',
+                    style: GoogleFonts.inter(
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                      color: color,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(width: 12),
+
+          // Timer info
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'Thời gian còn lại',
+                style: GoogleFonts.inter(fontSize: 12, color: AppColors.grey),
+              ),
+              Text(
+                '${remainingTime}s / ${totalTime}s',
+                style: GoogleFonts.inter(
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                  color: color,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildInstruction(String text) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 4),
@@ -739,15 +789,188 @@ class _QuizPlayerScreenState extends State<QuizPlayerScreen>
   }
 
   void _showStartDialog() {
-    // Auto-start after a brief delay
-    Future.delayed(const Duration(milliseconds: 500), () {
-      if (mounted) {
-        final quizPlayer = context.read<QuizPlayerProvider>();
-        if (quizPlayer.isReady) {
-          // Dialog is optional, we can start directly
-        }
-      }
-    });
+    final quizPlayer = context.read<QuizPlayerProvider>();
+    final quiz = quizPlayer.currentQuiz!;
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          title: Row(
+            children: [
+              Icon(Icons.quiz, color: AppColors.primary, size: 28),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  'Bắt đầu Quiz',
+                  style: GoogleFonts.inter(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                quiz.title,
+                style: GoogleFonts.inter(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.primary,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                quiz.description,
+                style: GoogleFonts.inter(fontSize: 14, color: AppColors.grey),
+              ),
+              const SizedBox(height: 16),
+
+              // Quiz info
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: AppColors.lightGrey.withOpacity(0.3),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Column(
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        _buildDialogInfoItem(
+                          'Câu hỏi',
+                          '${quizPlayer.totalQuestions}',
+                          Icons.quiz_outlined,
+                        ),
+                        _buildDialogInfoItem(
+                          'Thời gian',
+                          widget.enableTimer ? 'Có giới hạn' : 'Tự do',
+                          Icons.timer_outlined,
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        _buildDialogInfoItem(
+                          'Độ khó',
+                          _getDifficultyName(quiz.difficulty),
+                          Icons.signal_cellular_alt,
+                        ),
+                        _buildDialogInfoItem(
+                          'Danh mục',
+                          _getCategoryName(quiz.category),
+                          Icons.category_outlined,
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 16),
+              Text(
+                'Bạn đã sẵn sàng bắt đầu quiz này chưa?',
+                style: GoogleFonts.inter(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Close dialog
+                Navigator.of(context).pop(); // Go back to previous screen
+              },
+              child: Text(
+                'Hủy',
+                style: GoogleFonts.inter(
+                  color: AppColors.grey,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Close dialog
+                _startQuiz(quizPlayer); // Start quiz
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              child: Text(
+                'Bắt đầu',
+                style: GoogleFonts.inter(fontWeight: FontWeight.w600),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildDialogInfoItem(String label, String value, IconData icon) {
+    return Column(
+      children: [
+        Icon(icon, size: 20, color: AppColors.primary),
+        const SizedBox(height: 4),
+        Text(
+          label,
+          style: GoogleFonts.inter(
+            fontSize: 10,
+            color: AppColors.grey,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        Text(
+          value,
+          style: GoogleFonts.inter(
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+            color: AppColors.darkGrey,
+          ),
+        ),
+      ],
+    );
+  }
+
+  String _getCategoryName(QuizCategory category) {
+    switch (category) {
+      case QuizCategory.mathematics:
+        return 'Toán học';
+      case QuizCategory.science:
+        return 'Khoa học';
+      case QuizCategory.history:
+        return 'Lịch sử';
+      case QuizCategory.geography:
+        return 'Địa lý';
+      case QuizCategory.language:
+        return 'Ngôn ngữ';
+      case QuizCategory.programming:
+        return 'Lập trình';
+      case QuizCategory.sports:
+        return 'Thể thao';
+      case QuizCategory.entertainment:
+        return 'Giải trí';
+      case QuizCategory.general:
+        return 'Tổng hợp';
+    }
   }
 
   void _startQuiz(QuizPlayerProvider quizPlayer) {
@@ -757,13 +980,19 @@ class _QuizPlayerScreenState extends State<QuizPlayerScreen>
   }
 
   void _startTimer(QuizPlayerProvider quizPlayer) {
-    if (widget.enableTimer) {
+    if (widget.enableTimer && quizPlayer.currentQuestion != null) {
       _timer?.cancel();
-      _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-        if (quizPlayer.timeRemaining > 0) {
-          quizPlayer.updateTimer(quizPlayer.timeRemaining - 1);
-        }
-      });
+
+      // Only start timer if current question has time limit
+      if (quizPlayer.currentQuestion!.timeLimit > 0) {
+        _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+          if (mounted && quizPlayer.timeRemaining > 0) {
+            quizPlayer.updateTimer(quizPlayer.timeRemaining - 1);
+          } else {
+            timer.cancel();
+          }
+        });
+      }
     }
   }
 

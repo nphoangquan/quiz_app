@@ -107,7 +107,14 @@ class QuizPlayerProvider with ChangeNotifier {
       _currentQuestionIndex = 0;
       _userAnswers = [];
       _isTimerEnabled = enableTimer;
-      _timeRemaining = 0;
+
+      // Initialize timer for first question if enabled
+      if (enableTimer && questions.isNotEmpty && questions[0].timeLimit > 0) {
+        _timeRemaining = questions[0].timeLimit;
+      } else {
+        _timeRemaining = 0;
+      }
+
       _currentResult = null;
 
       _setState(QuizPlayerState.ready);
@@ -241,8 +248,10 @@ class QuizPlayerProvider with ChangeNotifier {
 
     // Auto-submit when time runs out
     if (_timeRemaining <= 0 && _state == QuizPlayerState.playing) {
-      // Auto-answer with -1 (no answer)
-      answerQuestion(selectedAnswerIndex: -1, selectedAnswer: 'Hết giờ');
+      // Auto-answer with -1 (no answer) if no answer was given
+      if (currentUserAnswer == null) {
+        answerQuestion(selectedAnswerIndex: -1, selectedAnswer: 'Hết giờ');
+      }
 
       if (isLastQuestion) {
         finishQuiz();

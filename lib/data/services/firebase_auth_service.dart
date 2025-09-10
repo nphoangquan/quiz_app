@@ -20,17 +20,12 @@ class FirebaseAuthService {
   /// Sign in with Google
   Future<UserModel?> signInWithGoogle() async {
     try {
-      print('🔑 Starting Google Sign-In...');
-
       // Trigger the authentication flow
       final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
 
       if (googleUser == null) {
-        print('❌ Google Sign-In cancelled by user');
-        return null;
+        return null; // User cancelled
       }
-
-      print('✅ Google user signed in: ${googleUser.email}');
 
       // Obtain the auth details from the request
       final GoogleSignInAuthentication googleAuth =
@@ -51,17 +46,19 @@ class FirebaseAuthService {
         throw Exception('Failed to sign in with Google');
       }
 
-      print('✅ Firebase user authenticated: ${firebaseUser.uid}');
-
       // Create UserModel from Firebase user
       final userModel = UserModel.fromFirebaseUser(firebaseUser);
 
       // Save or update user data in Firestore
       await _saveUserToFirestore(userModel);
 
-      print('🎉 Google Sign-In completed successfully!');
       return userModel;
+    } on Exception catch (e) {
+      // Handle specific exceptions
+      print('❌ Google Sign-In error: $e');
+      rethrow;
     } catch (e) {
+      // Handle type cast and other errors
       print('❌ Google Sign-In error: $e');
       rethrow;
     }
@@ -70,15 +67,11 @@ class FirebaseAuthService {
   /// Sign out
   Future<void> signOut() async {
     try {
-      print('🚪 Signing out...');
-
       // Sign out from Google
       await _googleSignIn.signOut();
 
       // Sign out from Firebase
       await _firebaseAuth.signOut();
-
-      print('✅ Signed out successfully');
     } catch (e) {
       print('❌ Sign out error: $e');
       rethrow;
@@ -105,7 +98,6 @@ class FirebaseAuthService {
         return userModel;
       }
     } catch (e) {
-      print('❌ Get current user error: $e');
       return null;
     }
   }
@@ -124,8 +116,6 @@ class FirebaseAuthService {
 
       // Sign out from Google
       await _googleSignIn.signOut();
-
-      print('✅ Account deleted successfully');
     } catch (e) {
       print('❌ Delete account error: $e');
       rethrow;
