@@ -10,7 +10,6 @@ import '../../widgets/quiz/quiz_card.dart';
 import '../../providers/quiz_provider.dart';
 import '../../providers/category_provider.dart';
 import '../quiz/quiz_player_screen.dart';
-import '../category/category_filter_screen.dart';
 
 class DiscoverScreen extends StatefulWidget {
   const DiscoverScreen({super.key});
@@ -144,7 +143,7 @@ class _DiscoverScreenState extends State<DiscoverScreen>
         }
 
         return Container(
-          height: 50,
+          height: 40,
           margin: const EdgeInsets.symmetric(vertical: 16),
           child: ListView(
             scrollDirection: Axis.horizontal,
@@ -153,12 +152,12 @@ class _DiscoverScreenState extends State<DiscoverScreen>
             ),
             children: [
               _buildCategoryChip('Tất cả', null),
-              const SizedBox(width: 8),
+              const SizedBox(width: 12),
               ...categoryProvider.categories
                   .map(
                     (category) => [
                       _buildCategoryChip(category.name, category),
-                      const SizedBox(width: 8),
+                      const SizedBox(width: 12),
                     ],
                   )
                   .expand((element) => element),
@@ -170,53 +169,53 @@ class _DiscoverScreenState extends State<DiscoverScreen>
   }
 
   Widget _buildCategoryChip(String name, CategoryEntity? category) {
+    final bool isSelected = category == _selectedFilterCategory;
+
     return GestureDetector(
       onTap: () {
-        if (category == null) {
-          // Clear filters and reload all quizzes
-          final quizProvider = context.read<QuizProvider>();
-          quizProvider.clearAllFilters();
-          quizProvider.loadPublicQuizzes();
-        } else {
-          // Navigate to category screen
-          final categoryProvider = context.read<CategoryProvider>();
-          final categoryColor = categoryProvider.getCategoryColor(
-            category.categoryId,
-          );
+        setState(() {
+          _selectedFilterCategory = category;
+        });
 
-          Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (context) => CategoryFilterScreen(
-                initialCategory: CategoryMapper.slugToEnum(category.slug),
-                categoryName: category.name,
-                categoryColor: categoryColor,
-                categoryIcon: Icons.category,
-              ),
-            ),
-          );
-        }
+        // Apply filter directly without navigation
+        _applyFilters();
       },
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         decoration: BoxDecoration(
-          color: Colors.white,
-          border: Border.all(color: Colors.grey.withOpacity(0.3)),
-          borderRadius: BorderRadius.circular(20),
+          color: isSelected
+              ? AppColors.primary
+              : Theme.of(context).brightness == Brightness.dark
+              ? Colors.grey[800]
+              : Colors.grey[50],
+          border: Border.all(
+            color: isSelected
+                ? AppColors.primary
+                : Theme.of(context).brightness == Brightness.dark
+                ? Colors.grey[600]!
+                : Colors.grey[300]!,
+            width: 1,
+          ),
+          borderRadius: BorderRadius.circular(12),
           boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 4,
-              offset: const Offset(0, 2),
-            ),
+            if (isSelected)
+              BoxShadow(
+                color: AppColors.primary.withValues(alpha: 0.2),
+                blurRadius: 6,
+                offset: const Offset(0, 2),
+              ),
           ],
         ),
         child: Text(
           name,
           style: GoogleFonts.inter(
-            fontSize: 14,
+            fontSize: 13,
             fontWeight: FontWeight.w500,
-            color: Colors.grey[700],
+            color: isSelected
+                ? Colors.white
+                : Theme.of(context).textTheme.bodyLarge?.color,
           ),
+          textAlign: TextAlign.center,
         ),
       ),
     );
@@ -313,11 +312,24 @@ class _DiscoverScreenState extends State<DiscoverScreen>
 
   Widget _buildQuizGrid(List<QuizEntity> quizzes) {
     var filteredQuizzes = quizzes.where((quiz) {
+      // Category filter
+      final matchesCategory =
+          _selectedFilterCategory == null ||
+          CategoryMapper.slugToEnum(_selectedFilterCategory!.slug) ==
+              quiz.category;
+
+      // Search filter
       final matchesSearch =
           _searchQuery.isEmpty ||
           quiz.title.toLowerCase().contains(_searchQuery.toLowerCase()) ||
           quiz.description.toLowerCase().contains(_searchQuery.toLowerCase());
-      return matchesSearch;
+
+      // Difficulty filter
+      final matchesDifficulty =
+          _selectedFilterDifficulty == null ||
+          quiz.difficulty == _selectedFilterDifficulty;
+
+      return matchesCategory && matchesSearch && matchesDifficulty;
     }).toList();
 
     if (filteredQuizzes.isEmpty) {
@@ -384,11 +396,7 @@ class _DiscoverScreenState extends State<DiscoverScreen>
     setState(() {
       _searchQuery = query;
     });
-
-    // Trigger search in provider and reload quizzes
-    final quizProvider = context.read<QuizProvider>();
-    quizProvider.updateSearchQuery(query);
-    quizProvider.loadPublicQuizzes(); // Reload with new search query
+    // Filtering is now done locally in _buildQuizGrid, no need to reload
   }
 
   void _showAdvancedFilterDialog() {
@@ -396,44 +404,55 @@ class _DiscoverScreenState extends State<DiscoverScreen>
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
       builder: (context) => Container(
-        height: MediaQuery.of(context).size.height * 0.7,
-        decoration: BoxDecoration(
-          color: Theme.of(context).scaffoldBackgroundColor,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+        height: MediaQuery.of(context).size.height * 0.75,
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
         ),
         child: Column(
           children: [
-            // Handle
+            // Handle bar
             Container(
-              width: 40,
-              height: 4,
-              margin: const EdgeInsets.only(top: 12, bottom: 20),
+              width: 48,
+              height: 5,
+              margin: const EdgeInsets.only(top: 12, bottom: 8),
               decoration: BoxDecoration(
                 color: Colors.grey[300],
-                borderRadius: BorderRadius.circular(2),
+                borderRadius: BorderRadius.circular(3),
               ),
             ),
 
-            // Header
+            // Header với padding cải thiện
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
+              padding: const EdgeInsets.fromLTRB(24, 8, 24, 16),
               child: Row(
                 children: [
                   Text(
                     'Bộ lọc nâng cao',
                     style: GoogleFonts.inter(
-                      fontSize: 20,
+                      fontSize: 22,
                       fontWeight: FontWeight.bold,
+                      color: Colors.black87,
                     ),
                   ),
                   const Spacer(),
                   TextButton(
                     onPressed: _clearAllFilters,
+                    style: TextButton.styleFrom(
+                      foregroundColor: Colors.red[600],
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 8,
+                      ),
+                    ),
                     child: Text(
                       'Xóa tất cả',
                       style: GoogleFonts.inter(
-                        color: Colors.red,
+                        fontSize: 14,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -442,19 +461,25 @@ class _DiscoverScreenState extends State<DiscoverScreen>
               ),
             ),
 
-            const Divider(),
+            // Divider với margin
+            Container(
+              height: 1,
+              margin: const EdgeInsets.symmetric(horizontal: 24),
+              color: Colors.grey[200],
+            ),
 
-            // Filter Content
+            // Filter Content với padding cải thiện
             Expanded(
-              child: Padding(
-                padding: const EdgeInsets.all(20),
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(24),
                 child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     _buildFilterSection(
                       'Danh mục',
                       _buildAdvancedCategoryOptions(),
                     ),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 32),
                     _buildFilterSection(
                       'Độ khó',
                       _buildAdvancedDifficultyOptions(),
@@ -464,18 +489,20 @@ class _DiscoverScreenState extends State<DiscoverScreen>
               ),
             ),
 
-            // Apply Button
+            // Apply Button với padding và style cải thiện
             Container(
-              padding: const EdgeInsets.all(20),
+              padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
               child: SizedBox(
                 width: double.infinity,
+                height: 52,
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primary,
                     foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    elevation: 2,
+                    shadowColor: AppColors.primary.withValues(alpha: 0.3),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(16),
                     ),
                   ),
                   onPressed: () {
@@ -502,11 +529,17 @@ class _DiscoverScreenState extends State<DiscoverScreen>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          title,
-          style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w600),
+        Padding(
+          padding: const EdgeInsets.only(bottom: 16),
+          child: Text(
+            title,
+            style: GoogleFonts.inter(
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+              color: Colors.black87,
+            ),
+          ),
         ),
-        const SizedBox(height: 12),
         content,
       ],
     );
@@ -520,8 +553,8 @@ class _DiscoverScreenState extends State<DiscoverScreen>
         return StatefulBuilder(
           builder: (context, setModalState) {
             return Wrap(
-              spacing: 8,
-              runSpacing: 8,
+              spacing: 12,
+              runSpacing: 12,
               children: [
                 // "Tất cả danh mục"
                 GestureDetector(
@@ -533,27 +566,36 @@ class _DiscoverScreenState extends State<DiscoverScreen>
                   child: Container(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 16,
-                      vertical: 8,
+                      vertical: 10,
                     ),
                     decoration: BoxDecoration(
                       color: _selectedFilterCategory == null
-                          ? AppColors.primary.withOpacity(0.1)
-                          : Colors.transparent,
+                          ? AppColors.primary
+                          : Colors.grey[50],
                       border: Border.all(
                         color: _selectedFilterCategory == null
                             ? AppColors.primary
-                            : Colors.grey.withOpacity(0.3),
+                            : Colors.grey[300]!,
+                        width: 1,
                       ),
-                      borderRadius: BorderRadius.circular(20),
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        if (_selectedFilterCategory == null)
+                          BoxShadow(
+                            color: AppColors.primary.withValues(alpha: 0.2),
+                            blurRadius: 6,
+                            offset: const Offset(0, 2),
+                          ),
+                      ],
                     ),
                     child: Text(
                       'Tất cả danh mục',
                       style: GoogleFonts.inter(
-                        fontSize: 14,
+                        fontSize: 13,
                         fontWeight: FontWeight.w500,
                         color: _selectedFilterCategory == null
-                            ? AppColors.primary
-                            : Colors.grey[600],
+                            ? Colors.white
+                            : Colors.black87,
                       ),
                     ),
                   ),
@@ -573,27 +615,32 @@ class _DiscoverScreenState extends State<DiscoverScreen>
                     child: Container(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 16,
-                        vertical: 8,
+                        vertical: 10,
                       ),
                       decoration: BoxDecoration(
-                        color: isSelected
-                            ? AppColors.primary.withOpacity(0.1)
-                            : Colors.transparent,
+                        color: isSelected ? AppColors.primary : Colors.grey[50],
                         border: Border.all(
                           color: isSelected
                               ? AppColors.primary
-                              : Colors.grey.withOpacity(0.3),
+                              : Colors.grey[300]!,
+                          width: 1,
                         ),
-                        borderRadius: BorderRadius.circular(20),
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: [
+                          if (isSelected)
+                            BoxShadow(
+                              color: AppColors.primary.withValues(alpha: 0.2),
+                              blurRadius: 6,
+                              offset: const Offset(0, 2),
+                            ),
+                        ],
                       ),
                       child: Text(
                         category.name,
                         style: GoogleFonts.inter(
-                          fontSize: 14,
+                          fontSize: 13,
                           fontWeight: FontWeight.w500,
-                          color: isSelected
-                              ? AppColors.primary
-                              : Colors.grey[600],
+                          color: isSelected ? Colors.white : Colors.black87,
                         ),
                       ),
                     ),
@@ -618,8 +665,8 @@ class _DiscoverScreenState extends State<DiscoverScreen>
     return StatefulBuilder(
       builder: (context, setModalState) {
         return Wrap(
-          spacing: 8,
-          runSpacing: 8,
+          spacing: 12,
+          runSpacing: 12,
           children: difficulties.map((item) {
             final difficulty = item['difficulty'] as QuizDifficulty?;
             final name = item['name'] as String;
@@ -634,25 +681,30 @@ class _DiscoverScreenState extends State<DiscoverScreen>
               child: Container(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 16,
-                  vertical: 8,
+                  vertical: 10,
                 ),
                 decoration: BoxDecoration(
-                  color: isSelected
-                      ? AppColors.primary.withOpacity(0.1)
-                      : Colors.transparent,
+                  color: isSelected ? AppColors.primary : Colors.grey[50],
                   border: Border.all(
-                    color: isSelected
-                        ? AppColors.primary
-                        : Colors.grey.withOpacity(0.3),
+                    color: isSelected ? AppColors.primary : Colors.grey[300]!,
+                    width: 1,
                   ),
-                  borderRadius: BorderRadius.circular(20),
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    if (isSelected)
+                      BoxShadow(
+                        color: AppColors.primary.withValues(alpha: 0.2),
+                        blurRadius: 6,
+                        offset: const Offset(0, 2),
+                      ),
+                  ],
                 ),
                 child: Text(
                   name,
                   style: GoogleFonts.inter(
-                    fontSize: 14,
+                    fontSize: 13,
                     fontWeight: FontWeight.w500,
-                    color: isSelected ? AppColors.primary : Colors.grey[600],
+                    color: isSelected ? Colors.white : Colors.black87,
                   ),
                 ),
               ),
@@ -669,26 +721,10 @@ class _DiscoverScreenState extends State<DiscoverScreen>
       _selectedFilterDifficulty = null;
       _searchQuery = '';
     });
-
-    final quizProvider = context.read<QuizProvider>();
-    quizProvider.clearAllFilters();
-    quizProvider.loadPublicQuizzes();
   }
 
   void _applyFilters() {
-    final quizProvider = context.read<QuizProvider>();
-
-    // Convert CategoryEntity to QuizCategory enum if needed
-    QuizCategory? categoryEnum;
-    if (_selectedFilterCategory != null) {
-      categoryEnum = CategoryMapper.slugToEnum(_selectedFilterCategory!.slug);
-    }
-
-    // Apply filters
-    quizProvider.loadPublicQuizzes(
-      category: categoryEnum,
-      difficulty: _selectedFilterDifficulty,
-      searchQuery: _searchQuery.isEmpty ? null : _searchQuery,
-    );
+    // Just trigger UI rebuild - filtering is now done locally in _buildQuizGrid
+    setState(() {});
   }
 }
