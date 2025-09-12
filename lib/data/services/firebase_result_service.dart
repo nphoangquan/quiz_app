@@ -20,6 +20,9 @@ class FirebaseResultService {
       // Update user stats
       await _updateUserStats(result.userId, result);
 
+      // Update quiz stats (increment totalAttempts)
+      await _updateQuizStats(result.quizId, result);
+
       return docRef.id;
     } catch (e) {
       throw Exception('Failed to save result: $e');
@@ -164,6 +167,38 @@ class FirebaseResultService {
       };
     } catch (e) {
       throw Exception('Failed to get quiz statistics: $e');
+    }
+  }
+
+  /// Update quiz statistics after a user completes it
+  Future<void> _updateQuizStats(String quizId, ResultEntity result) async {
+    try {
+      final quizDoc = _firestore.collection('quizzes').doc(quizId);
+      final quizSnapshot = await quizDoc.get();
+
+      if (!quizSnapshot.exists) return;
+
+      final currentStats =
+          quizSnapshot.data()?['stats'] as Map<String, dynamic>? ?? {};
+      final currentTotalAttempts = currentStats['totalAttempts'] as int? ?? 0;
+      final currentTotalScore =
+          (currentStats['averageScore'] as double? ?? 0.0) *
+          currentTotalAttempts;
+
+      // Calculate new stats
+      final newTotalAttempts = currentTotalAttempts + 1;
+      final newTotalScore = currentTotalScore + result.percentage;
+      final newAverageScore = newTotalScore / newTotalAttempts;
+
+      // Update quiz stats
+      await quizDoc.update({
+        'stats.totalAttempts': newTotalAttempts,
+        'stats.averageScore': newAverageScore,
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+    } catch (e) {
+      print('Failed to update quiz stats: $e');
+      // Don't throw error to avoid breaking result saving
     }
   }
 

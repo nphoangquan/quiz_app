@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/themes/app_colors.dart';
 import '../../../core/constants/app_constants.dart';
+import '../../../core/utils/category_mapper.dart';
 import '../../../domain/entities/quiz_entity.dart';
 import '../../providers/quiz_provider.dart';
 import '../../providers/auth_provider.dart';
@@ -279,7 +280,7 @@ class _MyQuizzesScreenState extends State<MyQuizzesScreen>
                       borderRadius: BorderRadius.circular(6),
                     ),
                     child: Text(
-                      _getCategoryName(quiz.category),
+                      CategoryMapper.getDisplayName(quiz.category),
                       style: GoogleFonts.inter(
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
@@ -664,29 +665,6 @@ class _MyQuizzesScreenState extends State<MyQuizzesScreen>
         );
       },
     );
-  }
-
-  String _getCategoryName(QuizCategory category) {
-    switch (category) {
-      case QuizCategory.programming:
-        return 'Lập trình';
-      case QuizCategory.mathematics:
-        return 'Toán học';
-      case QuizCategory.science:
-        return 'Khoa học';
-      case QuizCategory.history:
-        return 'Lịch sử';
-      case QuizCategory.language:
-        return 'Ngôn ngữ';
-      case QuizCategory.geography:
-        return 'Địa lý';
-      case QuizCategory.sports:
-        return 'Thể thao';
-      case QuizCategory.entertainment:
-        return 'Giải trí';
-      case QuizCategory.general:
-        return 'Tổng hợp';
-    }
   }
 
   String _getDifficultyName(QuizDifficulty difficulty) {

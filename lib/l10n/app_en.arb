@@ -1,0 +1,101 @@
+{
+  "@@locale": "en",
+  
+  "appTitle": "Quiz App",
+  
+  "welcome": "Good afternoon!",
+  
+  "searchHint": "Search quizzes, topics...",
+  
+  "categories": "Categories",
+  
+  "recent": "Recent",
+  
+  "popular": "Popular",
+  
+  "viewAll": "View all",
+  
+  "home": "Home",
+  
+  "discover": "Discover",
+  
+  "createQuiz": "Create Quiz",
+  
+  "profile": "Profile",
+  
+  "settings": "Settings",
+  
+  "interface": "Interface",
+  
+  "darkMode": "Dark mode",
+  
+  "darkModeDesc": "Toggle dark interface",
+  
+  "language": "Language",
+  
+  "languageDesc": "Change app language",
+  
+  "account": "Account",
+  
+  "signOut": "Sign out",
+  
+  "signOutDesc": "Exit current account",
+  
+  "deleteAccount": "Delete account",
+  
+  "deleteAccountDesc": "Permanently delete account and data",
+  
+  "appInfo": "Quiz App",
+  
+  "version": "Version 1.0.0",
+  
+  "all": "All",
+  
+  "newest": "Newest",
+  
+  "programming": "Programming",
+  
+  "mathematics": "Mathematics",
+  
+  "science": "Science",
+  
+  "history": "History",
+  
+  "languageSubject": "Language",
+  
+  "geography": "Geography",
+  
+  "sports": "Sports",
+  
+  "entertainment": "Entertainment",
+  
+  "general": "General",
+  
+  "easy": "Easy",
+  
+  "medium": "Medium",
+  
+  "hard": "Hard",
+  
+  "backToHome": "Back to home",
+  
+  "noQuizFound": "No quiz found",
+  
+  "tryChangeFilter": "Try changing filters or search keywords",
+  
+  "clearFilters": "Clear filters",
+  
+  "apply": "Apply",
+  
+  "difficulty": "Difficulty",
+  
+  "category": "Category",
+  
+  "advancedFilter": "Advanced filter",
+  
+  "question": "{count, plural, =1{1 question} other{{count} questions}}",
+  
+  "attempt": "{count, plural, =0{0} =1{1} other{{count}}}",
+  
+  "selectLanguage": "Select Language"
+}

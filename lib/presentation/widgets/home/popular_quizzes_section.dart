@@ -8,11 +8,13 @@ import '../../screens/quiz/quiz_player_screen.dart';
 class PopularQuizzesSection extends StatelessWidget {
   final List<QuizEntity> popularQuizzes;
   final bool isLoading;
+  final VoidCallback? onViewAll;
 
   const PopularQuizzesSection({
     super.key,
     required this.popularQuizzes,
     required this.isLoading,
+    this.onViewAll,
   });
 
   @override
@@ -33,16 +35,7 @@ class PopularQuizzesSection extends StatelessWidget {
               ),
             ),
             TextButton(
-              onPressed: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text(
-                      'Tính năng xem tất cả sẽ có trong phiên bản tiếp theo',
-                    ),
-                    duration: Duration(seconds: 2),
-                  ),
-                );
-              },
+              onPressed: onViewAll,
               child: Text(
                 'Xem tất cả',
                 style: GoogleFonts.inter(

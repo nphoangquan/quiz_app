@@ -5,7 +5,9 @@ import '../../../core/themes/app_colors.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/theme_provider.dart';
+import '../../providers/language_provider.dart';
 import '../auth/auth_wrapper.dart';
+import '../../../generated/l10n/app_localizations.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -19,11 +21,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: Text(
-          'Cài đặt',
+          l10n.settings,
           style: GoogleFonts.inter(fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
@@ -113,7 +117,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
               // Settings Sections
               Text(
-                'Giao diện',
+                l10n.interface,
                 style: GoogleFonts.inter(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
@@ -127,8 +131,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 builder: (context, themeProvider, child) {
                   return _buildSettingItem(
                     icon: Icons.palette_outlined,
-                    title: 'Chế độ tối',
-                    subtitle: 'Bật/tắt giao diện tối',
+                    title: l10n.darkMode,
+                    subtitle: l10n.darkModeDesc,
                     trailing: Switch(
                       value: themeProvider.isDarkMode,
                       onChanged: (value) => themeProvider.toggleTheme(),
@@ -138,11 +142,46 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 },
               ),
 
+              const SizedBox(height: 8),
+
+              // Language Setting
+              Consumer<LanguageProvider>(
+                builder: (context, languageProvider, child) {
+                  return _buildSettingItem(
+                    icon: Icons.language_outlined,
+                    title: l10n.language,
+                    subtitle: l10n.languageDesc,
+                    trailing: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColors.primary.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                          color: AppColors.primary.withOpacity(0.3),
+                        ),
+                      ),
+                      child: Text(
+                        languageProvider.currentLanguageName,
+                        style: GoogleFonts.inter(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.primary,
+                        ),
+                      ),
+                    ),
+                    onTap: () => _showLanguageDialog(languageProvider),
+                  );
+                },
+              ),
+
               const SizedBox(height: 32),
 
               // Account Section
               Text(
-                'Tài khoản',
+                l10n.account,
                 style: GoogleFonts.inter(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
@@ -154,8 +193,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
               // Sign Out
               _buildSettingItem(
                 icon: Icons.logout,
-                title: 'Đăng xuất',
-                subtitle: 'Thoát khỏi tài khoản hiện tại',
+                title: l10n.signOut,
+                subtitle: l10n.signOutDesc,
                 onTap: _showSignOutDialog,
                 iconColor: Colors.orange,
               ),
@@ -165,8 +204,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
               // Delete Account
               _buildSettingItem(
                 icon: Icons.delete_forever,
-                title: 'Xóa tài khoản',
-                subtitle: 'Xóa vĩnh viễn tài khoản và dữ liệu',
+                title: l10n.deleteAccount,
+                subtitle: l10n.deleteAccountDesc,
                 onTap: _showDeleteAccountDialog,
                 iconColor: AppColors.error,
                 isLoading: _isDeleting,
@@ -179,7 +218,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 child: Column(
                   children: [
                     Text(
-                      'Quiz App',
+                      l10n.appInfo,
                       style: GoogleFonts.inter(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
@@ -188,7 +227,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'Phiên bản 1.0.0',
+                      l10n.version,
                       style: GoogleFonts.inter(
                         fontSize: 12,
                         color: AppColors.grey,
@@ -254,6 +293,103 @@ class _SettingsScreenState extends State<SettingsScreen> {
             : trailing ??
                   const Icon(Icons.chevron_right, color: AppColors.grey),
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      ),
+    );
+  }
+
+  void _showLanguageDialog(LanguageProvider languageProvider) {
+    final l10n = AppLocalizations.of(context);
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          title: Row(
+            children: [
+              Icon(Icons.language, color: AppColors.primary, size: 28),
+              const SizedBox(width: 12),
+              Text(
+                l10n.selectLanguage,
+                style: GoogleFonts.inter(fontWeight: FontWeight.bold),
+              ),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _buildLanguageOption(
+                languageCode: 'vi',
+                languageName: 'Tiếng Việt',
+                flag: '🇻🇳',
+                isSelected: languageProvider.isVietnamese,
+                onTap: () {
+                  languageProvider.changeLanguage('vi');
+                  Navigator.of(context).pop();
+                },
+              ),
+              const SizedBox(height: 12),
+              _buildLanguageOption(
+                languageCode: 'en',
+                languageName: 'English (US)',
+                flag: '🇺🇸',
+                isSelected: languageProvider.isEnglish,
+                onTap: () {
+                  languageProvider.changeLanguage('en');
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildLanguageOption({
+    required String languageCode,
+    required String languageName,
+    required String flag,
+    required bool isSelected,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? AppColors.primary.withOpacity(0.1)
+              : Colors.transparent,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isSelected
+                ? AppColors.primary
+                : Colors.grey.withOpacity(0.3),
+            width: isSelected ? 2 : 1,
+          ),
+        ),
+        child: Row(
+          children: [
+            Text(flag, style: const TextStyle(fontSize: 24)),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                languageName,
+                style: GoogleFonts.inter(
+                  fontSize: 16,
+                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                  color: isSelected ? AppColors.primary : null,
+                ),
+              ),
+            ),
+            if (isSelected)
+              Icon(Icons.check_circle, color: AppColors.primary, size: 20),
+          ],
+        ),
       ),
     );
   }

@@ -1,0 +1,258 @@
+{
+  "@@locale": "vi",
+  
+  "appTitle": "Quiz App",
+  "@appTitle": {
+    "description": "The title of the application"
+  },
+  
+  "welcome": "Chào buổi chiều!",
+  "@welcome": {
+    "description": "Welcome greeting"
+  },
+  
+  "searchHint": "Tìm kiếm quiz, chủ đề...",
+  "@searchHint": {
+    "description": "Search bar placeholder text"
+  },
+  
+  "categories": "Danh mục",
+  "@categories": {
+    "description": "Categories section title"
+  },
+  
+  "recent": "Gần đây",
+  "@recent": {
+    "description": "Recent section title"
+  },
+  
+  "popular": "Phổ biến",
+  "@popular": {
+    "description": "Popular section title"
+  },
+  
+  "viewAll": "Xem tất cả",
+  "@viewAll": {
+    "description": "View all button text"
+  },
+  
+  "home": "Trang chủ",
+  "@home": {
+    "description": "Home tab label"
+  },
+  
+  "discover": "Khám phá",
+  "@discover": {
+    "description": "Discover tab label"
+  },
+  
+  "createQuiz": "Tạo quiz",
+  "@createQuiz": {
+    "description": "Create quiz tab label"
+  },
+  
+  "profile": "Cá nhân",
+  "@profile": {
+    "description": "Profile tab label"
+  },
+  
+  "settings": "Cài đặt",
+  "@settings": {
+    "description": "Settings screen title"
+  },
+  
+  "interface": "Giao diện",
+  "@interface": {
+    "description": "Interface settings section"
+  },
+  
+  "darkMode": "Chế độ tối",
+  "@darkMode": {
+    "description": "Dark mode setting"
+  },
+  
+  "darkModeDesc": "Bật/tắt giao diện tối",
+  "@darkModeDesc": {
+    "description": "Dark mode setting description"
+  },
+  
+  "language": "Ngôn ngữ",
+  "@language": {
+    "description": "Language setting"
+  },
+  
+  "languageDesc": "Thay đổi ngôn ngữ ứng dụng",
+  "@languageDesc": {
+    "description": "Language setting description"
+  },
+  
+  "account": "Tài khoản",
+  "@account": {
+    "description": "Account settings section"
+  },
+  
+  "signOut": "Đăng xuất",
+  "@signOut": {
+    "description": "Sign out button"
+  },
+  
+  "signOutDesc": "Thoát khỏi tài khoản hiện tại",
+  "@signOutDesc": {
+    "description": "Sign out description"
+  },
+  
+  "deleteAccount": "Xóa tài khoản",
+  "@deleteAccount": {
+    "description": "Delete account button"
+  },
+  
+  "deleteAccountDesc": "Xóa vĩnh viễn tài khoản và dữ liệu",
+  "@deleteAccountDesc": {
+    "description": "Delete account description"
+  },
+  
+  "appInfo": "Quiz App",
+  "@appInfo": {
+    "description": "App info section"
+  },
+  
+  "version": "Phiên bản 1.0.0",
+  "@version": {
+    "description": "App version"
+  },
+  
+  "all": "Tất cả",
+  "@all": {
+    "description": "All filter option"
+  },
+  
+  "newest": "Mới nhất",
+  "@newest": {
+    "description": "Newest sort option"
+  },
+  
+  "programming": "Lập trình",
+  "@programming": {
+    "description": "Programming category"
+  },
+  
+  "mathematics": "Toán học",
+  "@mathematics": {
+    "description": "Mathematics category"
+  },
+  
+  "science": "Khoa học",
+  "@science": {
+    "description": "Science category"
+  },
+  
+  "history": "Lịch sử",
+  "@history": {
+    "description": "History category"
+  },
+  
+  "languageSubject": "Ngôn ngữ",
+  "@languageSubject": {
+    "description": "Language subject category"
+  },
+  
+  "geography": "Địa lý",
+  "@geography": {
+    "description": "Geography category"
+  },
+  
+  "sports": "Thể thao",
+  "@sports": {
+    "description": "Sports category"
+  },
+  
+  "entertainment": "Giải trí",
+  "@entertainment": {
+    "description": "Entertainment category"
+  },
+  
+  "general": "Tổng hợp",
+  "@general": {
+    "description": "General category"
+  },
+  
+  "easy": "Dễ",
+  "@easy": {
+    "description": "Easy difficulty"
+  },
+  
+  "medium": "Trung bình",
+  "@medium": {
+    "description": "Medium difficulty"
+  },
+  
+  "hard": "Khó",
+  "@hard": {
+    "description": "Hard difficulty"
+  },
+  
+  "backToHome": "Về trang chủ",
+  "@backToHome": {
+    "description": "Back to home button"
+  },
+  
+  "noQuizFound": "Không tìm thấy quiz nào",
+  "@noQuizFound": {
+    "description": "No quiz found message"
+  },
+  
+  "tryChangeFilter": "Thử thay đổi bộ lọc hoặc từ khóa tìm kiếm",
+  "@tryChangeFilter": {
+    "description": "Try change filter message"
+  },
+  
+  "clearFilters": "Xóa bộ lọc",
+  "@clearFilters": {
+    "description": "Clear filters button"
+  },
+  
+  "apply": "Áp dụng",
+  "@apply": {
+    "description": "Apply button"
+  },
+  
+  "difficulty": "Độ khó",
+  "@difficulty": {
+    "description": "Difficulty label"
+  },
+  
+  "category": "Danh mục",
+  "@category": {
+    "description": "Category label"
+  },
+  
+  "advancedFilter": "Bộ lọc nâng cao",
+  "@advancedFilter": {
+    "description": "Advanced filter tooltip"
+  },
+  
+  "question": "{count, plural, =1{1 câu} other{{count} câu}}",
+  "@question": {
+    "description": "Question count",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  
+  "attempt": "{count, plural, =0{0} =1{1} other{{count}}}",
+  "@attempt": {
+    "description": "Attempt count",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  
+  "selectLanguage": "Chọn ngôn ngữ",
+  "@selectLanguage": {
+    "description": "Select language dialog title"
+  }
+}

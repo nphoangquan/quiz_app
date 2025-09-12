@@ -320,21 +320,36 @@ class QuizProvider with ChangeNotifier {
         );
   }
 
-  /// Load public quizzes
-  void loadPublicQuizzes() {
+  /// Load public quizzes with optional filters
+  void loadPublicQuizzes({
+    QuizCategory? category,
+    QuizDifficulty? difficulty,
+    String? searchQuery,
+    int limit = 20,
+  }) {
+    // Use provided parameters or fall back to instance variables
+    final effectiveCategory = category ?? _selectedCategory;
+    final effectiveDifficulty = difficulty ?? _selectedDifficulty;
+    final effectiveSearchQuery =
+        searchQuery ?? (_searchQuery.isEmpty ? null : _searchQuery);
+
     print(
-      '🔍 Loading public quizzes with search: $_searchQuery, category: $_selectedCategory',
+      '🔍 Loading public quizzes with search: $effectiveSearchQuery, category: $effectiveCategory, difficulty: $effectiveDifficulty',
     );
+
+    _setState(QuizState.loading);
+
     _quizRepository
         .getPublicQuizzes(
-          category: _selectedCategory,
-          difficulty: _selectedDifficulty,
-          searchQuery: _searchQuery.isEmpty ? null : _searchQuery,
+          category: effectiveCategory,
+          difficulty: effectiveDifficulty,
+          searchQuery: effectiveSearchQuery,
+          limit: limit,
         )
         .listen(
           (quizzes) {
             _publicQuizzes = quizzes;
-            notifyListeners();
+            _setState(QuizState.success);
           },
           onError: (error) {
             _setState(QuizState.error, error.toString());
@@ -456,6 +471,57 @@ class QuizProvider with ChangeNotifier {
 
       return matchesSearch && matchesCategory && matchesDifficulty;
     }).toList();
+  }
+
+  /// Update selected category
+  void updateSelectedCategory(QuizCategory? category) {
+    _selectedCategory = category;
+    notifyListeners();
+  }
+
+  /// Update selected difficulty
+  void updateSelectedDifficulty(QuizDifficulty? difficulty) {
+    _selectedDifficulty = difficulty;
+    notifyListeners();
+  }
+
+  /// Clear all filters and reload
+  void clearAllFilters() {
+    _searchQuery = '';
+    _selectedCategory = null;
+    _selectedDifficulty = null;
+    loadPublicQuizzes();
+  }
+
+  /// Get quizzes by specific category
+  List<QuizEntity> getQuizzesByCategory(QuizCategory category) {
+    return _publicQuizzes.where((quiz) => quiz.category == category).toList();
+  }
+
+  /// Get quiz count by category
+  int getQuizCountByCategory(QuizCategory category) {
+    return _publicQuizzes.where((quiz) => quiz.category == category).length;
+  }
+
+  /// Search quizzes with advanced filters
+  Future<List<QuizEntity>> searchQuizzesAdvanced({
+    required String searchQuery,
+    QuizCategory? category,
+    QuizDifficulty? difficulty,
+    int limit = 20,
+  }) async {
+    try {
+      final results = await _quizRepository.searchQuizzes(
+        searchQuery,
+        category: category,
+        difficulty: difficulty,
+        limit: limit,
+      );
+      return results;
+    } catch (e) {
+      _setState(QuizState.error, 'Search failed: $e');
+      return [];
+    }
   }
 
   /// Clear error

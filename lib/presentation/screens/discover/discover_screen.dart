@@ -4,9 +4,13 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../core/themes/app_colors.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../domain/entities/quiz_entity.dart';
+import '../../../domain/entities/category_entity.dart';
+import '../../../core/utils/category_mapper.dart';
 import '../../widgets/quiz/quiz_card.dart';
 import '../../providers/quiz_provider.dart';
+import '../../providers/category_provider.dart';
 import '../quiz/quiz_player_screen.dart';
+import '../category/category_filter_screen.dart';
 
 class DiscoverScreen extends StatefulWidget {
   const DiscoverScreen({super.key});
@@ -19,6 +23,8 @@ class _DiscoverScreenState extends State<DiscoverScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   String _searchQuery = '';
+  CategoryEntity? _selectedFilterCategory;
+  QuizDifficulty? _selectedFilterDifficulty;
 
   @override
   void initState() {
@@ -94,16 +100,7 @@ class _DiscoverScreenState extends State<DiscoverScreen>
           ),
           const Spacer(),
           IconButton(
-            onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text(
-                    'Tính năng lọc sẽ có trong phiên bản tiếp theo',
-                  ),
-                  duration: Duration(seconds: 2),
-                ),
-              );
-            },
+            onPressed: _showAdvancedFilterDialog,
             icon: Icon(
               Icons.tune,
               color: Theme.of(context).textTheme.bodyLarge?.color,
@@ -140,8 +137,89 @@ class _DiscoverScreenState extends State<DiscoverScreen>
   }
 
   Widget _buildFilters() {
-    // Simplified filters - removed category buttons for now
-    return const SizedBox(height: 16); // Just spacing
+    return Consumer<CategoryProvider>(
+      builder: (context, categoryProvider, child) {
+        if (categoryProvider.categories.isEmpty) {
+          return const SizedBox(height: 16); // Just spacing if no categories
+        }
+
+        return Container(
+          height: 50,
+          margin: const EdgeInsets.symmetric(vertical: 16),
+          child: ListView(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppConstants.defaultPadding,
+            ),
+            children: [
+              _buildCategoryChip('Tất cả', null),
+              const SizedBox(width: 8),
+              ...categoryProvider.categories
+                  .map(
+                    (category) => [
+                      _buildCategoryChip(category.name, category),
+                      const SizedBox(width: 8),
+                    ],
+                  )
+                  .expand((element) => element),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildCategoryChip(String name, CategoryEntity? category) {
+    return GestureDetector(
+      onTap: () {
+        if (category == null) {
+          // Clear filters and reload all quizzes
+          final quizProvider = context.read<QuizProvider>();
+          quizProvider.clearAllFilters();
+          quizProvider.loadPublicQuizzes();
+        } else {
+          // Navigate to category screen
+          final categoryProvider = context.read<CategoryProvider>();
+          final categoryColor = categoryProvider.getCategoryColor(
+            category.categoryId,
+          );
+
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context) => CategoryFilterScreen(
+                initialCategory: CategoryMapper.slugToEnum(category.slug),
+                categoryName: category.name,
+                categoryColor: categoryColor,
+                categoryIcon: Icons.category,
+              ),
+            ),
+          );
+        }
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          border: Border.all(color: Colors.grey.withOpacity(0.3)),
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 4,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Text(
+          name,
+          style: GoogleFonts.inter(
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
+            color: Colors.grey[700],
+          ),
+        ),
+      ),
+    );
   }
 
   Widget _buildTabBar() {
@@ -311,5 +389,306 @@ class _DiscoverScreenState extends State<DiscoverScreen>
     final quizProvider = context.read<QuizProvider>();
     quizProvider.updateSearchQuery(query);
     quizProvider.loadPublicQuizzes(); // Reload with new search query
+  }
+
+  void _showAdvancedFilterDialog() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        height: MediaQuery.of(context).size.height * 0.7,
+        decoration: BoxDecoration(
+          color: Theme.of(context).scaffoldBackgroundColor,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        child: Column(
+          children: [
+            // Handle
+            Container(
+              width: 40,
+              height: 4,
+              margin: const EdgeInsets.only(top: 12, bottom: 20),
+              decoration: BoxDecoration(
+                color: Colors.grey[300],
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+
+            // Header
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Row(
+                children: [
+                  Text(
+                    'Bộ lọc nâng cao',
+                    style: GoogleFonts.inter(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const Spacer(),
+                  TextButton(
+                    onPressed: _clearAllFilters,
+                    child: Text(
+                      'Xóa tất cả',
+                      style: GoogleFonts.inter(
+                        color: Colors.red,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            const Divider(),
+
+            // Filter Content
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  children: [
+                    _buildFilterSection(
+                      'Danh mục',
+                      _buildAdvancedCategoryOptions(),
+                    ),
+                    const SizedBox(height: 24),
+                    _buildFilterSection(
+                      'Độ khó',
+                      _buildAdvancedDifficultyOptions(),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+            // Apply Button
+            Container(
+              padding: const EdgeInsets.all(20),
+              child: SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                    _applyFilters();
+                  },
+                  child: Text(
+                    'Áp dụng bộ lọc',
+                    style: GoogleFonts.inter(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFilterSection(String title, Widget content) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w600),
+        ),
+        const SizedBox(height: 12),
+        content,
+      ],
+    );
+  }
+
+  Widget _buildAdvancedCategoryOptions() {
+    return Consumer<CategoryProvider>(
+      builder: (context, categoryProvider, child) {
+        final categories = categoryProvider.categories;
+
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                // "Tất cả danh mục"
+                GestureDetector(
+                  onTap: () {
+                    setModalState(() {
+                      _selectedFilterCategory = null;
+                    });
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 8,
+                    ),
+                    decoration: BoxDecoration(
+                      color: _selectedFilterCategory == null
+                          ? AppColors.primary.withOpacity(0.1)
+                          : Colors.transparent,
+                      border: Border.all(
+                        color: _selectedFilterCategory == null
+                            ? AppColors.primary
+                            : Colors.grey.withOpacity(0.3),
+                      ),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      'Tất cả danh mục',
+                      style: GoogleFonts.inter(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        color: _selectedFilterCategory == null
+                            ? AppColors.primary
+                            : Colors.grey[600],
+                      ),
+                    ),
+                  ),
+                ),
+                // Dynamic categories
+                ...categories.map((category) {
+                  final isSelected =
+                      _selectedFilterCategory?.categoryId ==
+                      category.categoryId;
+
+                  return GestureDetector(
+                    onTap: () {
+                      setModalState(() {
+                        _selectedFilterCategory = category;
+                      });
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 8,
+                      ),
+                      decoration: BoxDecoration(
+                        color: isSelected
+                            ? AppColors.primary.withOpacity(0.1)
+                            : Colors.transparent,
+                        border: Border.all(
+                          color: isSelected
+                              ? AppColors.primary
+                              : Colors.grey.withOpacity(0.3),
+                        ),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Text(
+                        category.name,
+                        style: GoogleFonts.inter(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                          color: isSelected
+                              ? AppColors.primary
+                              : Colors.grey[600],
+                        ),
+                      ),
+                    ),
+                  );
+                }),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildAdvancedDifficultyOptions() {
+    final difficulties = [
+      {'difficulty': null, 'name': 'Tất cả độ khó'},
+      {'difficulty': QuizDifficulty.beginner, 'name': 'Dễ'},
+      {'difficulty': QuizDifficulty.intermediate, 'name': 'Trung bình'},
+      {'difficulty': QuizDifficulty.advanced, 'name': 'Khó'},
+    ];
+
+    return StatefulBuilder(
+      builder: (context, setModalState) {
+        return Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: difficulties.map((item) {
+            final difficulty = item['difficulty'] as QuizDifficulty?;
+            final name = item['name'] as String;
+            final isSelected = _selectedFilterDifficulty == difficulty;
+
+            return GestureDetector(
+              onTap: () {
+                setModalState(() {
+                  _selectedFilterDifficulty = difficulty;
+                });
+              },
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
+                decoration: BoxDecoration(
+                  color: isSelected
+                      ? AppColors.primary.withOpacity(0.1)
+                      : Colors.transparent,
+                  border: Border.all(
+                    color: isSelected
+                        ? AppColors.primary
+                        : Colors.grey.withOpacity(0.3),
+                  ),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  name,
+                  style: GoogleFonts.inter(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    color: isSelected ? AppColors.primary : Colors.grey[600],
+                  ),
+                ),
+              ),
+            );
+          }).toList(),
+        );
+      },
+    );
+  }
+
+  void _clearAllFilters() {
+    setState(() {
+      _selectedFilterCategory = null;
+      _selectedFilterDifficulty = null;
+      _searchQuery = '';
+    });
+
+    final quizProvider = context.read<QuizProvider>();
+    quizProvider.clearAllFilters();
+    quizProvider.loadPublicQuizzes();
+  }
+
+  void _applyFilters() {
+    final quizProvider = context.read<QuizProvider>();
+
+    // Convert CategoryEntity to QuizCategory enum if needed
+    QuizCategory? categoryEnum;
+    if (_selectedFilterCategory != null) {
+      categoryEnum = CategoryMapper.slugToEnum(_selectedFilterCategory!.slug);
+    }
+
+    // Apply filters
+    quizProvider.loadPublicQuizzes(
+      category: categoryEnum,
+      difficulty: _selectedFilterDifficulty,
+      searchQuery: _searchQuery.isEmpty ? null : _searchQuery,
+    );
   }
 }

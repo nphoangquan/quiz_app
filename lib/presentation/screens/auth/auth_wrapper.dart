@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
+import '../../providers/category_provider.dart';
 import '../../providers/navigation_provider.dart';
 import '../splash/splash_screen.dart';
 import 'login_screen.dart';
@@ -19,6 +20,12 @@ class AuthWrapper extends StatelessWidget {
             return const SplashScreen();
 
           case AuthStatus.authenticated:
+            // Initialize categories when user is authenticated
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              final categoryProvider = context.read<CategoryProvider>();
+              categoryProvider.initializeCategories();
+            });
+
             return ChangeNotifierProvider(
               create: (_) => NavigationProvider(),
               child: const MainScreen(),

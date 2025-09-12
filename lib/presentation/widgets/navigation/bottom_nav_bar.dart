@@ -2,12 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../core/themes/app_colors.dart';
 import '../../providers/navigation_provider.dart';
+import '../../../generated/l10n/app_localizations.dart';
 
 class CustomBottomNavBar extends StatelessWidget {
   const CustomBottomNavBar({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
     return Consumer<NavigationProvider>(
       builder: (context, navigationProvider, child) {
         return Container(
@@ -36,26 +39,26 @@ class CustomBottomNavBar extends StatelessWidget {
               fontSize: 12,
               fontWeight: FontWeight.normal,
             ),
-            items: const [
+            items: [
               BottomNavigationBarItem(
-                icon: Icon(Icons.home_outlined),
-                activeIcon: Icon(Icons.home),
-                label: 'Trang chủ',
+                icon: const Icon(Icons.home_outlined),
+                activeIcon: const Icon(Icons.home),
+                label: l10n.home,
               ),
               BottomNavigationBarItem(
-                icon: Icon(Icons.explore_outlined),
-                activeIcon: Icon(Icons.explore),
-                label: 'Khám phá',
+                icon: const Icon(Icons.explore_outlined),
+                activeIcon: const Icon(Icons.explore),
+                label: l10n.discover,
               ),
               BottomNavigationBarItem(
-                icon: Icon(Icons.add_circle_outline),
-                activeIcon: Icon(Icons.add_circle),
-                label: 'Tạo quiz',
+                icon: const Icon(Icons.add_circle_outline),
+                activeIcon: const Icon(Icons.add_circle),
+                label: l10n.createQuiz,
               ),
               BottomNavigationBarItem(
-                icon: Icon(Icons.person_outline),
-                activeIcon: Icon(Icons.person),
-                label: 'Cá nhân',
+                icon: const Icon(Icons.person_outline),
+                activeIcon: const Icon(Icons.person),
+                label: l10n.profile,
               ),
             ],
           ),

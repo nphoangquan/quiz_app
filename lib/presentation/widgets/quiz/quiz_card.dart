@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/themes/app_colors.dart';
+import '../../../core/utils/category_mapper.dart';
 import '../../../domain/entities/quiz_entity.dart';
 
 class QuizCard extends StatelessWidget {
@@ -255,25 +256,32 @@ class QuizCard extends StatelessWidget {
   }
 
   _CategoryData _getCategoryData(QuizCategory category) {
+    return _CategoryData(
+      CategoryMapper.getDisplayName(category),
+      _getCategoryColor(category),
+    );
+  }
+
+  Color _getCategoryColor(QuizCategory category) {
     switch (category) {
       case QuizCategory.programming:
-        return _CategoryData('Lập trình', AppColors.primary);
+        return AppColors.primary;
       case QuizCategory.mathematics:
-        return _CategoryData('Toán học', Colors.orange);
+        return Colors.orange;
       case QuizCategory.science:
-        return _CategoryData('Khoa học', Colors.green);
+        return Colors.green;
       case QuizCategory.history:
-        return _CategoryData('Lịch sử', Colors.brown);
+        return Colors.brown;
       case QuizCategory.language:
-        return _CategoryData('Ngôn ngữ', Colors.blue);
+        return Colors.blue;
       case QuizCategory.geography:
-        return _CategoryData('Địa lý', Colors.teal);
+        return Colors.teal;
       case QuizCategory.sports:
-        return _CategoryData('Thể thao', Colors.red);
+        return Colors.red;
       case QuizCategory.entertainment:
-        return _CategoryData('Giải trí', Colors.purple);
+        return Colors.purple;
       case QuizCategory.general:
-        return _CategoryData('Tổng hợp', AppColors.grey);
+        return AppColors.grey;
     }
   }
 }

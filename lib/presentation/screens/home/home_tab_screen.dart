@@ -3,12 +3,12 @@ import 'package:provider/provider.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../domain/entities/quiz_entity.dart';
 import '../../widgets/home/welcome_header.dart';
-import '../../widgets/home/search_bar.dart';
-import '../../widgets/home/featured_section.dart';
 import '../../widgets/home/categories_section.dart';
 import '../../widgets/home/recent_quizzes_section.dart';
 import '../../widgets/home/popular_quizzes_section.dart';
 import '../../providers/quiz_provider.dart';
+import '../../providers/navigation_provider.dart';
+import '../../../generated/l10n/app_localizations.dart';
 
 class HomeTabScreen extends StatefulWidget {
   const HomeTabScreen({super.key});
@@ -26,7 +26,6 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final quizProvider = context.read<QuizProvider>();
       quizProvider.loadPublicQuizzes();
-      quizProvider.loadFeaturedQuizzes();
     });
   }
 
@@ -40,7 +39,6 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
             return RefreshIndicator(
               onRefresh: () async {
                 quizProvider.loadPublicQuizzes();
-                quizProvider.loadFeaturedQuizzes();
               },
               child: SingleChildScrollView(
                 physics: const AlwaysScrollableScrollPhysics(),
@@ -53,16 +51,8 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
 
                     const SizedBox(height: 20),
 
-                    // Search Bar
-                    const HomeSearchBar(),
-
-                    const SizedBox(height: 24),
-
-                    // Featured Section
-                    FeaturedSection(
-                      featuredQuizzes: quizProvider.featuredQuizzes,
-                      isLoading: quizProvider.isLoading,
-                    ),
+                    // Search Bar with Filter
+                    _buildSearchBarWithFilter(),
 
                     const SizedBox(height: 24),
 
@@ -77,6 +67,7 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
                         quizProvider.publicQuizzes,
                       ),
                       isLoading: quizProvider.isLoading,
+                      onViewAll: () => _navigateToRecentQuizzes(),
                     ),
 
                     const SizedBox(height: 24),
@@ -87,6 +78,7 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
                         quizProvider.publicQuizzes,
                       ),
                       isLoading: quizProvider.isLoading,
+                      onViewAll: () => _navigateToPopularQuizzes(),
                     ),
 
                     const SizedBox(
@@ -100,6 +92,78 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
         ),
       ),
     );
+  }
+
+  Widget _buildSearchBarWithFilter() {
+    final l10n = AppLocalizations.of(context);
+
+    return Row(
+      children: [
+        // Search Bar
+        Expanded(
+          child: GestureDetector(
+            onTap: _navigateToDiscoverScreen,
+            child: Container(
+              height: 56,
+              decoration: BoxDecoration(
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? Colors.grey[800]
+                    : Colors.grey[100],
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Row(
+                children: [
+                  const SizedBox(width: 16),
+                  Icon(Icons.search, color: Colors.grey[600]),
+                  const SizedBox(width: 12),
+                  Text(
+                    l10n.searchHint,
+                    style: TextStyle(color: Colors.grey[600], fontSize: 16),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+
+        const SizedBox(width: 12),
+
+        // Filter Button
+        Container(
+          height: 56,
+          width: 56,
+          decoration: BoxDecoration(
+            color: Theme.of(context).brightness == Brightness.dark
+                ? Colors.grey[800]
+                : Colors.grey[100],
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: IconButton(
+            onPressed: _navigateToDiscoverScreen,
+            icon: const Icon(Icons.tune),
+            tooltip: 'Bộ lọc nâng cao',
+          ),
+        ),
+      ],
+    );
+  }
+
+  void _navigateToDiscoverScreen() {
+    // Switch to discover tab
+    final navigationProvider = context.read<NavigationProvider>();
+    navigationProvider.setCurrentIndex(1); // Index 1 = DiscoverScreen
+  }
+
+  void _navigateToRecentQuizzes() {
+    // Switch to discover tab (can be enhanced to show recent filter)
+    final navigationProvider = context.read<NavigationProvider>();
+    navigationProvider.setCurrentIndex(1); // Index 1 = DiscoverScreen
+  }
+
+  void _navigateToPopularQuizzes() {
+    // Switch to discover tab (can be enhanced to show popular filter)
+    final navigationProvider = context.read<NavigationProvider>();
+    navigationProvider.setCurrentIndex(1); // Index 1 = DiscoverScreen
   }
 
   List<QuizEntity> _getRecentQuizzes(List<QuizEntity> allQuizzes) {

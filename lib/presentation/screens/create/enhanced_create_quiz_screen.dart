@@ -5,8 +5,11 @@ import '../../../core/themes/app_colors.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../domain/entities/quiz_entity.dart';
 import '../../../domain/entities/question_entity.dart';
+import '../../../domain/entities/category_entity.dart';
+import '../../../core/utils/category_mapper.dart';
 import '../../providers/quiz_provider.dart';
 import '../../providers/auth_provider.dart';
+import '../../providers/category_provider.dart';
 import 'add_questions_screen.dart';
 
 class EnhancedCreateQuizScreen extends StatefulWidget {
@@ -23,7 +26,7 @@ class _EnhancedCreateQuizScreenState extends State<EnhancedCreateQuizScreen> {
   final _descriptionController = TextEditingController();
   final _tagController = TextEditingController();
 
-  QuizCategory _selectedCategory = QuizCategory.general;
+  CategoryEntity? _selectedCategory;
   QuizDifficulty _selectedDifficulty = QuizDifficulty.beginner;
   bool _isPublic = false;
   List<String> _tags = [];
@@ -50,11 +53,17 @@ class _EnhancedCreateQuizScreenState extends State<EnhancedCreateQuizScreen> {
 
   void _updateQuizDetails() {
     final quizProvider = context.read<QuizProvider>();
+
+    // Convert CategoryEntity to QuizCategory enum for compatibility
+    final categoryEnum = _selectedCategory != null
+        ? CategoryMapper.slugToEnum(_selectedCategory!.slug)
+        : QuizCategory.general;
+
     quizProvider.updateQuizDetails(
       title: _titleController.text.trim(),
       description: _descriptionController.text.trim(),
       tags: _tags,
-      category: _selectedCategory,
+      category: categoryEnum,
       isPublic: _isPublic,
       difficulty: _selectedDifficulty,
     );
@@ -388,61 +397,72 @@ class _EnhancedCreateQuizScreenState extends State<EnhancedCreateQuizScreen> {
   }
 
   Widget _buildCategorySelector() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Danh mục',
-          style: GoogleFonts.inter(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-            color: Theme.of(context).textTheme.bodyLarge?.color,
-          ),
-        ),
-        const SizedBox(height: 8),
-        DropdownButtonFormField<QuizCategory>(
-          value: _selectedCategory,
-          onChanged: (category) {
-            if (category != null) {
-              setState(() {
-                _selectedCategory = category;
-              });
-              _updateQuizDetails();
-            }
-          },
-          decoration: InputDecoration(
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(
-                color: AppColors.lightGrey.withOpacity(0.5),
+    return Consumer<CategoryProvider>(
+      builder: (context, categoryProvider, child) {
+        final categories = categoryProvider.categories;
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Danh mục',
+              style: GoogleFonts.inter(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: Theme.of(context).textTheme.bodyLarge?.color,
               ),
             ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(
-                color: AppColors.lightGrey.withOpacity(0.5),
+            const SizedBox(height: 8),
+            DropdownButtonFormField<CategoryEntity>(
+              value: _selectedCategory,
+              hint: Text(
+                'Chọn danh mục',
+                style: GoogleFonts.inter(fontSize: 16, color: Colors.grey[600]),
               ),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: AppColors.primary, width: 2),
-            ),
-            filled: true,
-            fillColor: Theme.of(context).brightness == Brightness.dark
-                ? AppColors.surfaceDark
-                : AppColors.white,
-          ),
-          items: QuizCategory.values.map((category) {
-            return DropdownMenuItem(
-              value: category,
-              child: Text(
-                _getCategoryName(category),
-                style: GoogleFonts.inter(fontSize: 16),
+              onChanged: (category) {
+                setState(() {
+                  _selectedCategory = category;
+                });
+                _updateQuizDetails();
+              },
+              decoration: InputDecoration(
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(
+                    color: AppColors.lightGrey.withOpacity(0.5),
+                  ),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(
+                    color: AppColors.lightGrey.withOpacity(0.5),
+                  ),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(
+                    color: AppColors.primary,
+                    width: 2,
+                  ),
+                ),
+                filled: true,
+                fillColor: Theme.of(context).brightness == Brightness.dark
+                    ? AppColors.surfaceDark
+                    : AppColors.white,
               ),
-            );
-          }).toList(),
-        ),
-      ],
+              items: categories.map((category) {
+                return DropdownMenuItem(
+                  value: category,
+                  child: Text(
+                    category.name,
+                    style: GoogleFonts.inter(fontSize: 16),
+                  ),
+                );
+              }).toList(),
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -982,29 +1002,6 @@ class _EnhancedCreateQuizScreenState extends State<EnhancedCreateQuizScreen> {
         );
       },
     );
-  }
-
-  String _getCategoryName(QuizCategory category) {
-    switch (category) {
-      case QuizCategory.programming:
-        return 'Lập trình';
-      case QuizCategory.mathematics:
-        return 'Toán học';
-      case QuizCategory.science:
-        return 'Khoa học';
-      case QuizCategory.history:
-        return 'Lịch sử';
-      case QuizCategory.language:
-        return 'Ngôn ngữ';
-      case QuizCategory.geography:
-        return 'Địa lý';
-      case QuizCategory.sports:
-        return 'Thể thao';
-      case QuizCategory.entertainment:
-        return 'Giải trí';
-      case QuizCategory.general:
-        return 'Tổng hợp';
-    }
   }
 
   String _getDifficultyName(QuizDifficulty difficulty) {

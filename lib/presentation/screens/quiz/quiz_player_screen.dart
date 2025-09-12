@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/themes/app_colors.dart';
 import '../../../core/constants/app_constants.dart';
+import '../../../core/utils/category_mapper.dart';
 import '../../../domain/entities/quiz_entity.dart';
 import '../../../domain/entities/question_entity.dart';
 import '../../providers/quiz_player_provider.dart';
@@ -869,7 +870,7 @@ class _QuizPlayerScreenState extends State<QuizPlayerScreen>
                         ),
                         _buildDialogInfoItem(
                           'Danh mục',
-                          _getCategoryName(quiz.category),
+                          CategoryMapper.getDisplayName(quiz.category),
                           Icons.category_outlined,
                         ),
                       ],
@@ -948,29 +949,6 @@ class _QuizPlayerScreenState extends State<QuizPlayerScreen>
         ),
       ],
     );
-  }
-
-  String _getCategoryName(QuizCategory category) {
-    switch (category) {
-      case QuizCategory.mathematics:
-        return 'Toán học';
-      case QuizCategory.science:
-        return 'Khoa học';
-      case QuizCategory.history:
-        return 'Lịch sử';
-      case QuizCategory.geography:
-        return 'Địa lý';
-      case QuizCategory.language:
-        return 'Ngôn ngữ';
-      case QuizCategory.programming:
-        return 'Lập trình';
-      case QuizCategory.sports:
-        return 'Thể thao';
-      case QuizCategory.entertainment:
-        return 'Giải trí';
-      case QuizCategory.general:
-        return 'Tổng hợp';
-    }
   }
 
   void _startQuiz(QuizPlayerProvider quizPlayer) {
