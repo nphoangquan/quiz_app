@@ -54,6 +54,11 @@ class _QuizPlayerScreenState extends State<QuizPlayerScreen>
       enableTimer: widget.enableTimer,
     );
 
+    // Auto-enable timer if quiz has timed questions and timer is not explicitly disabled
+    if (!widget.enableTimer && quizPlayer.hasTimedQuestions) {
+      await quizPlayer.initializeQuiz(widget.quizId, enableTimer: true);
+    }
+
     // Quiz will show ready screen, user clicks "Bắt đầu Quiz" button to start
   }
 
@@ -214,9 +219,11 @@ class _QuizPlayerScreenState extends State<QuizPlayerScreen>
                               ),
                               _buildStatItem(
                                 'Thời gian',
-                                widget.enableTimer ? 'Có giới hạn' : 'Tự do',
+                                quizPlayer.hasTimedQuestions
+                                    ? 'Giới hạn'
+                                    : 'Tự do',
                                 Icons.timer,
-                                widget.enableTimer
+                                quizPlayer.hasTimedQuestions
                                     ? Colors.orange
                                     : Colors.green,
                               ),
@@ -259,7 +266,7 @@ class _QuizPlayerScreenState extends State<QuizPlayerScreen>
                           _buildInstruction(
                             '• Bạn có thể quay lại câu hỏi trước đó',
                           ),
-                          if (widget.enableTimer)
+                          if (quizPlayer.hasTimedQuestions)
                             _buildInstruction(
                               '• Mỗi câu hỏi có thời gian giới hạn',
                             ),

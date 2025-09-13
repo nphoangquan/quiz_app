@@ -148,6 +148,39 @@ class CategoryProvider with ChangeNotifier {
     loadCategories();
   }
 
+  /// Create a new category
+  Future<void> createCategory(CategoryEntity category) async {
+    try {
+      await _categoryRepository.createCategory(category);
+      // Categories will be automatically updated through the stream listener
+    } catch (e) {
+      debugPrint('Failed to create category: $e');
+      throw e;
+    }
+  }
+
+  /// Update an existing category
+  Future<void> updateCategory(CategoryEntity category) async {
+    try {
+      await _categoryRepository.updateCategory(category);
+      // Categories will be automatically updated through the stream listener
+    } catch (e) {
+      debugPrint('Failed to update category: $e');
+      throw e;
+    }
+  }
+
+  /// Delete a category
+  Future<void> deleteCategory(String categoryId) async {
+    try {
+      await _categoryRepository.deleteCategory(categoryId);
+      // Categories will be automatically updated through the stream listener
+    } catch (e) {
+      debugPrint('Failed to delete category: $e');
+      throw e;
+    }
+  }
+
   @override
   void dispose() {
     super.dispose();

@@ -8,6 +8,7 @@ import '../../providers/theme_provider.dart';
 import '../../providers/language_provider.dart';
 import '../auth/auth_wrapper.dart';
 import '../../../generated/l10n/app_localizations.dart';
+import '../dashboard/dashboard_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -37,7 +38,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         ),
       ),
       body: SafeArea(
-        child: Padding(
+        child: SingleChildScrollView(
           padding: const EdgeInsets.all(AppConstants.defaultPadding),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -190,6 +191,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
               const SizedBox(height: 16),
 
+              // Dashboard
+              _buildSettingItem(
+                icon: Icons.dashboard_outlined,
+                title: 'Dashboard',
+                subtitle: 'Quản lý danh mục và nội dung',
+                onTap: _navigateToDashboard,
+                iconColor: AppColors.primary,
+              ),
+
+              const SizedBox(height: 8),
+
               // Sign Out
               _buildSettingItem(
                 icon: Icons.logout,
@@ -211,7 +223,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 isLoading: _isDeleting,
               ),
 
-              const Spacer(),
+              const SizedBox(height: 32),
 
               // App Info
               Center(
@@ -236,6 +248,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ],
                 ),
               ),
+
+              const SizedBox(height: 32), // Extra padding at bottom
             ],
           ),
         ),
@@ -295,6 +309,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       ),
     );
+  }
+
+  void _navigateToDashboard() {
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (context) => const DashboardScreen()));
   }
 
   void _showLanguageDialog(LanguageProvider languageProvider) {

@@ -52,7 +52,7 @@ class PopularQuizzesSection extends StatelessWidget {
 
         // Popular Quiz Cards - Horizontal Scrollable
         SizedBox(
-          height: 220, // Fixed height for horizontal scroll
+          height: 240, // Increased height to prevent overflow
           child: isLoading
               ? const Center(child: CircularProgressIndicator())
               : popularQuizzes.isEmpty
@@ -93,7 +93,7 @@ class PopularQuizzesSection extends StatelessWidget {
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (context) =>
-            QuizPlayerScreen(quizId: quiz.quizId, enableTimer: false),
+            QuizPlayerScreen(quizId: quiz.quizId, enableTimer: true),
       ),
     );
   }

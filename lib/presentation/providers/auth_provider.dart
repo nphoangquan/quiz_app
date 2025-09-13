@@ -171,6 +171,55 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
+  /// Update user profile
+  Future<void> updateProfile({String? displayName, String? photoUrl}) async {
+    if (_user == null) {
+      throw Exception('User not authenticated');
+    }
+
+    _isLoading = true;
+    notifyListeners();
+
+    try {
+      await _authRepository.updateProfile(
+        displayName: displayName,
+        photoUrl: photoUrl,
+      );
+
+      // Update local user data directly to avoid PigeonUserInfo error
+      if (displayName != null) {
+        _user = UserEntity(
+          uid: _user!.uid,
+          name: displayName,
+          email: _user!.email,
+          photoUrl: _user!.photoUrl,
+          stats: _user!.stats,
+          createdAt: _user!.createdAt,
+        );
+      }
+      if (photoUrl != null) {
+        _user = UserEntity(
+          uid: _user!.uid,
+          name: _user!.name,
+          email: _user!.email,
+          photoUrl: photoUrl,
+          stats: _user!.stats,
+          createdAt: _user!.createdAt,
+        );
+      }
+
+      notifyListeners();
+      print('✅ Profile updated successfully');
+    } catch (e) {
+      _errorMessage = e.toString();
+      print('❌ Profile update error: $e');
+      rethrow;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
   @override
   void dispose() {
     _errorTimer?.cancel();

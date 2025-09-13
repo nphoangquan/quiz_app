@@ -18,4 +18,7 @@ abstract class AuthRepository {
 
   /// Delete user account
   Future<void> deleteAccount();
+
+  /// Update user profile
+  Future<void> updateProfile({String? displayName, String? photoUrl});
 }

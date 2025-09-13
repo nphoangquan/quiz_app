@@ -37,4 +37,12 @@ class AuthRepositoryImpl implements AuthRepository {
   Future<void> deleteAccount() async {
     return await _authService.deleteAccount();
   }
+
+  @override
+  Future<void> updateProfile({String? displayName, String? photoUrl}) async {
+    return await _authService.updateProfile(
+      displayName: displayName,
+      photoUrl: photoUrl,
+    );
+  }
 }

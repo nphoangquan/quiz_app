@@ -13,7 +13,9 @@ import '../../providers/category_provider.dart';
 import 'add_questions_screen.dart';
 
 class EnhancedCreateQuizScreen extends StatefulWidget {
-  const EnhancedCreateQuizScreen({super.key});
+  final String? editQuizId; // Quiz ID to edit, null for new quiz
+
+  const EnhancedCreateQuizScreen({super.key, this.editQuizId});
 
   @override
   State<EnhancedCreateQuizScreen> createState() =>
@@ -35,7 +37,11 @@ class _EnhancedCreateQuizScreenState extends State<EnhancedCreateQuizScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _initializeNewQuiz();
+      if (widget.editQuizId != null) {
+        _initializeEditQuiz();
+      } else {
+        _initializeNewQuiz();
+      }
     });
   }
 
@@ -49,6 +55,40 @@ class _EnhancedCreateQuizScreenState extends State<EnhancedCreateQuizScreen> {
         authProvider.user!.name,
       );
     }
+  }
+
+  void _initializeEditQuiz() {
+    final quizProvider = context.read<QuizProvider>();
+
+    // Quiz data should already be loaded by loadQuizForEditing
+    if (quizProvider.currentQuiz != null) {
+      _populateFormWithQuizData(quizProvider.currentQuiz!);
+    }
+  }
+
+  void _populateFormWithQuizData(QuizEntity quiz) {
+    _titleController.text = quiz.title;
+    _descriptionController.text = quiz.description;
+    _selectedDifficulty = quiz.difficulty;
+    _isPublic = quiz.isPublic;
+    _tags = List<String>.from(quiz.tags);
+    _tagController.text = _tags.join(', ');
+
+    // Set category if available
+    if (quiz.categoryId != null) {
+      // Find category by ID
+      final categoryProvider = context.read<CategoryProvider>();
+      try {
+        _selectedCategory = categoryProvider.categories.firstWhere(
+          (cat) => cat.categoryId == quiz.categoryId,
+        );
+      } catch (e) {
+        // Fallback to enum mapping
+        _selectedCategory = null;
+      }
+    }
+
+    setState(() {});
   }
 
   void _updateQuizDetails() {
@@ -233,7 +273,7 @@ class _EnhancedCreateQuizScreenState extends State<EnhancedCreateQuizScreen> {
           const SizedBox(width: 8),
           Expanded(
             child: Text(
-              'Tạo Quiz Mới',
+              widget.editQuizId != null ? 'Chỉnh sửa Quiz' : 'Tạo Quiz Mới',
               style: GoogleFonts.inter(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
@@ -881,7 +921,9 @@ class _EnhancedCreateQuizScreenState extends State<EnhancedCreateQuizScreen> {
                         ),
                       )
                     : Text(
-                        'Tạo Quiz',
+                        widget.editQuizId != null
+                            ? 'Cập nhật Quiz'
+                            : 'Tạo Quiz',
                         style: GoogleFonts.inter(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
@@ -924,7 +966,10 @@ class _EnhancedCreateQuizScreenState extends State<EnhancedCreateQuizScreen> {
       return;
     }
 
-    final quizId = await quizProvider.createQuiz();
+    final bool isEditMode = widget.editQuizId != null;
+    final quizId = isEditMode
+        ? await quizProvider.updateQuiz()
+        : await quizProvider.createQuiz();
 
     if (quizId != null && mounted) {
       // Show success dialog instead of just snackbar
@@ -940,8 +985,10 @@ class _EnhancedCreateQuizScreenState extends State<EnhancedCreateQuizScreen> {
                 const Text('Thành công!'),
               ],
             ),
-            content: const Text(
-              'Quiz đã được tạo thành công! Bạn có muốn tiếp tục chỉnh sửa hay quay về trang chủ?',
+            content: Text(
+              isEditMode
+                  ? 'Quiz đã được cập nhật thành công! Bạn có muốn tiếp tục chỉnh sửa hay quay về trang chủ?'
+                  : 'Quiz đã được tạo thành công! Bạn có muốn tiếp tục chỉnh sửa hay quay về trang chủ?',
             ),
             actions: [
               TextButton(
@@ -965,8 +1012,12 @@ class _EnhancedCreateQuizScreenState extends State<EnhancedCreateQuizScreen> {
     } else if (mounted) {
       // Show error message
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('❌ Có lỗi xảy ra khi tạo quiz. Vui lòng thử lại!'),
+        SnackBar(
+          content: Text(
+            isEditMode
+                ? '❌ Có lỗi xảy ra khi cập nhật quiz. Vui lòng thử lại!'
+                : '❌ Có lỗi xảy ra khi tạo quiz. Vui lòng thử lại!',
+          ),
           backgroundColor: Colors.red,
         ),
       );

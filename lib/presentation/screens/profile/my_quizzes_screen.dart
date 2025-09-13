@@ -585,7 +585,8 @@ class _MyQuizzesScreenState extends State<MyQuizzesScreen>
     if (mounted) {
       final result = await Navigator.of(context).push(
         MaterialPageRoute(
-          builder: (context) => const EnhancedCreateQuizScreen(),
+          builder: (context) =>
+              EnhancedCreateQuizScreen(editQuizId: quiz.quizId),
         ),
       );
 

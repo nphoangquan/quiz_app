@@ -9,6 +9,7 @@ import '../../providers/quiz_provider.dart';
 import 'my_quizzes_screen.dart';
 import 'quiz_history_screen.dart';
 import 'settings_screen.dart';
+import 'edit_profile_screen.dart';
 
 class ProfileTabScreen extends StatefulWidget {
   const ProfileTabScreen({super.key});
@@ -62,6 +63,17 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
     Navigator.of(
       context,
     ).push(MaterialPageRoute(builder: (context) => const QuizHistoryScreen()));
+  }
+
+  void _navigateToEditProfile() async {
+    final result = await Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (context) => const EditProfileScreen()));
+
+    // Refresh user data if profile was updated
+    if (result == true) {
+      _loadUserStats();
+    }
   }
 
   @override
@@ -208,16 +220,7 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
 
                 // Edit Button
                 IconButton(
-                  onPressed: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text(
-                          'Tính năng chỉnh sửa hồ sơ sẽ có trong phiên bản tiếp theo',
-                        ),
-                        duration: Duration(seconds: 2),
-                      ),
-                    );
-                  },
+                  onPressed: () => _navigateToEditProfile(),
                   icon: const Icon(Icons.edit_outlined),
                 ),
               ],

@@ -7,6 +7,7 @@ import '../../../core/utils/category_mapper.dart';
 import '../../../domain/entities/quiz_entity.dart';
 import '../../../domain/entities/question_entity.dart';
 import '../../providers/quiz_provider.dart';
+import 'enhanced_create_quiz_screen.dart';
 
 class QuizPreviewScreen extends StatelessWidget {
   final QuizEntity quiz;
@@ -32,7 +33,7 @@ class QuizPreviewScreen extends StatelessWidget {
             onSelected: (value) {
               switch (value) {
                 case 'edit':
-                  Navigator.of(context).pop();
+                  _editQuiz(context);
                   break;
                 case 'publish':
                   _publishQuiz(context);
@@ -231,13 +232,6 @@ class QuizPreviewScreen extends StatelessWidget {
   Widget _buildQuizStats(BuildContext context) {
     final totalPoints = questions.fold(0, (sum, q) => sum + q.points);
     final hasTimer = questions.any((q) => q.timeLimit > 0);
-    final avgTime = hasTimer
-        ? (questions
-                      .where((q) => q.timeLimit > 0)
-                      .fold(0, (sum, q) => sum + q.timeLimit) /
-                  questions.where((q) => q.timeLimit > 0).length)
-              .round()
-        : 0;
 
     return Container(
       margin: const EdgeInsets.all(AppConstants.defaultPadding),
@@ -270,7 +264,7 @@ class QuizPreviewScreen extends StatelessWidget {
           ),
           _buildStatItem(
             'Thời gian',
-            hasTimer ? '${avgTime}s' : 'Tự do',
+            hasTimer ? 'Giới hạn' : 'Tự do',
             Icons.timer,
             hasTimer ? Colors.orange : AppColors.grey,
           ),
@@ -714,6 +708,27 @@ class QuizPreviewScreen extends StatelessWidget {
       return 'Trắc nghiệm';
     } else {
       return 'Đúng/Sai';
+    }
+  }
+
+  void _editQuiz(BuildContext context) async {
+    final quizProvider = context.read<QuizProvider>();
+
+    // Load quiz for editing
+    await quizProvider.loadQuizForEditing(quiz.quizId);
+
+    if (context.mounted) {
+      final result = await Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) =>
+              EnhancedCreateQuizScreen(editQuizId: quiz.quizId),
+        ),
+      );
+
+      if (result == true) {
+        // Quiz was updated successfully
+        Navigator.of(context).pop(true); // Return to previous screen
+      }
     }
   }
 }

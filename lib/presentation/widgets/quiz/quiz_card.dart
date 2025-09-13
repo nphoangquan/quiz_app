@@ -26,7 +26,7 @@ class QuizCard extends StatelessWidget {
             );
           },
       child: Container(
-        width: 280,
+        constraints: const BoxConstraints(minWidth: 280, maxWidth: 320),
         margin: const EdgeInsets.only(right: 16),
         decoration: BoxDecoration(
           color: Theme.of(context).brightness == Brightness.dark
@@ -46,6 +46,7 @@ class QuizCard extends StatelessWidget {
           ],
         ),
         child: Column(
+          mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Header

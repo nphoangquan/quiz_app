@@ -66,6 +66,10 @@ class QuizPlayerProvider with ChangeNotifier {
   bool get canGoPrevious => _currentQuestionIndex > 0;
   bool get isLastQuestion => _currentQuestionIndex == _questions.length - 1;
 
+  /// Check if quiz has any timed questions
+  bool get hasTimedQuestions =>
+      _questions.any((question) => question.timeLimit > 0);
+
   UserAnswer? get currentUserAnswer {
     try {
       return _userAnswers.firstWhere(
@@ -108,7 +112,7 @@ class QuizPlayerProvider with ChangeNotifier {
       _userAnswers = [];
       _isTimerEnabled = enableTimer;
 
-      // Initialize timer for first question if enabled
+      // Initialize timer for first question if enabled and has timed questions
       if (enableTimer && questions.isNotEmpty && questions[0].timeLimit > 0) {
         _timeRemaining = questions[0].timeLimit;
       } else {
@@ -130,10 +134,14 @@ class QuizPlayerProvider with ChangeNotifier {
     _quizStartTime = DateTime.now();
     _questionStartTime = DateTime.now();
 
+    // Only enable timer if quiz has timed questions
     if (_isTimerEnabled &&
+        hasTimedQuestions &&
         currentQuestion?.timeLimit != null &&
         currentQuestion!.timeLimit > 0) {
       _timeRemaining = currentQuestion!.timeLimit;
+    } else {
+      _timeRemaining = 0;
     }
 
     _setState(QuizPlayerState.playing);
@@ -199,9 +207,12 @@ class QuizPlayerProvider with ChangeNotifier {
 
     // Update timer for new question
     if (_isTimerEnabled &&
+        hasTimedQuestions &&
         currentQuestion?.timeLimit != null &&
         currentQuestion!.timeLimit > 0) {
       _timeRemaining = currentQuestion!.timeLimit;
+    } else {
+      _timeRemaining = 0;
     }
 
     notifyListeners();
@@ -233,9 +244,12 @@ class QuizPlayerProvider with ChangeNotifier {
 
     // Update timer for current question
     if (_isTimerEnabled &&
+        hasTimedQuestions &&
         currentQuestion?.timeLimit != null &&
         currentQuestion!.timeLimit > 0) {
       _timeRemaining = currentQuestion!.timeLimit;
+    } else {
+      _timeRemaining = 0;
     }
 
     notifyListeners();

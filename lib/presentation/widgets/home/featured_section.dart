@@ -103,7 +103,7 @@ class FeaturedSection extends StatelessWidget {
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (context) =>
-            QuizPlayerScreen(quizId: quiz.quizId, enableTimer: false),
+            QuizPlayerScreen(quizId: quiz.quizId, enableTimer: true),
       ),
     );
   }

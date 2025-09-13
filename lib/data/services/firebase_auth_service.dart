@@ -138,4 +138,35 @@ class FirebaseAuthService {
       rethrow;
     }
   }
+
+  /// Update user profile
+  Future<void> updateProfile({String? displayName, String? photoUrl}) async {
+    try {
+      final user = currentFirebaseUser;
+      if (user == null) {
+        throw Exception('User not authenticated');
+      }
+
+      // Only update Firestore (skip Firebase Auth to avoid PigeonUserInfo error)
+      final userDoc = _firestore.collection('users').doc(user.uid);
+      final updateData = <String, dynamic>{};
+
+      if (displayName != null) {
+        updateData['name'] = displayName;
+      }
+      if (photoUrl != null) {
+        updateData['photoUrl'] = photoUrl;
+      }
+
+      if (updateData.isNotEmpty) {
+        updateData['updatedAt'] = FieldValue.serverTimestamp();
+        await userDoc.update(updateData);
+      }
+
+      print('✅ Profile updated successfully (Firestore only)');
+    } catch (e) {
+      print('❌ Update profile error: $e');
+      rethrow;
+    }
+  }
 }
