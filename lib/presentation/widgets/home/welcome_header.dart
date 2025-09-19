@@ -63,46 +63,6 @@ class WelcomeHeader extends StatelessWidget {
                 ],
               ),
             ),
-
-            // Notification Icon
-            IconButton(
-              onPressed: () {
-                // TODO: Navigate to notifications
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text(
-                      'Tính năng thông báo sẽ có trong phiên bản tiếp theo',
-                    ),
-                    duration: Duration(seconds: 2),
-                  ),
-                );
-              },
-              icon: Stack(
-                children: [
-                  Icon(
-                    Icons.notifications_outlined,
-                    color: Theme.of(context).textTheme.bodyLarge?.color,
-                    size: 24,
-                  ),
-                  // Notification badge
-                  Positioned(
-                    right: 0,
-                    top: 0,
-                    child: Container(
-                      padding: const EdgeInsets.all(4),
-                      decoration: const BoxDecoration(
-                        color: AppColors.error,
-                        shape: BoxShape.circle,
-                      ),
-                      constraints: const BoxConstraints(
-                        minWidth: 8,
-                        minHeight: 8,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
           ],
         );
       },

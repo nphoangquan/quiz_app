@@ -459,7 +459,7 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
                 onTap: () {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
-                      content: Text('QuizApp v1.0.0 - Giai đoạn 3 hoàn thành'),
+                      content: Text('Skibidi QuizApp v1.0.0'),
                       duration: Duration(seconds: 2),
                     ),
                   );

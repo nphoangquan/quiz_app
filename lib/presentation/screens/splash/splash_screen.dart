@@ -156,7 +156,7 @@ class _SplashScreenState extends State<SplashScreen>
 
                           // App Tagline
                           Text(
-                            'Learn • Practice • Master',
+                            'Học • Học Nữa • Học Mãi',
                             style: GoogleFonts.inter(
                               fontSize: 16,
                               fontWeight: FontWeight.w500,
