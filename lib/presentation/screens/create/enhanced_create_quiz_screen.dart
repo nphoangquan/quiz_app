@@ -10,6 +10,8 @@ import '../../../core/utils/category_mapper.dart';
 import '../../providers/quiz_provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/category_provider.dart';
+import '../../widgets/ai/ai_quiz_generator_modal.dart';
+import '../ai/ai_quiz_preview_screen.dart';
 import 'add_questions_screen.dart';
 
 class EnhancedCreateQuizScreen extends StatefulWidget {
@@ -706,19 +708,52 @@ class _EnhancedCreateQuizScreenState extends State<EnhancedCreateQuizScreen> {
                 color: Theme.of(context).textTheme.headlineMedium?.color,
               ),
             ),
-            ElevatedButton.icon(
-              onPressed: () => _navigateToAddQuestions(),
-              icon: const Icon(Icons.add, color: AppColors.white),
-              label: const Text(
-                'Thêm câu hỏi',
-                style: TextStyle(color: AppColors.white),
-              ),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+            Row(
+              children: [
+                // AI Generate Button
+                ElevatedButton.icon(
+                  onPressed: () => _showAiGeneratorModal(),
+                  icon: const Icon(
+                    Icons.auto_awesome,
+                    color: AppColors.white,
+                    size: 18,
+                  ),
+                  label: const Text(
+                    'Tạo bằng AI',
+                    style: TextStyle(color: AppColors.white, fontSize: 14),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.purple,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 8,
+                    ),
+                  ),
                 ),
-              ),
+                const SizedBox(width: 8),
+                // Manual Add Button
+                ElevatedButton.icon(
+                  onPressed: () => _navigateToAddQuestions(),
+                  icon: const Icon(Icons.add, color: AppColors.white, size: 18),
+                  label: const Text(
+                    'Thêm câu hỏi',
+                    style: TextStyle(color: AppColors.white, fontSize: 14),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 8,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ],
         ),
@@ -1063,6 +1098,32 @@ class _EnhancedCreateQuizScreenState extends State<EnhancedCreateQuizScreen> {
         return 'Trung bình';
       case QuizDifficulty.advanced:
         return 'Khó';
+    }
+  }
+
+  /// Show AI Quiz Generator Modal
+  void _showAiGeneratorModal() async {
+    try {
+      final result = await showDialog<String>(
+        context: context,
+        builder: (context) => const AiQuizGeneratorModal(),
+      );
+
+      if (result == 'success' && mounted) {
+        // Navigate to preview screen
+        Navigator.of(context).push(
+          MaterialPageRoute(builder: (context) => const AiQuizPreviewScreen()),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('❌ Lỗi khi mở AI Generator: $e'),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
     }
   }
 }

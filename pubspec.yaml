@@ -55,6 +55,9 @@ dependencies:
   # Utilities
   flutter_hooks: ^0.20.5
   
+  # HTTP Client
+  http: ^1.1.0
+  
   # Icons
   cupertino_icons: ^1.0.8
 

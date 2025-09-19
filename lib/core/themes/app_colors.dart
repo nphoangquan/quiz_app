@@ -34,4 +34,12 @@ class AppColors {
   static const Color correctAnswer = Color(0xFF10B981);
   static const Color wrongAnswer = Color(0xFFEF4444);
   static const Color selectedOption = Color(0xFF3B82F6);
+
+  // Text Colors (for compatibility)
+  static const Color textPrimary = Color(0xFF111827);
+  static const Color textSecondary = Color(0xFF6B7280);
+
+  // UI Colors (for compatibility)
+  static const Color background = Color(0xFFF9FAFB);
+  static const Color border = Color(0xFFE5E7EB);
 }

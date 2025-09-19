@@ -13,6 +13,7 @@ import 'presentation/providers/auth_provider.dart';
 import 'presentation/providers/quiz_provider.dart';
 import 'presentation/providers/quiz_player_provider.dart';
 import 'presentation/providers/result_provider.dart';
+import 'presentation/providers/ai_quiz_provider.dart';
 import 'presentation/screens/auth/auth_wrapper.dart';
 import 'data/services/firebase_auth_service.dart';
 import 'data/services/firebase_quiz_service.dart';
@@ -83,6 +84,7 @@ class MyApp extends StatelessWidget {
           create: (_) =>
               ResultProvider(ResultRepositoryImpl(FirebaseResultService())),
         ),
+        ChangeNotifierProvider(create: (_) => AiQuizProvider()),
       ],
       child: Consumer2<ThemeProvider, LanguageProvider>(
         builder: (context, themeProvider, languageProvider, child) {

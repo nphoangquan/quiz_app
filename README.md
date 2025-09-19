@@ -136,14 +136,23 @@ lib/
   flutter build web
   ```
 
-## Contributing
+## Gemini AI Key (setup/rotate)
 
-1. Fork the project
-2. Create a feature branch
-3. Commit your changes
-4. Push to the branch
-5. Open a Pull Request
+- File: `lib/data/services/gemini_ai_service.dart`
+- Keys to update:
+  - `_apiKey`: your Gemini API key from Google AI Studio
+  - `_baseUrl`: recommended free-friendly model/endpoint
 
-## License
+Example:
+```dart
+static const String _apiKey = '<YOUR_GEMINI_API_KEY>';
+static const String _baseUrl = 'https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent';
+```
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+Notes:
+- This API caller is hardcoded directly into a a gemini provider file, it is not safe for production.
+- For production, avoid hardcoding keys. Prefer:
+  - `flutter_dotenv` (.env), or
+  - reading from a local asset (dev only), or
+  - routing requests via a backend (Cloud Functions) to keep the key secret.
+

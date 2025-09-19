@@ -861,7 +861,9 @@ class _QuizPlayerScreenState extends State<QuizPlayerScreen>
                         ),
                         _buildDialogInfoItem(
                           'Thời gian',
-                          widget.enableTimer ? 'Có giới hạn' : 'Tự do',
+                          (widget.enableTimer && quizPlayer.hasTimedQuestions)
+                              ? 'Có giới hạn'
+                              : 'Tự do',
                           Icons.timer_outlined,
                         ),
                       ],
