@@ -5,6 +5,11 @@ abstract class QuizRepository {
   // Quiz CRUD operations
   Future<String> createQuiz(QuizEntity quiz);
   Future<void> updateQuiz(String quizId, QuizEntity quiz);
+  Future<void> updateQuizWithQuestions(
+    String quizId,
+    QuizEntity quiz,
+    List<QuestionEntity> questions,
+  );
   Future<void> deleteQuiz(String quizId);
   Future<QuizEntity?> getQuiz(String quizId);
 

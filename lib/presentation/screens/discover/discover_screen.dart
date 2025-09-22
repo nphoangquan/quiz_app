@@ -5,7 +5,6 @@ import '../../../core/themes/app_colors.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../domain/entities/quiz_entity.dart';
 import '../../../domain/entities/category_entity.dart';
-import '../../../core/utils/category_mapper.dart';
 import '../../widgets/quiz/quiz_card.dart';
 import '../../providers/quiz_provider.dart';
 import '../../providers/category_provider.dart';
@@ -287,8 +286,10 @@ class _DiscoverScreenState extends State<DiscoverScreen>
     // Sort "Tất cả" by category, then title (alphabetical)
     final sortedQuizzes = List<QuizEntity>.from(quizProvider.publicQuizzes)
       ..sort((a, b) {
-        // First sort by category
-        final categoryComparison = a.category.name.compareTo(b.category.name);
+        // First sort by category name
+        final categoryA = _getCategoryName(a);
+        final categoryB = _getCategoryName(b);
+        final categoryComparison = categoryA.compareTo(categoryB);
         if (categoryComparison != 0) return categoryComparison;
 
         // Then sort by title (alphabetical)
@@ -315,8 +316,7 @@ class _DiscoverScreenState extends State<DiscoverScreen>
       // Category filter
       final matchesCategory =
           _selectedFilterCategory == null ||
-          CategoryMapper.slugToEnum(_selectedFilterCategory!.slug) ==
-              quiz.category;
+          quiz.categoryId == _selectedFilterCategory!.categoryId;
 
       // Search filter
       final matchesSearch =
@@ -726,5 +726,20 @@ class _DiscoverScreenState extends State<DiscoverScreen>
   void _applyFilters() {
     // Just trigger UI rebuild - filtering is now done locally in _buildQuizGrid
     setState(() {});
+  }
+
+  String _getCategoryName(QuizEntity quiz) {
+    if (quiz.categoryId != null) {
+      final categoryProvider = context.read<CategoryProvider>();
+      try {
+        final category = categoryProvider.categories.firstWhere(
+          (cat) => cat.categoryId == quiz.categoryId,
+        );
+        return category.name;
+      } catch (e) {
+        return 'Chưa phân loại';
+      }
+    }
+    return 'Chưa phân loại';
   }
 }

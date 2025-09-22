@@ -60,7 +60,8 @@ class FeaturedSection extends StatelessWidget {
 
         // Horizontal Scrollable Quiz Cards
         SizedBox(
-          height: 220, // Consistent height with other sections
+          height:
+              260, // Increased height to prevent overflow from AI-generated quiz
           child: isLoading
               ? const Center(child: CircularProgressIndicator())
               : featuredQuizzes.isEmpty

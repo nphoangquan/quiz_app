@@ -105,7 +105,7 @@ Trả về CHÍNH XÁC định dạng JSON sau, không thêm text nào khác:
   "quiz": {
     "title": "Tiêu đề quiz phù hợp",
     "description": "Mô tả ngắn gọn về nội dung quiz",
-    "category": "${category ?? 'general'}",
+    "category": "${category ?? 'khác'}",
     "difficulty": "$difficulty"
   },
   "questions": [

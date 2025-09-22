@@ -3,10 +3,10 @@ import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/themes/app_colors.dart';
 import '../../../core/constants/app_constants.dart';
-import '../../../core/utils/category_mapper.dart';
 import '../../../domain/entities/quiz_entity.dart';
 import '../../../domain/entities/question_entity.dart';
 import '../../providers/quiz_provider.dart';
+import '../../providers/category_provider.dart';
 import 'enhanced_create_quiz_screen.dart';
 
 class QuizPreviewScreen extends StatelessWidget {
@@ -124,13 +124,28 @@ class QuizPreviewScreen extends StatelessWidget {
               borderRadius: BorderRadius.circular(20),
               border: Border.all(color: AppColors.primary.withOpacity(0.3)),
             ),
-            child: Text(
-              CategoryMapper.getDisplayName(quiz.category),
-              style: GoogleFonts.inter(
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-                color: AppColors.primary,
-              ),
+            child: Consumer<CategoryProvider>(
+              builder: (context, categoryProvider, child) {
+                String categoryName = 'Chưa phân loại';
+                if (quiz.categoryId != null) {
+                  try {
+                    final category = categoryProvider.categories.firstWhere(
+                      (cat) => cat.categoryId == quiz.categoryId,
+                    );
+                    categoryName = category.name;
+                  } catch (e) {
+                    // Keep default
+                  }
+                }
+                return Text(
+                  categoryName,
+                  style: GoogleFonts.inter(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.primary,
+                  ),
+                );
+              },
             ),
           ),
 
@@ -603,7 +618,7 @@ class QuizPreviewScreen extends StatelessWidget {
                 style: GoogleFonts.inter(fontSize: 14, color: AppColors.grey),
               ),
               Text(
-                '• Danh mục: ${CategoryMapper.getDisplayName(quiz.category)}',
+                '• Danh mục: ${_getCategoryName(quiz, context.read<CategoryProvider>())}',
                 style: GoogleFonts.inter(fontSize: 14, color: AppColors.grey),
               ),
             ],
@@ -730,5 +745,19 @@ class QuizPreviewScreen extends StatelessWidget {
         Navigator.of(context).pop(true); // Return to previous screen
       }
     }
+  }
+
+  String _getCategoryName(QuizEntity quiz, CategoryProvider categoryProvider) {
+    if (quiz.categoryId != null) {
+      try {
+        final category = categoryProvider.categories.firstWhere(
+          (cat) => cat.categoryId == quiz.categoryId,
+        );
+        return category.name;
+      } catch (e) {
+        return 'Chưa phân loại';
+      }
+    }
+    return 'Chưa phân loại';
   }
 }

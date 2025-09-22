@@ -235,26 +235,6 @@ class QuizPlayerProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  /// Jump to specific question
-  void jumpToQuestion(int index) {
-    if (index < 0 || index >= _questions.length) return;
-
-    _currentQuestionIndex = index;
-    _questionStartTime = DateTime.now();
-
-    // Update timer for current question
-    if (_isTimerEnabled &&
-        hasTimedQuestions &&
-        currentQuestion?.timeLimit != null &&
-        currentQuestion!.timeLimit > 0) {
-      _timeRemaining = currentQuestion!.timeLimit;
-    } else {
-      _timeRemaining = 0;
-    }
-
-    notifyListeners();
-  }
-
   /// Update timer (called by UI timer)
   void updateTimer(int remainingSeconds) {
     _timeRemaining = remainingSeconds;
@@ -320,49 +300,6 @@ class QuizPlayerProvider with ChangeNotifier {
     }
   }
 
-  /// Abandon quiz
-  Future<void> abandonQuiz() async {
-    if (_currentQuiz == null || _quizStartTime == null) return;
-
-    try {
-      // Save partial result if any answers were given
-      if (_userAnswers.isNotEmpty) {
-        final correctAnswers = _userAnswers
-            .where((answer) => answer.isCorrect)
-            .length;
-        final totalTimeSpent = DateTime.now()
-            .difference(_quizStartTime!)
-            .inSeconds;
-        final score = correctAnswers * 10;
-        final percentage = totalQuestions > 0
-            ? (correctAnswers / totalQuestions) * 100
-            : 0.0;
-
-        final result = ResultEntity(
-          resultId: '',
-          userId: _currentQuiz!.ownerId, // This should be current user ID
-          quizId: _currentQuiz!.quizId,
-          quizTitle: _currentQuiz!.title,
-          score: score,
-          totalQuestions: totalQuestions,
-          correctAnswers: correctAnswers,
-          totalTimeSpent: totalTimeSpent,
-          percentage: percentage,
-          status: QuizResultStatus.abandoned,
-          answers: _userAnswers,
-          startedAt: _quizStartTime!,
-          completedAt: DateTime.now(),
-        );
-
-        await _resultRepository.saveResult(result);
-      }
-
-      reset();
-    } catch (e) {
-      _setState(QuizPlayerState.error, e.toString());
-    }
-  }
-
   /// Reset quiz player
   void reset() {
     _state = QuizPlayerState.idle;
@@ -402,37 +339,6 @@ class QuizPlayerProvider with ChangeNotifier {
       'grade': _currentResult!.grade,
       'performanceMessage': _currentResult!.performanceMessage,
     };
-  }
-
-  /// Get answers for review
-  List<Map<String, dynamic>> getAnswersForReview() {
-    final reviewData = <Map<String, dynamic>>[];
-
-    for (int i = 0; i < _questions.length; i++) {
-      final question = _questions[i];
-      final userAnswer = _userAnswers.firstWhere(
-        (answer) => answer.questionId == question.questionId,
-        orElse: () => UserAnswer(
-          questionId: question.questionId,
-          selectedAnswerIndex: -1,
-          selectedAnswer: 'Không trả lời',
-          isCorrect: false,
-          timeSpent: 0,
-          answeredAt: DateTime.now(),
-        ),
-      );
-
-      reviewData.add({
-        'question': question,
-        'userAnswer': userAnswer,
-        'correctAnswer': question.options[question.correctAnswerIndex],
-        'explanation': question.explanation,
-        'isCorrect': userAnswer.isCorrect,
-        'timeSpent': userAnswer.timeSpent,
-      });
-    }
-
-    return reviewData;
   }
 
   /// Clear error

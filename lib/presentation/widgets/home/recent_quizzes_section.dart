@@ -52,7 +52,8 @@ class RecentQuizzesSection extends StatelessWidget {
 
         // Recent Quiz Cards - Horizontal Scrollable
         SizedBox(
-          height: 240, // Increased height to prevent overflow
+          height:
+              260, // Increased height to prevent overflow from AI-generated quiz
           child: isLoading
               ? const Center(child: CircularProgressIndicator())
               : recentQuizzes.isEmpty
