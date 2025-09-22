@@ -4,22 +4,21 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../core/themes/app_colors.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../domain/entities/quiz_entity.dart';
-import '../../../domain/entities/category_entity.dart';
-// import '../../../core/utils/category_mapper.dart';
+import '../../../core/utils/category_mapper.dart';
 import '../../providers/category_provider.dart';
 import '../../widgets/quiz/quiz_card.dart';
 import '../../providers/quiz_provider.dart';
 import '../quiz/quiz_player_screen.dart';
 
 class CategoryFilterScreen extends StatefulWidget {
-  final CategoryEntity? initialCategory;
+  final QuizCategory initialCategory;
   final String categoryName;
   final Color categoryColor;
   final IconData categoryIcon;
 
   const CategoryFilterScreen({
     super.key,
-    this.initialCategory,
+    required this.initialCategory,
     required this.categoryName,
     required this.categoryColor,
     required this.categoryIcon,
@@ -33,7 +32,7 @@ class _CategoryFilterScreenState extends State<CategoryFilterScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   String _searchQuery = '';
-  CategoryEntity? _selectedCategory;
+  QuizCategory? _selectedCategory;
   QuizDifficulty? _selectedDifficulty;
 
   @override
@@ -174,7 +173,7 @@ class _CategoryFilterScreenState extends State<CategoryFilterScreen>
         children: [
           // Category Filter
           _buildFilterChip(
-            'Danh mục: ${_selectedCategory != null ? _selectedCategory!.name : "Tất cả"}',
+            'Danh mục: ${_selectedCategory != null ? CategoryMapper.getDisplayName(_selectedCategory!) : "Tất cả"}',
             _selectedCategory != null,
             () => _showCategoryPicker(),
           ),
@@ -325,7 +324,7 @@ class _CategoryFilterScreenState extends State<CategoryFilterScreen>
     // Apply category filter
     if (_selectedCategory != null) {
       quizzes = quizzes
-          .where((quiz) => quiz.categoryId == _selectedCategory!.categoryId)
+          .where((quiz) => quiz.category == _selectedCategory)
           .toList();
     }
 
@@ -596,13 +595,13 @@ class _CategoryFilterScreenState extends State<CategoryFilterScreen>
                 ),
                 // Dynamic categories from Firestore
                 ...dynamicCategories.map((cat) {
-                  final isSelected =
-                      _selectedCategory?.categoryId == cat.categoryId;
+                  final mappedEnum = CategoryMapper.slugToEnum(cat.slug);
+                  final isSelected = _selectedCategory == mappedEnum;
 
                   return GestureDetector(
                     onTap: () {
                       setState(() {
-                        _selectedCategory = cat;
+                        _selectedCategory = mappedEnum;
                       });
                       setModalState(() {});
                     },
@@ -712,7 +711,7 @@ class _CategoryFilterScreenState extends State<CategoryFilterScreen>
 
   void _clearFilters() {
     setState(() {
-      _selectedCategory = null; // Clear category selection
+      _selectedCategory = widget.initialCategory;
       _selectedDifficulty = null;
       _searchQuery = '';
     });

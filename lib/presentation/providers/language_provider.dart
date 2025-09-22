@@ -76,6 +76,12 @@ class LanguageProvider extends ChangeNotifier {
     }
   }
 
+  /// Toggle between Vietnamese and English
+  Future<void> toggleLanguage() async {
+    final newLanguage = _currentLocale.languageCode == 'vi' ? 'en' : 'vi';
+    await changeLanguage(newLanguage);
+  }
+
   /// Get supported locales
   List<Locale> getSupportedLocales() {
     return const [Locale('vi', 'VN'), Locale('en', 'US')];

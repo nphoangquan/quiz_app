@@ -6,6 +6,7 @@ import '../../../core/constants/app_constants.dart';
 import '../../../domain/entities/quiz_entity.dart';
 import '../../../domain/entities/question_entity.dart';
 import '../../../domain/entities/category_entity.dart';
+import '../../../core/utils/category_mapper.dart';
 import '../../providers/quiz_provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/category_provider.dart';
@@ -56,9 +57,6 @@ class _EnhancedCreateQuizScreenState extends State<EnhancedCreateQuizScreen> {
         authProvider.user!.name,
       );
     }
-
-    // Sync form with any existing quiz data
-    _syncFormWithQuizProvider();
   }
 
   void _initializeEditQuiz() {
@@ -78,62 +76,36 @@ class _EnhancedCreateQuizScreenState extends State<EnhancedCreateQuizScreen> {
     _tags = List<String>.from(quiz.tags);
     _tagController.text = _tags.join(', ');
 
-    // Set category - prioritize categoryId, then fall back to enum mapping
-    final categoryProvider = context.read<CategoryProvider>();
-
-    if (quiz.categoryId != null && quiz.categoryId!.isNotEmpty) {
-      // Find category by categoryId
+    // Set category if available
+    if (quiz.categoryId != null) {
+      // Find category by ID
+      final categoryProvider = context.read<CategoryProvider>();
       try {
         _selectedCategory = categoryProvider.categories.firstWhere(
           (cat) => cat.categoryId == quiz.categoryId,
         );
       } catch (e) {
+        // Fallback to enum mapping
         _selectedCategory = null;
       }
-    } else {
-      // No category set
-      _selectedCategory = null;
     }
 
     setState(() {});
   }
 
-  void _syncFormWithQuizProvider() {
-    final quizProvider = context.read<QuizProvider>();
-
-    if (quizProvider.currentQuiz != null) {
-      final quiz = quizProvider.currentQuiz!;
-
-      // Only update form if it has content from AI
-      if (quiz.title.isNotEmpty && _titleController.text.isEmpty) {
-        _titleController.text = quiz.title;
-      }
-
-      if (quiz.description.isNotEmpty && _descriptionController.text.isEmpty) {
-        _descriptionController.text = quiz.description;
-      }
-
-      // Update difficulty and category
-      _selectedDifficulty = quiz.difficulty;
-
-      // No additional mapping needed - categoryId is already handled above
-
-      _isPublic = quiz.isPublic;
-      _tags = List<String>.from(quiz.tags);
-      _tagController.text = _tags.join(', ');
-
-      setState(() {});
-    }
-  }
-
   void _updateQuizDetails() {
     final quizProvider = context.read<QuizProvider>();
+
+    // Convert CategoryEntity to QuizCategory enum for compatibility
+    final categoryEnum = _selectedCategory != null
+        ? CategoryMapper.slugToEnum(_selectedCategory!.slug)
+        : QuizCategory.general;
 
     quizProvider.updateQuizDetails(
       title: _titleController.text.trim(),
       description: _descriptionController.text.trim(),
       tags: _tags,
-      categoryId: _selectedCategory?.categoryId, // Just pass categoryId
+      category: categoryEnum,
       isPublic: _isPublic,
       difficulty: _selectedDifficulty,
     );
@@ -169,11 +141,6 @@ class _EnhancedCreateQuizScreenState extends State<EnhancedCreateQuizScreen> {
   Widget build(BuildContext context) {
     return Consumer<QuizProvider>(
       builder: (context, quizProvider, child) {
-        // Auto-sync form when quiz provider updates (e.g., from AI)
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          _syncFormWithQuizProvider();
-        });
-
         return Scaffold(
           backgroundColor: Theme.of(context).scaffoldBackgroundColor,
           body: SafeArea(

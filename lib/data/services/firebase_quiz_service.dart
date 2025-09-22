@@ -34,62 +34,6 @@ class FirebaseQuizService {
     }
   }
 
-  /// Update quiz with questions using batch operations for better performance
-  Future<void> updateQuizWithQuestions(
-    String quizId,
-    QuizEntity quiz,
-    List<QuestionEntity> questions,
-  ) async {
-    try {
-      // Use batch operations for atomic updates
-      final batch = _firestore.batch();
-
-      // Update quiz metadata
-      final quizModel = QuizModel.fromEntity(quiz);
-      batch.update(_quizzesCollection.doc(quizId), quizModel.toFirestore());
-
-      // Get existing questions to compare
-      final existingQuestionsSnapshot = await _questionsCollection(
-        quizId,
-      ).get();
-      final existingQuestionIds = existingQuestionsSnapshot.docs
-          .map((doc) => doc.id)
-          .toSet();
-      final newQuestionIds = questions
-          .where((q) => q.questionId.isNotEmpty)
-          .map((q) => q.questionId)
-          .toSet();
-
-      // Delete questions that are no longer present
-      for (final questionId in existingQuestionIds) {
-        if (!newQuestionIds.contains(questionId)) {
-          batch.delete(_questionsCollection(quizId).doc(questionId));
-        }
-      }
-
-      // Add/update questions
-      for (final question in questions) {
-        final questionModel = QuestionModel.fromEntity(question);
-        if (question.questionId.isEmpty) {
-          // New question
-          final newQuestionRef = _questionsCollection(quizId).doc();
-          batch.set(newQuestionRef, questionModel.toFirestore());
-        } else {
-          // Update existing question
-          batch.update(
-            _questionsCollection(quizId).doc(question.questionId),
-            questionModel.toFirestore(),
-          );
-        }
-      }
-
-      // Commit all operations at once
-      await batch.commit();
-    } catch (e) {
-      throw Exception('Failed to update quiz with questions: $e');
-    }
-  }
-
   /// Delete quiz and all its questions
   Future<void> deleteQuiz(String quizId) async {
     try {

@@ -20,7 +20,8 @@ class QuizEntity {
   final String ownerName;
   final String? ownerAvatar;
   final List<String> tags;
-  final String? categoryId; // Dynamic category ID - primary field
+  final QuizCategory category; // Keep enum for backward compatibility
+  final String? categoryId; // New field for dynamic categories
   final bool isPublic;
   final int questionCount;
   final QuizDifficulty difficulty;
@@ -36,7 +37,8 @@ class QuizEntity {
     required this.ownerName,
     this.ownerAvatar,
     required this.tags,
-    this.categoryId, // Dynamic category ID
+    required this.category,
+    this.categoryId, // Optional for now
     required this.isPublic,
     required this.questionCount,
     required this.difficulty,

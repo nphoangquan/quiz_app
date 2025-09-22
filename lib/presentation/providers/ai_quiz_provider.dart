@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../data/services/gemini_ai_service.dart';
 import '../../domain/entities/question_entity.dart';
-// import '../../domain/entities/quiz_entity.dart';
-// import '../../core/utils/category_mapper.dart';
+import '../../domain/entities/quiz_entity.dart';
+import '../../core/utils/category_mapper.dart';
 
 class AiQuizProvider extends ChangeNotifier {
   final GeminiAiService _geminiService = GeminiAiService();
@@ -14,7 +14,7 @@ class AiQuizProvider extends ChangeNotifier {
   List<QuestionEntity> _generatedQuestions = [];
   String? _generatedTitle;
   String? _generatedDescription;
-  String? _generatedCategory;
+  QuizCategory? _generatedCategory;
   String? _generatedDifficulty;
 
   // Getters
@@ -24,7 +24,7 @@ class AiQuizProvider extends ChangeNotifier {
   List<QuestionEntity> get generatedQuestions => _generatedQuestions;
   String? get generatedTitle => _generatedTitle;
   String? get generatedDescription => _generatedDescription;
-  String? get generatedCategory => _generatedCategory;
+  QuizCategory? get generatedCategory => _generatedCategory;
   String? get generatedDifficulty => _generatedDifficulty;
   bool get hasGeneratedQuiz => _generatedQuestions.isNotEmpty;
 
@@ -82,7 +82,7 @@ class AiQuizProvider extends ChangeNotifier {
       // Try to map category
       final categorySlug = quiz['category']?.toString();
       if (categorySlug != null) {
-        _generatedCategory = categorySlug;
+        _generatedCategory = CategoryMapper.slugToEnum(categorySlug);
       }
 
       // Process questions
@@ -119,6 +119,14 @@ class AiQuizProvider extends ChangeNotifier {
     }
   }
 
+  /// Update a specific question
+  void updateGeneratedQuestion(int index, QuestionEntity updatedQuestion) {
+    if (index >= 0 && index < _generatedQuestions.length) {
+      _generatedQuestions[index] = updatedQuestion;
+      notifyListeners();
+    }
+  }
+
   /// Remove a question
   void removeGeneratedQuestion(int index) {
     if (index >= 0 && index < _generatedQuestions.length) {
@@ -127,11 +135,17 @@ class AiQuizProvider extends ChangeNotifier {
     }
   }
 
+  /// Add a new question
+  void addGeneratedQuestion(QuestionEntity question) {
+    _generatedQuestions.add(question);
+    notifyListeners();
+  }
+
   /// Update quiz metadata
   void updateGeneratedQuizMetadata({
     String? title,
     String? description,
-    String? category,
+    QuizCategory? category,
     String? difficulty,
   }) {
     if (title != null) _generatedTitle = title;

@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class GeminiAiService {
-  static const String _apiKey = 'AIzaSyD3EODSu3NSKv6Y21QWNkBF0uESekNR06Y';
+  static const String _apiKey = 'YOUR_API_KEY_HERE';
   static const String _baseUrl =
       'https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent';
 
@@ -105,7 +105,7 @@ Trả về CHÍNH XÁC định dạng JSON sau, không thêm text nào khác:
   "quiz": {
     "title": "Tiêu đề quiz phù hợp",
     "description": "Mô tả ngắn gọn về nội dung quiz",
-    "category": "${category ?? 'khác'}",
+    "category": "${category ?? 'general'}",
     "difficulty": "$difficulty"
   },
   "questions": [

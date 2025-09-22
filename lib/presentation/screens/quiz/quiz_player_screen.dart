@@ -4,10 +4,10 @@ import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/themes/app_colors.dart';
 import '../../../core/constants/app_constants.dart';
+import '../../../core/utils/category_mapper.dart';
 import '../../../domain/entities/quiz_entity.dart';
 import '../../../domain/entities/question_entity.dart';
 import '../../providers/quiz_player_provider.dart';
-import '../../providers/category_provider.dart';
 import 'quiz_result_screen.dart';
 
 class QuizPlayerScreen extends StatefulWidget {
@@ -877,27 +877,10 @@ class _QuizPlayerScreenState extends State<QuizPlayerScreen>
                           _getDifficultyName(quiz.difficulty),
                           Icons.signal_cellular_alt,
                         ),
-                        Consumer<CategoryProvider>(
-                          builder: (context, categoryProvider, child) {
-                            String categoryName = 'Chưa phân loại';
-                            if (quiz.categoryId != null) {
-                              try {
-                                final category = categoryProvider.categories
-                                    .firstWhere(
-                                      (cat) =>
-                                          cat.categoryId == quiz.categoryId,
-                                    );
-                                categoryName = category.name;
-                              } catch (e) {
-                                // Keep default
-                              }
-                            }
-                            return _buildDialogInfoItem(
-                              'Danh mục',
-                              categoryName,
-                              Icons.category_outlined,
-                            );
-                          },
+                        _buildDialogInfoItem(
+                          'Danh mục',
+                          CategoryMapper.getDisplayName(quiz.category),
+                          Icons.category_outlined,
                         ),
                       ],
                     ),

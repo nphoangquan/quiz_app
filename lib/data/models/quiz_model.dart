@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../domain/entities/quiz_entity.dart';
+import '../../core/utils/category_mapper.dart';
 
 class QuizModel extends QuizEntity {
   const QuizModel({
@@ -10,6 +11,7 @@ class QuizModel extends QuizEntity {
     required super.ownerName,
     super.ownerAvatar,
     required super.tags,
+    required super.category,
     super.categoryId,
     required super.isPublic,
     required super.questionCount,
@@ -29,6 +31,7 @@ class QuizModel extends QuizEntity {
       ownerName: entity.ownerName,
       ownerAvatar: entity.ownerAvatar,
       tags: entity.tags,
+      category: entity.category,
       categoryId: entity.categoryId,
       isPublic: entity.isPublic,
       questionCount: entity.questionCount,
@@ -51,6 +54,7 @@ class QuizModel extends QuizEntity {
       ownerName: data['ownerName'] ?? '',
       ownerAvatar: data['ownerAvatar'],
       tags: List<String>.from(data['tags'] ?? []),
+      category: _parseCategory(data['category']),
       categoryId: data['categoryId'] as String?,
       isPublic: data['isPublic'] ?? false,
       questionCount: data['questionCount']?.toInt() ?? 0,
@@ -66,6 +70,22 @@ class QuizModel extends QuizEntity {
     );
   }
 
+  /// Parse category from Firestore data (handles both enum and categoryId)
+  static QuizCategory _parseCategory(dynamic categoryData) {
+    if (categoryData is String) {
+      // Try to parse as enum name first
+      try {
+        return QuizCategory.values.firstWhere(
+          (cat) => cat.name == categoryData,
+        );
+      } catch (e) {
+        // If not enum name, try to parse as slug
+        return CategoryMapper.slugToEnum(categoryData);
+      }
+    }
+    return QuizCategory.general;
+  }
+
   /// Convert QuizModel to Firestore document
   Map<String, dynamic> toFirestore() {
     return {
@@ -75,7 +95,8 @@ class QuizModel extends QuizEntity {
       'ownerName': ownerName,
       'ownerAvatar': ownerAvatar,
       'tags': tags,
-      'categoryId': categoryId, // Only store categoryId
+      'category': category.name,
+      'categoryId': categoryId ?? CategoryMapper.enumToSlug(category),
       'isPublic': isPublic,
       'questionCount': questionCount,
       'difficulty': difficulty.name,
@@ -94,7 +115,7 @@ class QuizModel extends QuizEntity {
     String? ownerName,
     String? ownerAvatar,
     List<String>? tags,
-    String? categoryId,
+    QuizCategory? category,
     bool? isPublic,
     int? questionCount,
     QuizDifficulty? difficulty,
@@ -110,7 +131,7 @@ class QuizModel extends QuizEntity {
       ownerName: ownerName ?? this.ownerName,
       ownerAvatar: ownerAvatar ?? this.ownerAvatar,
       tags: tags ?? this.tags,
-      categoryId: categoryId ?? this.categoryId,
+      category: category ?? this.category,
       isPublic: isPublic ?? this.isPublic,
       questionCount: questionCount ?? this.questionCount,
       difficulty: difficulty ?? this.difficulty,
@@ -129,7 +150,7 @@ class QuizModel extends QuizEntity {
       ownerId: ownerId,
       ownerName: ownerName,
       tags: [],
-      categoryId: null,
+      category: QuizCategory.general,
       isPublic: false,
       questionCount: 0,
       difficulty: QuizDifficulty.beginner,

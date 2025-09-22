@@ -3,11 +3,10 @@ import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../providers/ai_quiz_provider.dart';
 import '../../providers/quiz_provider.dart';
-import '../../providers/category_provider.dart';
 import '../../../core/themes/app_colors.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../domain/entities/quiz_entity.dart';
-import '../../../domain/entities/category_entity.dart';
+import '../../../core/utils/category_mapper.dart';
 
 class AiQuizPreviewScreen extends StatefulWidget {
   const AiQuizPreviewScreen({super.key});
@@ -19,7 +18,7 @@ class AiQuizPreviewScreen extends StatefulWidget {
 class _AiQuizPreviewScreenState extends State<AiQuizPreviewScreen> {
   late TextEditingController _titleController;
   late TextEditingController _descriptionController;
-  CategoryEntity? _selectedCategory;
+  QuizCategory? _selectedCategory;
   QuizDifficulty? _selectedDifficulty;
 
   @override
@@ -32,8 +31,7 @@ class _AiQuizPreviewScreenState extends State<AiQuizPreviewScreen> {
     _descriptionController = TextEditingController(
       text: aiProvider.generatedDescription ?? '',
     );
-    // Map generated category to CategoryEntity if needed
-    _selectedCategory = _mapStringToCategory(aiProvider.generatedCategory);
+    _selectedCategory = aiProvider.generatedCategory;
     _selectedDifficulty = _mapStringToDifficulty(
       aiProvider.generatedDifficulty,
     );
@@ -270,35 +268,30 @@ class _AiQuizPreviewScreenState extends State<AiQuizPreviewScreen> {
           ),
         ),
         const SizedBox(height: 8),
-        Consumer<CategoryProvider>(
-          builder: (context, categoryProvider, child) {
-            return DropdownButtonFormField<CategoryEntity>(
-              value: _selectedCategory,
-              decoration: InputDecoration(
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: AppColors.border),
-                ),
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 8,
-                ),
+        DropdownButtonFormField<QuizCategory>(
+          value: _selectedCategory,
+          decoration: InputDecoration(
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: AppColors.border),
+            ),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 12,
+              vertical: 8,
+            ),
+          ),
+          items: QuizCategory.values.map((category) {
+            return DropdownMenuItem<QuizCategory>(
+              value: category,
+              child: Text(
+                CategoryMapper.getDisplayName(category),
+                style: GoogleFonts.inter(fontSize: 14),
               ),
-              items: categoryProvider.categories.map((category) {
-                return DropdownMenuItem<CategoryEntity>(
-                  value: category,
-                  child: Text(
-                    category.name,
-                    style: GoogleFonts.inter(fontSize: 14),
-                  ),
-                );
-              }).toList(),
-              onChanged: (value) {
-                setState(() => _selectedCategory = value);
-                // Update AI provider with category name
-                aiProvider.updateGeneratedQuizMetadata(category: value?.name);
-              },
             );
+          }).toList(),
+          onChanged: (value) {
+            setState(() => _selectedCategory = value);
+            aiProvider.updateGeneratedQuizMetadata(category: value);
           },
         ),
       ],
@@ -787,15 +780,12 @@ class _AiQuizPreviewScreenState extends State<AiQuizPreviewScreen> {
     try {
       final quizProvider = context.read<QuizProvider>();
 
-      // Store questions count before clearing
-      final questionsCount = aiProvider.generatedQuestions.length;
-
       // Update quiz details if needed
       if (_titleController.text.trim().isNotEmpty) {
         quizProvider.updateQuizDetails(
           title: _titleController.text.trim(),
           description: _descriptionController.text.trim(),
-          categoryId: _selectedCategory?.categoryId,
+          category: _selectedCategory ?? QuizCategory.general,
           difficulty: _selectedDifficulty ?? QuizDifficulty.intermediate,
         );
       }
@@ -812,7 +802,9 @@ class _AiQuizPreviewScreenState extends State<AiQuizPreviewScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('✅ Đã thêm $questionsCount câu hỏi vào quiz'),
+            content: Text(
+              '✅ Đã thêm ${aiProvider.generatedQuestions.length} câu hỏi vào quiz',
+            ),
             backgroundColor: AppColors.success,
           ),
         );
@@ -828,28 +820,6 @@ class _AiQuizPreviewScreenState extends State<AiQuizPreviewScreen> {
             backgroundColor: AppColors.error,
           ),
         );
-      }
-    }
-  }
-
-  CategoryEntity? _mapStringToCategory(String? categoryString) {
-    if (categoryString == null) return null;
-
-    final categoryProvider = context.read<CategoryProvider>();
-    try {
-      // Try to find category by name first
-      return categoryProvider.categories.firstWhere(
-        (cat) => cat.name.toLowerCase() == categoryString.toLowerCase(),
-      );
-    } catch (e) {
-      // If not found by name, try by slug
-      try {
-        return categoryProvider.categories.firstWhere(
-          (cat) => cat.slug == categoryString,
-        );
-      } catch (e) {
-        // If still not found, return null
-        return null;
       }
     }
   }

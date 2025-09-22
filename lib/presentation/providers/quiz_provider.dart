@@ -66,7 +66,7 @@ class QuizProvider with ChangeNotifier {
     String? title,
     String? description,
     List<String>? tags,
-    String? categoryId,
+    QuizCategory? category,
     bool? isPublic,
     QuizDifficulty? difficulty,
   }) {
@@ -77,14 +77,14 @@ class QuizProvider with ChangeNotifier {
       if (title != null ||
           description != null ||
           tags != null ||
-          categoryId != null ||
+          category != null ||
           isPublic != null ||
           difficulty != null) {
         updateQuizDetails(
           title: title,
           description: description,
           tags: tags,
-          categoryId: categoryId,
+          category: category,
           isPublic: isPublic,
           difficulty: difficulty,
         );
@@ -100,7 +100,7 @@ class QuizProvider with ChangeNotifier {
       ownerName: _currentQuiz!.ownerName,
       ownerAvatar: _currentQuiz!.ownerAvatar,
       tags: tags ?? _currentQuiz!.tags,
-      categoryId: categoryId ?? _currentQuiz!.categoryId,
+      category: category ?? _currentQuiz!.category,
       isPublic: isPublic ?? _currentQuiz!.isPublic,
       questionCount: _currentQuestions.length,
       difficulty: difficulty ?? _currentQuiz!.difficulty,
@@ -261,19 +261,25 @@ class QuizProvider with ChangeNotifier {
     _setState(QuizState.loading);
 
     try {
-      // Use batch operations for better performance
-      await _quizRepository.updateQuizWithQuestions(
+      await _quizRepository.updateQuiz(_currentQuiz!.quizId, _currentQuiz!);
+
+      // Update questions (simple approach: delete all and recreate)
+      // In a production app, you'd want more sophisticated sync
+      final existingQuestions = await _quizRepository.getQuizQuestionsOnce(
         _currentQuiz!.quizId,
-        _currentQuiz!,
-        _currentQuestions,
       );
+      for (final question in existingQuestions) {
+        await _quizRepository.deleteQuestion(
+          _currentQuiz!.quizId,
+          question.questionId,
+        );
+      }
+
+      for (final question in _currentQuestions) {
+        await _quizRepository.addQuestion(_currentQuiz!.quizId, question);
+      }
 
       _setState(QuizState.success);
-
-      // Refresh quiz lists in background
-      loadPublicQuizzes();
-      loadUserQuizzes(''); // Will need current user ID
-
       return true;
     } catch (e) {
       _setState(QuizState.error, e.toString());
@@ -420,7 +426,7 @@ class QuizProvider with ChangeNotifier {
       description: '',
       ownerId: ownerId ?? '',
       ownerName: ownerName ?? '',
-      categoryId: null, // Will be set when user selects category
+      category: QuizCategory.general,
       difficulty: QuizDifficulty.beginner,
       tags: [],
       isPublic: true,
@@ -448,6 +454,37 @@ class QuizProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  List<QuizEntity> getFilteredQuizzes(List<QuizEntity> quizzes) {
+    return quizzes.where((quiz) {
+      final matchesSearch =
+          _searchQuery.isEmpty ||
+          quiz.title.toLowerCase().contains(_searchQuery.toLowerCase()) ||
+          quiz.description.toLowerCase().contains(_searchQuery.toLowerCase()) ||
+          quiz.tags.any(
+            (tag) => tag.toLowerCase().contains(_searchQuery.toLowerCase()),
+          );
+
+      final matchesCategory =
+          _selectedCategory == null || quiz.category == _selectedCategory;
+      final matchesDifficulty =
+          _selectedDifficulty == null || quiz.difficulty == _selectedDifficulty;
+
+      return matchesSearch && matchesCategory && matchesDifficulty;
+    }).toList();
+  }
+
+  /// Update selected category
+  void updateSelectedCategory(QuizCategory? category) {
+    _selectedCategory = category;
+    notifyListeners();
+  }
+
+  /// Update selected difficulty
+  void updateSelectedDifficulty(QuizDifficulty? difficulty) {
+    _selectedDifficulty = difficulty;
+    notifyListeners();
+  }
+
   /// Clear all filters and reload
   void clearAllFilters() {
     _searchQuery = '';
@@ -456,18 +493,35 @@ class QuizProvider with ChangeNotifier {
     loadPublicQuizzes();
   }
 
-  /// Get quizzes by category ID
-  List<QuizEntity> getQuizzesByCategoryId(String? categoryId) {
-    if (categoryId == null) return _publicQuizzes;
-    return _publicQuizzes
-        .where((quiz) => quiz.categoryId == categoryId)
-        .toList();
+  /// Get quizzes by specific category
+  List<QuizEntity> getQuizzesByCategory(QuizCategory category) {
+    return _publicQuizzes.where((quiz) => quiz.category == category).toList();
   }
 
-  /// Get quiz count by category ID
-  int getQuizCountByCategoryId(String? categoryId) {
-    if (categoryId == null) return _publicQuizzes.length;
-    return _publicQuizzes.where((quiz) => quiz.categoryId == categoryId).length;
+  /// Get quiz count by category
+  int getQuizCountByCategory(QuizCategory category) {
+    return _publicQuizzes.where((quiz) => quiz.category == category).length;
+  }
+
+  /// Search quizzes with advanced filters
+  Future<List<QuizEntity>> searchQuizzesAdvanced({
+    required String searchQuery,
+    QuizCategory? category,
+    QuizDifficulty? difficulty,
+    int limit = 20,
+  }) async {
+    try {
+      final results = await _quizRepository.searchQuizzes(
+        searchQuery,
+        category: category,
+        difficulty: difficulty,
+        limit: limit,
+      );
+      return results;
+    } catch (e) {
+      _setState(QuizState.error, 'Search failed: $e');
+      return [];
+    }
   }
 
   /// Clear error

@@ -3,10 +3,10 @@ import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/themes/app_colors.dart';
 import '../../../core/constants/app_constants.dart';
+import '../../../core/utils/category_mapper.dart';
 import '../../../domain/entities/quiz_entity.dart';
 import '../../providers/quiz_provider.dart';
 import '../../providers/auth_provider.dart';
-import '../../providers/category_provider.dart';
 import '../create/enhanced_create_quiz_screen.dart';
 import '../create/quiz_preview_screen.dart';
 
@@ -279,29 +279,13 @@ class _MyQuizzesScreenState extends State<MyQuizzesScreen>
                       color: AppColors.primary.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(6),
                     ),
-                    child: Consumer<CategoryProvider>(
-                      builder: (context, categoryProvider, child) {
-                        String categoryName = 'Chưa phân loại';
-                        if (quiz.categoryId != null) {
-                          try {
-                            final category = categoryProvider.categories
-                                .firstWhere(
-                                  (cat) => cat.categoryId == quiz.categoryId,
-                                );
-                            categoryName = category.name;
-                          } catch (e) {
-                            // Keep default
-                          }
-                        }
-                        return Text(
-                          categoryName,
-                          style: GoogleFonts.inter(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                            color: AppColors.primary,
-                          ),
-                        );
-                      },
+                    child: Text(
+                      CategoryMapper.getDisplayName(quiz.category),
+                      style: GoogleFonts.inter(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.primary,
+                      ),
                     ),
                   ),
 

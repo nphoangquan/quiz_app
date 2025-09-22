@@ -4,7 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/themes/app_colors.dart';
 import '../../../domain/entities/category_entity.dart';
-// import '../../../core/utils/category_mapper.dart';
+import '../../../core/utils/category_mapper.dart';
 import '../../providers/category_provider.dart';
 import '../../screens/category/category_filter_screen.dart';
 
@@ -201,7 +201,7 @@ class _CategoryCard extends StatelessWidget {
         Navigator.of(context).push(
           MaterialPageRoute(
             builder: (context) => CategoryFilterScreen(
-              initialCategory: category, // Pass CategoryEntity directly
+              initialCategory: CategoryMapper.slugToEnum(category.slug),
               categoryName: category.name,
               categoryColor: categoryColor,
               categoryIcon: Icons.category, // Default icon

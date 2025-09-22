@@ -155,6 +155,148 @@ class ResultProvider with ChangeNotifier {
     }
   }
 
+  /// Get user performance analytics
+  Map<String, dynamic> getUserPerformanceAnalytics(String userId) {
+    final userResultsList = _userResults
+        .where((result) => result.userId == userId)
+        .toList();
+
+    if (userResultsList.isEmpty) {
+      return {
+        'totalQuizzesTaken': 0,
+        'averageScore': 0.0,
+        'averagePercentage': 0.0,
+        'totalTimeSpent': 0,
+        'bestScore': 0,
+        'worstScore': 0,
+        'improvementTrend': 0.0,
+        'categoryPerformance': <String, dynamic>{},
+        'recentActivity': <ResultEntity>[],
+      };
+    }
+
+    final totalQuizzes = userResultsList.length;
+    final totalScore = userResultsList.fold(
+      0,
+      (sum, result) => sum + result.score,
+    );
+    final totalPercentage = userResultsList.fold(
+      0.0,
+      (sum, result) => sum + result.percentage,
+    );
+    final totalTimeSpent = userResultsList.fold(
+      0,
+      (sum, result) => sum + result.totalTimeSpent,
+    );
+
+    final scores = userResultsList.map((r) => r.score).toList();
+    scores.sort();
+
+    final percentages = userResultsList.map((r) => r.percentage).toList();
+    percentages.sort();
+
+    // Calculate improvement trend (compare first half vs second half)
+    double improvementTrend = 0.0;
+    if (totalQuizzes >= 4) {
+      final sortedByDate = List<ResultEntity>.from(userResultsList);
+      sortedByDate.sort((a, b) => a.completedAt.compareTo(b.completedAt));
+
+      final halfPoint = totalQuizzes ~/ 2;
+      final firstHalf = sortedByDate.take(halfPoint);
+      final secondHalf = sortedByDate.skip(halfPoint);
+
+      final firstHalfAvg =
+          firstHalf.fold(0.0, (sum, r) => sum + r.percentage) /
+          firstHalf.length;
+      final secondHalfAvg =
+          secondHalf.fold(0.0, (sum, r) => sum + r.percentage) /
+          secondHalf.length;
+
+      improvementTrend = secondHalfAvg - firstHalfAvg;
+    }
+
+    // Category performance (would need quiz category data)
+    final categoryPerformance = <String, dynamic>{};
+
+    // Recent activity (last 5 results)
+    final recentActivity = List<ResultEntity>.from(userResultsList);
+    recentActivity.sort((a, b) => b.completedAt.compareTo(a.completedAt));
+
+    return {
+      'totalQuizzesTaken': totalQuizzes,
+      'averageScore': totalScore / totalQuizzes,
+      'averagePercentage': totalPercentage / totalQuizzes,
+      'totalTimeSpent': totalTimeSpent,
+      'bestScore': scores.isNotEmpty ? scores.last : 0,
+      'worstScore': scores.isNotEmpty ? scores.first : 0,
+      'bestPercentage': percentages.isNotEmpty ? percentages.last : 0.0,
+      'worstPercentage': percentages.isNotEmpty ? percentages.first : 0.0,
+      'improvementTrend': improvementTrend,
+      'categoryPerformance': categoryPerformance,
+      'recentActivity': recentActivity.take(5).toList(),
+    };
+  }
+
+  /// Get quiz performance analytics
+  Map<String, dynamic> getQuizPerformanceAnalytics(String quizId) {
+    final quizResultsList = _quizResults
+        .where((result) => result.quizId == quizId)
+        .toList();
+
+    if (quizResultsList.isEmpty) {
+      return {
+        'totalAttempts': 0,
+        'averageScore': 0.0,
+        'averagePercentage': 0.0,
+        'averageTimeSpent': 0,
+        'highestScore': 0,
+        'lowestScore': 0,
+        'passRate': 0.0,
+        'difficultyRating': 0.0,
+        'popularityTrend': <Map<String, dynamic>>[],
+      };
+    }
+
+    final totalAttempts = quizResultsList.length;
+    final totalScore = quizResultsList.fold(
+      0,
+      (sum, result) => sum + result.score,
+    );
+    final totalPercentage = quizResultsList.fold(
+      0.0,
+      (sum, result) => sum + result.percentage,
+    );
+    final totalTimeSpent = quizResultsList.fold(
+      0,
+      (sum, result) => sum + result.totalTimeSpent,
+    );
+
+    final scores = quizResultsList.map((r) => r.score).toList();
+    scores.sort();
+
+    final passedCount = quizResultsList
+        .where((result) => result.isPassed)
+        .length;
+    final passRate = (passedCount / totalAttempts) * 100;
+
+    // Difficulty rating based on average score and time spent
+    final avgPercentage = totalPercentage / totalAttempts;
+    final avgTimeSpent = totalTimeSpent / totalAttempts;
+    final difficultyRating = (100 - avgPercentage) / 20; // Scale 1-5
+
+    return {
+      'totalAttempts': totalAttempts,
+      'averageScore': totalScore / totalAttempts,
+      'averagePercentage': avgPercentage,
+      'averageTimeSpent': avgTimeSpent,
+      'highestScore': scores.isNotEmpty ? scores.last : 0,
+      'lowestScore': scores.isNotEmpty ? scores.first : 0,
+      'passRate': passRate,
+      'difficultyRating': difficultyRating.clamp(1.0, 5.0),
+      'uniqueUsers': quizResultsList.map((r) => r.userId).toSet().length,
+    };
+  }
+
   /// Filter results by date range
   List<ResultEntity> filterResultsByDateRange(
     List<ResultEntity> results,
@@ -178,6 +320,14 @@ class ResultProvider with ChangeNotifier {
     }).toList();
   }
 
+  /// Filter results by completion status
+  List<ResultEntity> filterResultsByStatus(
+    List<ResultEntity> results,
+    QuizResultStatus status,
+  ) {
+    return results.where((result) => result.status == status).toList();
+  }
+
   /// Clear error
   void clearError() {
     if (_state == ResultState.error) {
@@ -185,6 +335,18 @@ class ResultProvider with ChangeNotifier {
       _errorMessage = null;
       notifyListeners();
     }
+  }
+
+  /// Clear all data
+  void clearData() {
+    _userResults = [];
+    _quizResults = [];
+    _recentResults = [];
+    _leaderboard = [];
+    _quizStatistics = {};
+    _state = ResultState.idle;
+    _errorMessage = null;
+    notifyListeners();
   }
 
   @override
