@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import '../../domain/entities/category_entity.dart';
 import '../../domain/repositories/category_repository.dart';
@@ -16,12 +15,14 @@ class CategoryProvider with ChangeNotifier {
 
   // Categories data
   List<CategoryEntity> _categories = [];
+  List<CategoryEntity> _allCategories = [];
   CategoryEntity? _selectedCategory;
 
   // Getters
   CategoryState get state => _state;
   String? get errorMessage => _errorMessage;
   List<CategoryEntity> get categories => _categories;
+  List<CategoryEntity> get allCategories => _allCategories;
   CategoryEntity? get selectedCategory => _selectedCategory;
 
   bool get isLoading => _state == CategoryState.loading;
@@ -63,6 +64,26 @@ class CategoryProvider with ChangeNotifier {
     }
   }
 
+  /// Load all categories (including inactive) for admin dashboard
+  void loadAllCategories() {
+    try {
+      _categoryRepository.getAllCategories().listen(
+        (allCategories) {
+          debugPrint(
+            '📦 Loaded ${allCategories.length} total categories (including inactive)',
+          );
+          _allCategories = allCategories;
+          notifyListeners();
+        },
+        onError: (error) {
+          debugPrint('❌ Error loading all categories: $error');
+        },
+      );
+    } catch (e) {
+      debugPrint('❌ Error loading all categories: $e');
+    }
+  }
+
   /// Initialize categories on app startup
   Future<void> initializeCategories() async {
     try {
@@ -73,6 +94,7 @@ class CategoryProvider with ChangeNotifier {
 
       // Load categories
       loadCategories();
+      loadAllCategories();
     } catch (e) {
       _setState(CategoryState.error, e.toString());
     }
@@ -113,11 +135,6 @@ class CategoryProvider with ChangeNotifier {
     }
   }
 
-  /// Get categories with non-zero quiz counts
-  List<CategoryEntity> getCategoriesWithQuizzes() {
-    return _categories.where((category) => category.quizCount > 0).toList();
-  }
-
   /// Get category color as Color object
   Color getCategoryColor(String categoryId) {
     try {
@@ -143,11 +160,6 @@ class CategoryProvider with ChangeNotifier {
     }
   }
 
-  /// Refresh categories
-  void refresh() {
-    loadCategories();
-  }
-
   /// Create a new category
   Future<void> createCategory(CategoryEntity category) async {
     try {
@@ -170,13 +182,44 @@ class CategoryProvider with ChangeNotifier {
     }
   }
 
-  /// Delete a category
+  /// Check if category is used by any quizzes
+  Future<bool> isCategoryInUse(String categoryId) async {
+    try {
+      return await _categoryRepository.isCategoryInUse(categoryId);
+    } catch (e) {
+      debugPrint('Failed to check category usage: $e');
+      throw e;
+    }
+  }
+
+  /// Get count of quizzes using this category
+  Future<int> getCategoryUsageCount(String categoryId) async {
+    try {
+      return await _categoryRepository.getCategoryUsageCount(categoryId);
+    } catch (e) {
+      debugPrint('Failed to get category usage count: $e');
+      throw e;
+    }
+  }
+
+  /// Delete a category (permanently remove from database)
   Future<void> deleteCategory(String categoryId) async {
     try {
       await _categoryRepository.deleteCategory(categoryId);
       // Categories will be automatically updated through the stream listener
     } catch (e) {
       debugPrint('Failed to delete category: $e');
+      throw e;
+    }
+  }
+
+  /// Disable a category (soft delete - set isActive to false)
+  Future<void> disableCategory(String categoryId) async {
+    try {
+      await _categoryRepository.disableCategory(categoryId);
+      // Categories will be automatically updated through the stream listener
+    } catch (e) {
+      debugPrint('Failed to disable category: $e');
       throw e;
     }
   }

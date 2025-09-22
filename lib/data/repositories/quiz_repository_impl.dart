@@ -19,6 +19,15 @@ class QuizRepositoryImpl implements QuizRepository {
   }
 
   @override
+  Future<void> updateQuizWithQuestions(
+    String quizId,
+    QuizEntity quiz,
+    List<QuestionEntity> questions,
+  ) {
+    return _quizService.updateQuizWithQuestions(quizId, quiz, questions);
+  }
+
+  @override
   Future<void> deleteQuiz(String quizId) {
     return _quizService.deleteQuiz(quizId);
   }

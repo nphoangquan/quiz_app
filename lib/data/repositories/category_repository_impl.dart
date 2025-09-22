@@ -47,8 +47,23 @@ class CategoryRepositoryImpl implements CategoryRepository {
   }
 
   @override
+  Future<bool> isCategoryInUse(String categoryId) async {
+    return await _categoryService.isCategoryInUse(categoryId);
+  }
+
+  @override
+  Future<int> getCategoryUsageCount(String categoryId) async {
+    return await _categoryService.getCategoryUsageCount(categoryId);
+  }
+
+  @override
   Future<void> deleteCategory(String categoryId) async {
     await _categoryService.deleteCategory(categoryId);
+  }
+
+  @override
+  Future<void> disableCategory(String categoryId) async {
+    await _categoryService.disableCategory(categoryId);
   }
 
   @override
