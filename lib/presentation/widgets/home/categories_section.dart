@@ -2,7 +2,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../../core/themes/app_colors.dart';
 import '../../../domain/entities/category_entity.dart';
 // import '../../../core/utils/category_mapper.dart';
 import '../../providers/category_provider.dart';
@@ -17,7 +16,7 @@ class CategoriesSection extends StatelessWidget {
       builder: (context, categoryProvider, child) {
         if (categoryProvider.isLoading) {
           debugPrint('🏠 CategoriesSection: Loading categories...');
-          return _buildLoadingState();
+          return _buildLoadingState(context);
         }
 
         if (categoryProvider.hasError) {
@@ -25,6 +24,7 @@ class CategoriesSection extends StatelessWidget {
             '🏠 CategoriesSection: Error - ${categoryProvider.errorMessage}',
           );
           return _buildErrorState(
+            context,
             categoryProvider.errorMessage ?? 'Unknown error',
           );
         }
@@ -42,7 +42,7 @@ class CategoriesSection extends StatelessWidget {
             '🏠 CategoriesSection: No categories found, showing empty state',
           );
           // Show debug info in empty state
-          return _buildEmptyStateWithDebug(categoryProvider);
+          return _buildEmptyStateWithDebug(context, categoryProvider);
         }
 
         return Column(
@@ -60,11 +60,16 @@ class CategoriesSection extends StatelessWidget {
 
             const SizedBox(height: 12),
 
-            // Categories Grid
-            SizedBox(
-              height: 40, // Compact height for simple white cards
+            // Categories Grid with margin for shadows
+            Container(
+              height: 40,
+              margin: const EdgeInsets.symmetric(
+                vertical: 4,
+              ), // Space for shadows
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
+                clipBehavior:
+                    Clip.none, // Allow shadows to extend beyond bounds
                 itemCount: categories.length,
                 itemBuilder: (context, index) {
                   final category = categories[index];
@@ -83,13 +88,19 @@ class CategoriesSection extends StatelessWidget {
     );
   }
 
-  Widget _buildLoadingState() {
+  Widget _buildLoadingState(BuildContext context) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           'Danh mục',
-          style: GoogleFonts.inter(fontSize: 20, fontWeight: FontWeight.bold),
+          style: GoogleFonts.inter(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            color: Theme.of(context).textTheme.headlineMedium?.color,
+          ),
         ),
         const SizedBox(height: 12),
         SizedBox(
@@ -104,7 +115,7 @@ class CategoriesSection extends StatelessWidget {
                   width: 120,
                   height: 80,
                   decoration: BoxDecoration(
-                    color: Colors.grey[300],
+                    color: isDarkMode ? Colors.grey[700] : Colors.grey[300],
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
@@ -116,53 +127,78 @@ class CategoriesSection extends StatelessWidget {
     );
   }
 
-  Widget _buildErrorState(String error) {
+  Widget _buildErrorState(BuildContext context, String error) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           'Danh mục',
-          style: GoogleFonts.inter(fontSize: 20, fontWeight: FontWeight.bold),
+          style: GoogleFonts.inter(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            color: Theme.of(context).textTheme.headlineMedium?.color,
+          ),
         ),
         const SizedBox(height: 12),
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: Colors.red[50],
+            color: isDarkMode
+                ? Colors.red[900]?.withOpacity(0.3)
+                : Colors.red[50],
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.red[200]!),
+            border: Border.all(
+              color: isDarkMode ? Colors.red[700]! : Colors.red[200]!,
+            ),
           ),
           child: Text(
             'Lỗi tải danh mục: $error',
-            style: GoogleFonts.inter(color: Colors.red[700]),
+            style: GoogleFonts.inter(
+              color: isDarkMode ? Colors.red[300] : Colors.red[700],
+            ),
           ),
         ),
       ],
     );
   }
 
-  Widget _buildEmptyStateWithDebug(CategoryProvider categoryProvider) {
+  Widget _buildEmptyStateWithDebug(
+    BuildContext context,
+    CategoryProvider categoryProvider,
+  ) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           'Danh mục',
-          style: GoogleFonts.inter(fontSize: 20, fontWeight: FontWeight.bold),
+          style: GoogleFonts.inter(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            color: Theme.of(context).textTheme.headlineMedium?.color,
+          ),
         ),
         const SizedBox(height: 12),
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: Colors.grey[50],
+            color: isDarkMode ? Colors.grey[800] : Colors.grey[50],
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.grey[200]!),
+            border: Border.all(
+              color: isDarkMode ? Colors.grey[600]! : Colors.grey[200]!,
+            ),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
                 'Chưa có danh mục nào',
-                style: GoogleFonts.inter(color: Colors.grey[600]),
+                style: GoogleFonts.inter(
+                  color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
+                ),
               ),
               if (kDebugMode) ...[
                 const SizedBox(height: 8),
@@ -195,6 +231,7 @@ class _CategoryCard extends StatelessWidget {
     final categoryColor = categoryProvider.getCategoryColor(
       category.categoryId,
     );
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
     return GestureDetector(
       onTap: () {
@@ -212,15 +249,24 @@ class _CategoryCard extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
-          color: Theme.of(context).brightness == Brightness.dark
-              ? AppColors.surfaceDark
-              : Colors.white,
-          borderRadius: BorderRadius.circular(8),
+          color: Theme.of(context).cardColor, // Use theme card color
+          borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.03),
+              color: isDarkMode
+                  ? Colors.black.withOpacity(0.3)
+                  : Colors.black.withOpacity(0.08),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+              spreadRadius: 0,
+            ),
+            BoxShadow(
+              color: isDarkMode
+                  ? Colors.black.withOpacity(0.15)
+                  : Colors.black.withOpacity(0.04),
               blurRadius: 4,
               offset: const Offset(0, 1),
+              spreadRadius: 0,
             ),
           ],
         ),

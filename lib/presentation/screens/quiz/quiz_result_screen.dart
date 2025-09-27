@@ -8,7 +8,6 @@ import '../../../domain/entities/question_entity.dart';
 import '../../providers/quiz_player_provider.dart';
 import '../../providers/result_provider.dart';
 import '../../widgets/common/confetti_widget.dart';
-import 'quiz_player_screen.dart';
 import 'answer_review_screen.dart';
 
 class QuizResultScreen extends StatefulWidget {
@@ -743,13 +742,9 @@ class _QuizResultScreenState extends State<QuizResultScreen>
   }
 
   void _retakeQuiz() {
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute(
-        builder: (context) => QuizPlayerScreen(
-          quizId: widget.result.quizId,
-          enableTimer: false, // Can be made configurable
-        ),
-      ),
+    Navigator.of(context).pushReplacementNamed(
+      '/quiz-play',
+      arguments: {'quizId': widget.result.quizId, 'enableTimer': false},
     );
   }
 

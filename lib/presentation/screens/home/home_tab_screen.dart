@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../../core/constants/app_constants.dart';
+import '../../../core/themes/app_colors.dart';
 import '../../../domain/entities/quiz_entity.dart';
 import '../../widgets/home/welcome_header.dart';
 import '../../widgets/home/categories_section.dart';
@@ -9,6 +11,7 @@ import '../../widgets/home/popular_quizzes_section.dart';
 import '../../providers/quiz_provider.dart';
 import '../../providers/navigation_provider.dart';
 import '../../../generated/l10n/app_localizations.dart';
+// import '../category/category_filter_screen.dart';
 
 class HomeTabScreen extends StatefulWidget {
   const HomeTabScreen({super.key});
@@ -42,6 +45,8 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
               },
               child: SingleChildScrollView(
                 physics: const AlwaysScrollableScrollPhysics(),
+                clipBehavior:
+                    Clip.none, // Allow shadows to extend beyond bounds
                 padding: const EdgeInsets.all(AppConstants.defaultPadding),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -96,6 +101,7 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
 
   Widget _buildSearchBarWithFilter() {
     final l10n = AppLocalizations.of(context);
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
     return Row(
       children: [
@@ -104,21 +110,48 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
           child: GestureDetector(
             onTap: _navigateToDiscoverScreen,
             child: Container(
-              height: 56,
+              height: 50,
               decoration: BoxDecoration(
-                color: Theme.of(context).brightness == Brightness.dark
-                    ? Colors.grey[800]
-                    : Colors.grey[100],
+                color: Theme.of(context).cardColor, // Use theme card color
                 borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: isDarkMode
+                        ? Colors.black.withOpacity(0.3)
+                        : Colors.black.withOpacity(0.08),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
+                    spreadRadius: 0,
+                  ),
+                  BoxShadow(
+                    color: isDarkMode
+                        ? Colors.black.withOpacity(0.15)
+                        : Colors.black.withOpacity(0.04),
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
+                    spreadRadius: 0,
+                  ),
+                ],
               ),
               child: Row(
                 children: [
                   const SizedBox(width: 16),
-                  Icon(Icons.search, color: Colors.grey[600]),
+                  Icon(
+                    Icons.search,
+                    color: Theme.of(
+                      context,
+                    ).textTheme.bodyLarge?.color?.withOpacity(0.6),
+                    size: 20,
+                  ),
                   const SizedBox(width: 12),
                   Text(
                     l10n.searchHint,
-                    style: TextStyle(color: Colors.grey[600], fontSize: 16),
+                    style: GoogleFonts.inter(
+                      color: Theme.of(
+                        context,
+                      ).textTheme.bodyLarge?.color?.withOpacity(0.6),
+                      fontSize: 16,
+                    ),
                   ),
                 ],
               ),
@@ -130,23 +163,51 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
 
         // Filter Button
         Container(
-          height: 56,
-          width: 56,
+          height: 50,
+          width: 50,
           decoration: BoxDecoration(
-            color: Theme.of(context).brightness == Brightness.dark
-                ? Colors.grey[800]
-                : Colors.grey[100],
+            color: Theme.of(context).cardColor, // Use theme card color
             borderRadius: BorderRadius.circular(12),
+            boxShadow: [
+              BoxShadow(
+                color: isDarkMode
+                    ? Colors.black.withOpacity(0.3)
+                    : Colors.black.withOpacity(0.08),
+                blurRadius: 12,
+                offset: const Offset(0, 4),
+                spreadRadius: 0,
+              ),
+              BoxShadow(
+                color: isDarkMode
+                    ? Colors.black.withOpacity(0.15)
+                    : Colors.black.withOpacity(0.04),
+                blurRadius: 4,
+                offset: const Offset(0, 2),
+                spreadRadius: 0,
+              ),
+            ],
           ),
           child: IconButton(
             onPressed: _navigateToDiscoverScreen,
-            icon: const Icon(Icons.tune),
+            icon: Icon(Icons.tune, color: AppColors.primary, size: 20),
             tooltip: 'Bộ lọc nâng cao',
           ),
         ),
       ],
     );
   }
+
+  // void _navigateToCategoryFilter() {
+  //   Navigator.of(context).push(
+  //     MaterialPageRoute(
+  //       builder: (context) => const CategoryFilterScreen(
+  //         categoryName: '',
+  //         categoryColor: AppColors.primary,
+  //         categoryIcon: Icons.category,
+  //       ),
+  //     ),
+  //   );
+  // }
 
   void _navigateToDiscoverScreen() {
     // Switch to discover tab

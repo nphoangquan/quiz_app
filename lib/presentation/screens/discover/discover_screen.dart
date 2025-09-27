@@ -84,6 +84,8 @@ class _DiscoverScreenState extends State<DiscoverScreen>
   }
 
   Widget _buildHeader() {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
     return Padding(
       padding: const EdgeInsets.all(AppConstants.defaultPadding),
       child: Row(
@@ -97,11 +99,32 @@ class _DiscoverScreenState extends State<DiscoverScreen>
             ),
           ),
           const Spacer(),
-          IconButton(
-            onPressed: _showAdvancedFilterDialog,
-            icon: Icon(
-              Icons.tune,
-              color: Theme.of(context).textTheme.bodyLarge?.color,
+          Container(
+            decoration: BoxDecoration(
+              color: Theme.of(context).cardColor, // Use theme card color
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: [
+                BoxShadow(
+                  color: isDarkMode
+                      ? Colors.black.withOpacity(0.3)
+                      : Colors.black.withOpacity(0.08),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
+                  spreadRadius: 0,
+                ),
+                BoxShadow(
+                  color: isDarkMode
+                      ? Colors.black.withOpacity(0.15)
+                      : Colors.black.withOpacity(0.04),
+                  blurRadius: 4,
+                  offset: const Offset(0, 2),
+                  spreadRadius: 0,
+                ),
+              ],
+            ),
+            child: IconButton(
+              onPressed: _showAdvancedFilterDialog,
+              icon: Icon(Icons.tune, color: AppColors.primary, size: 20),
             ),
           ),
         ],
@@ -110,25 +133,75 @@ class _DiscoverScreenState extends State<DiscoverScreen>
   }
 
   Widget _buildSearchBar() {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
     return Padding(
       padding: const EdgeInsets.symmetric(
         horizontal: AppConstants.defaultPadding,
       ),
-      child: TextField(
-        onChanged: _onSearchChanged,
-        decoration: InputDecoration(
-          hintText: 'Tìm kiếm quiz...',
-          prefixIcon: const Icon(Icons.search),
-          suffixIcon: _searchQuery.isNotEmpty
-              ? IconButton(
-                  icon: const Icon(Icons.clear),
-                  onPressed: () {
-                    setState(() {
-                      _searchQuery = '';
-                    });
-                  },
-                )
-              : null,
+      child: Container(
+        decoration: BoxDecoration(
+          color: Theme.of(context).cardColor, // Use theme card color
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: isDarkMode
+                  ? Colors.black.withOpacity(0.3)
+                  : Colors.black.withOpacity(0.08),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+              spreadRadius: 0,
+            ),
+            BoxShadow(
+              color: isDarkMode
+                  ? Colors.black.withOpacity(0.15)
+                  : Colors.black.withOpacity(0.04),
+              blurRadius: 4,
+              offset: const Offset(0, 2),
+              spreadRadius: 0,
+            ),
+          ],
+        ),
+        child: TextField(
+          onChanged: _onSearchChanged,
+          style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color),
+          decoration: InputDecoration(
+            hintText: 'Tìm kiếm quiz...',
+            hintStyle: GoogleFonts.inter(
+              color: Theme.of(
+                context,
+              ).textTheme.bodyLarge?.color?.withOpacity(0.6),
+              fontSize: 16,
+            ),
+            prefixIcon: Icon(
+              Icons.search,
+              color: Theme.of(
+                context,
+              ).textTheme.bodyLarge?.color?.withOpacity(0.6),
+              size: 20,
+            ),
+            suffixIcon: _searchQuery.isNotEmpty
+                ? IconButton(
+                    icon: Icon(
+                      Icons.clear,
+                      color: Theme.of(
+                        context,
+                      ).textTheme.bodyLarge?.color?.withOpacity(0.6),
+                      size: 20,
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        _searchQuery = '';
+                      });
+                    },
+                  )
+                : null,
+            border: InputBorder.none,
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 14,
+            ),
+          ),
         ),
       ),
     );
@@ -142,10 +215,12 @@ class _DiscoverScreenState extends State<DiscoverScreen>
         }
 
         return Container(
-          height: 40,
+          height: 50, // Increased height to accommodate shadow and padding
           margin: const EdgeInsets.symmetric(vertical: 16),
+          padding: const EdgeInsets.symmetric(vertical: 4), // Space for shadows
           child: ListView(
             scrollDirection: Axis.horizontal,
+            clipBehavior: Clip.none, // Allow shadows to extend beyond bounds
             padding: const EdgeInsets.symmetric(
               horizontal: AppConstants.defaultPadding,
             ),
@@ -169,6 +244,7 @@ class _DiscoverScreenState extends State<DiscoverScreen>
 
   Widget _buildCategoryChip(String name, CategoryEntity? category) {
     final bool isSelected = category == _selectedFilterCategory;
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
     return GestureDetector(
       onTap: () {
@@ -184,25 +260,27 @@ class _DiscoverScreenState extends State<DiscoverScreen>
         decoration: BoxDecoration(
           color: isSelected
               ? AppColors.primary
-              : Theme.of(context).brightness == Brightness.dark
-              ? Colors.grey[800]
-              : Colors.grey[50],
-          border: Border.all(
-            color: isSelected
-                ? AppColors.primary
-                : Theme.of(context).brightness == Brightness.dark
-                ? Colors.grey[600]!
-                : Colors.grey[300]!,
-            width: 1,
-          ),
+              : Theme.of(context).cardColor, // Use theme card color
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
-            if (isSelected)
-              BoxShadow(
-                color: AppColors.primary.withValues(alpha: 0.2),
-                blurRadius: 6,
-                offset: const Offset(0, 2),
-              ),
+            BoxShadow(
+              color: isSelected
+                  ? AppColors.primary.withOpacity(0.3)
+                  : isDarkMode
+                  ? Colors.black.withOpacity(0.3)
+                  : Colors.black.withOpacity(0.08),
+              blurRadius: isSelected ? 8 : 6,
+              offset: const Offset(0, 2),
+              spreadRadius: isSelected ? 1 : 0,
+            ),
+            BoxShadow(
+              color: isDarkMode
+                  ? Colors.black.withOpacity(0.15)
+                  : Colors.black.withOpacity(0.04),
+              blurRadius: 4,
+              offset: const Offset(0, 1),
+              spreadRadius: 0,
+            ),
           ],
         ),
         child: Text(
@@ -228,7 +306,9 @@ class _DiscoverScreenState extends State<DiscoverScreen>
       child: TabBar(
         controller: _tabController,
         labelColor: AppColors.primary,
-        unselectedLabelColor: AppColors.grey,
+        unselectedLabelColor: Theme.of(
+          context,
+        ).textTheme.bodyLarge?.color?.withOpacity(0.6),
         indicatorColor: AppColors.primary,
         labelStyle: GoogleFonts.inter(
           fontSize: 16,
@@ -400,6 +480,8 @@ class _DiscoverScreenState extends State<DiscoverScreen>
   }
 
   void _showAdvancedFilterDialog() {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -409,9 +491,9 @@ class _DiscoverScreenState extends State<DiscoverScreen>
       ),
       builder: (context) => Container(
         height: MediaQuery.of(context).size.height * 0.75,
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        decoration: BoxDecoration(
+          color: Theme.of(context).cardColor, // Use theme card color
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
         ),
         child: Column(
           children: [
@@ -421,7 +503,7 @@ class _DiscoverScreenState extends State<DiscoverScreen>
               height: 5,
               margin: const EdgeInsets.only(top: 12, bottom: 8),
               decoration: BoxDecoration(
-                color: Colors.grey[300],
+                color: isDarkMode ? Colors.grey[600] : Colors.grey[300],
                 borderRadius: BorderRadius.circular(3),
               ),
             ),
@@ -436,7 +518,7 @@ class _DiscoverScreenState extends State<DiscoverScreen>
                     style: GoogleFonts.inter(
                       fontSize: 22,
                       fontWeight: FontWeight.bold,
-                      color: Colors.black87,
+                      color: Theme.of(context).textTheme.headlineLarge?.color,
                     ),
                   ),
                   const Spacer(),
@@ -465,12 +547,14 @@ class _DiscoverScreenState extends State<DiscoverScreen>
             Container(
               height: 1,
               margin: const EdgeInsets.symmetric(horizontal: 24),
-              color: Colors.grey[200],
+              color: isDarkMode ? Colors.grey[700] : Colors.grey[200],
             ),
 
             // Filter Content với padding cải thiện
             Expanded(
               child: SingleChildScrollView(
+                clipBehavior:
+                    Clip.none, // Allow shadows to extend beyond bounds
                 padding: const EdgeInsets.all(24),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -536,7 +620,7 @@ class _DiscoverScreenState extends State<DiscoverScreen>
             style: GoogleFonts.inter(
               fontSize: 18,
               fontWeight: FontWeight.w600,
-              color: Colors.black87,
+              color: Theme.of(context).textTheme.headlineLarge?.color,
             ),
           ),
         ),
@@ -549,6 +633,7 @@ class _DiscoverScreenState extends State<DiscoverScreen>
     return Consumer<CategoryProvider>(
       builder: (context, categoryProvider, child) {
         final categories = categoryProvider.categories;
+        final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
         return StatefulBuilder(
           builder: (context, setModalState) {
@@ -571,10 +656,14 @@ class _DiscoverScreenState extends State<DiscoverScreen>
                     decoration: BoxDecoration(
                       color: _selectedFilterCategory == null
                           ? AppColors.primary
+                          : isDarkMode
+                          ? Colors.grey[800]
                           : Colors.grey[50],
                       border: Border.all(
                         color: _selectedFilterCategory == null
                             ? AppColors.primary
+                            : isDarkMode
+                            ? Colors.grey[600]!
                             : Colors.grey[300]!,
                         width: 1,
                       ),
@@ -595,7 +684,7 @@ class _DiscoverScreenState extends State<DiscoverScreen>
                         fontWeight: FontWeight.w500,
                         color: _selectedFilterCategory == null
                             ? Colors.white
-                            : Colors.black87,
+                            : Theme.of(context).textTheme.bodyLarge?.color,
                       ),
                     ),
                   ),
@@ -618,10 +707,16 @@ class _DiscoverScreenState extends State<DiscoverScreen>
                         vertical: 10,
                       ),
                       decoration: BoxDecoration(
-                        color: isSelected ? AppColors.primary : Colors.grey[50],
+                        color: isSelected
+                            ? AppColors.primary
+                            : isDarkMode
+                            ? Colors.grey[800]
+                            : Colors.grey[50],
                         border: Border.all(
                           color: isSelected
                               ? AppColors.primary
+                              : isDarkMode
+                              ? Colors.grey[600]!
                               : Colors.grey[300]!,
                           width: 1,
                         ),
@@ -640,7 +735,9 @@ class _DiscoverScreenState extends State<DiscoverScreen>
                         style: GoogleFonts.inter(
                           fontSize: 13,
                           fontWeight: FontWeight.w500,
-                          color: isSelected ? Colors.white : Colors.black87,
+                          color: isSelected
+                              ? Colors.white
+                              : Theme.of(context).textTheme.bodyLarge?.color,
                         ),
                       ),
                     ),
@@ -661,6 +758,7 @@ class _DiscoverScreenState extends State<DiscoverScreen>
       {'difficulty': QuizDifficulty.intermediate, 'name': 'Trung bình'},
       {'difficulty': QuizDifficulty.advanced, 'name': 'Khó'},
     ];
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
     return StatefulBuilder(
       builder: (context, setModalState) {
@@ -684,9 +782,17 @@ class _DiscoverScreenState extends State<DiscoverScreen>
                   vertical: 10,
                 ),
                 decoration: BoxDecoration(
-                  color: isSelected ? AppColors.primary : Colors.grey[50],
+                  color: isSelected
+                      ? AppColors.primary
+                      : isDarkMode
+                      ? Colors.grey[800]
+                      : Colors.grey[50],
                   border: Border.all(
-                    color: isSelected ? AppColors.primary : Colors.grey[300]!,
+                    color: isSelected
+                        ? AppColors.primary
+                        : isDarkMode
+                        ? Colors.grey[600]!
+                        : Colors.grey[300]!,
                     width: 1,
                   ),
                   borderRadius: BorderRadius.circular(12),
@@ -704,7 +810,9 @@ class _DiscoverScreenState extends State<DiscoverScreen>
                   style: GoogleFonts.inter(
                     fontSize: 13,
                     fontWeight: FontWeight.w500,
-                    color: isSelected ? Colors.white : Colors.black87,
+                    color: isSelected
+                        ? Colors.white
+                        : Theme.of(context).textTheme.bodyLarge?.color,
                   ),
                 ),
               ),

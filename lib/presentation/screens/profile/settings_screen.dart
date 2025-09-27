@@ -6,7 +6,6 @@ import '../../../core/constants/app_constants.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/theme_provider.dart';
 import '../../providers/language_provider.dart';
-import '../auth/auth_wrapper.dart';
 import '../../../generated/l10n/app_localizations.dart';
 import '../dashboard/dashboard_screen.dart';
 
@@ -589,10 +588,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
       if (mounted) {
         // Navigate to auth wrapper and clear all previous routes
-        Navigator.of(context).pushAndRemoveUntil(
-          MaterialPageRoute(builder: (context) => const AuthWrapper()),
-          (route) => false,
-        );
+        Navigator.of(
+          context,
+        ).pushNamedAndRemoveUntil('/auth', (route) => false);
       }
     } catch (e) {
       if (mounted) {
@@ -625,10 +623,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
         );
 
         // Navigate to auth wrapper and clear all previous routes
-        Navigator.of(context).pushAndRemoveUntil(
-          MaterialPageRoute(builder: (context) => const AuthWrapper()),
-          (route) => false,
-        );
+        Navigator.of(
+          context,
+        ).pushNamedAndRemoveUntil('/auth', (route) => false);
       }
     } catch (e) {
       if (mounted) {

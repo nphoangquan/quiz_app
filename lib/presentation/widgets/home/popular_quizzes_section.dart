@@ -3,7 +3,6 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../core/themes/app_colors.dart';
 import '../../../domain/entities/quiz_entity.dart';
 import '../quiz/quiz_card.dart';
-import '../../screens/quiz/quiz_player_screen.dart';
 
 class PopularQuizzesSection extends StatelessWidget {
   final List<QuizEntity> popularQuizzes;
@@ -91,11 +90,9 @@ class PopularQuizzesSection extends StatelessWidget {
   }
 
   void _navigateToQuizPlayer(BuildContext context, QuizEntity quiz) {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) =>
-            QuizPlayerScreen(quizId: quiz.quizId, enableTimer: true),
-      ),
+    Navigator.of(context).pushNamed(
+      '/quiz-play',
+      arguments: {'quizId': quiz.quizId, 'enableTimer': true},
     );
   }
 }

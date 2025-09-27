@@ -15,6 +15,7 @@ import 'presentation/providers/quiz_player_provider.dart';
 import 'presentation/providers/result_provider.dart';
 import 'presentation/providers/ai_quiz_provider.dart';
 import 'presentation/screens/auth/auth_wrapper.dart';
+import 'presentation/screens/quiz/quiz_player_screen.dart';
 import 'data/services/firebase_auth_service.dart';
 import 'data/services/firebase_quiz_service.dart';
 import 'data/services/firebase_result_service.dart';
@@ -106,7 +107,20 @@ class MyApp extends StatelessWidget {
             locale: languageProvider.currentLocale,
 
             home: const AuthWrapper(),
-            // TODO: Add routing configuration
+
+            // Named routes configuration
+            routes: {
+              '/auth': (context) => const AuthWrapper(),
+              '/quiz-play': (context) {
+                final args =
+                    ModalRoute.of(context)!.settings.arguments
+                        as Map<String, dynamic>?;
+                return QuizPlayerScreen(
+                  quizId: args?['quizId'] ?? '',
+                  enableTimer: args?['enableTimer'] ?? false,
+                );
+              },
+            },
           );
         },
       ),
