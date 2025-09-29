@@ -4,7 +4,7 @@ import 'package:http/http.dart' as http;
 class GeminiAiService {
   static const String _apiKey = 'YOUR_API_KEY_HERE';
   static const String _baseUrl =
-      'https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent';
+      'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
 
   /// Generate quiz from input text/topic
   Future<Map<String, dynamic>> generateQuiz({
