@@ -211,9 +211,9 @@ class _CategoryFilterScreenState extends State<CategoryFilterScreen>
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
           color: isSelected
-              ? AppColors.primary.withOpacity(0.1)
+              ? AppColors.primary.withValues(alpha: 0.1)
               : isAction
-              ? AppColors.error.withOpacity(0.1)
+              ? AppColors.error.withValues(alpha: 0.1)
               : Colors.transparent,
           border: Border.all(
             color: isSelected
@@ -573,7 +573,7 @@ class _CategoryFilterScreenState extends State<CategoryFilterScreen>
                     ),
                     decoration: BoxDecoration(
                       color: _selectedCategory == null
-                          ? AppColors.primary.withOpacity(0.1)
+                          ? AppColors.primary.withValues(alpha: 0.1)
                           : Colors.transparent,
                       border: Border.all(
                         color: _selectedCategory == null
@@ -613,7 +613,7 @@ class _CategoryFilterScreenState extends State<CategoryFilterScreen>
                       ),
                       decoration: BoxDecoration(
                         color: isSelected
-                            ? AppColors.primary.withOpacity(0.1)
+                            ? AppColors.primary.withValues(alpha: 0.1)
                             : Colors.transparent,
                         border: Border.all(
                           color: isSelected
@@ -675,7 +675,7 @@ class _CategoryFilterScreenState extends State<CategoryFilterScreen>
                 ),
                 decoration: BoxDecoration(
                   color: isSelected
-                      ? AppColors.primary.withOpacity(0.1)
+                      ? AppColors.primary.withValues(alpha: 0.1)
                       : Colors.transparent,
                   border: Border.all(
                     color: isSelected ? AppColors.primary : AppColors.lightGrey,

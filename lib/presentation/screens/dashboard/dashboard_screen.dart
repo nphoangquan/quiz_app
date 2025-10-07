@@ -560,23 +560,27 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
       Navigator.of(context).pop();
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            existingCategory != null
-                ? 'Cập nhật danh mục thành công'
-                : 'Thêm danh mục thành công',
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              existingCategory != null
+                  ? 'Cập nhật danh mục thành công'
+                  : 'Thêm danh mục thành công',
+            ),
+            backgroundColor: Colors.green,
           ),
-          backgroundColor: Colors.green,
-        ),
-      );
+        );
+      }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Có lỗi xảy ra: $e'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Có lỗi xảy ra: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 

@@ -15,8 +15,13 @@ import 'add_questions_screen.dart';
 
 class EnhancedCreateQuizScreen extends StatefulWidget {
   final String? editQuizId; // Quiz ID to edit, null for new quiz
+  final QuizEntity? duplicatedQuiz; // Quiz to duplicate
 
-  const EnhancedCreateQuizScreen({super.key, this.editQuizId});
+  const EnhancedCreateQuizScreen({
+    super.key,
+    this.editQuizId,
+    this.duplicatedQuiz,
+  });
 
   @override
   State<EnhancedCreateQuizScreen> createState() =>
@@ -40,10 +45,43 @@ class _EnhancedCreateQuizScreenState extends State<EnhancedCreateQuizScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (widget.editQuizId != null) {
         _initializeEditQuiz();
+      } else if (widget.duplicatedQuiz != null) {
+        _initializeDuplicatedQuiz();
       } else {
         _initializeNewQuiz();
       }
     });
+  }
+
+  void _initializeDuplicatedQuiz() {
+    final duplicatedQuiz = widget.duplicatedQuiz!;
+
+    // Populate form with duplicated quiz data
+    _titleController.text = duplicatedQuiz.title;
+    _descriptionController.text = duplicatedQuiz.description;
+    _selectedDifficulty = duplicatedQuiz.difficulty;
+    _isPublic = duplicatedQuiz.isPublic;
+    _tags = List.from(duplicatedQuiz.tags);
+    _tagController.text = _tags.join(', ');
+
+    // Find and set category
+    final categoryProvider = context.read<CategoryProvider>();
+    if (duplicatedQuiz.categoryId != null) {
+      _selectedCategory = categoryProvider.categories
+          .where((cat) => cat.categoryId == duplicatedQuiz.categoryId)
+          .firstOrNull;
+    }
+
+    // Initialize new quiz in provider
+    final authProvider = context.read<AuthProvider>();
+    final quizProvider = context.read<QuizProvider>();
+
+    if (authProvider.user != null) {
+      quizProvider.initializeNewQuiz(
+        authProvider.user!.uid,
+        authProvider.user!.name,
+      );
+    }
   }
 
   void _initializeNewQuiz() {
@@ -286,7 +324,7 @@ class _EnhancedCreateQuizScreenState extends State<EnhancedCreateQuizScreen> {
         color: Theme.of(context).scaffoldBackgroundColor,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 4,
             offset: const Offset(0, 2),
           ),
@@ -440,13 +478,13 @@ class _EnhancedCreateQuizScreenState extends State<EnhancedCreateQuizScreen> {
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide(
-                color: AppColors.lightGrey.withOpacity(0.5),
+                color: AppColors.lightGrey.withValues(alpha: 0.5),
               ),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide(
-                color: AppColors.lightGrey.withOpacity(0.5),
+                color: AppColors.lightGrey.withValues(alpha: 0.5),
               ),
             ),
             focusedBorder: OutlineInputBorder(
@@ -504,13 +542,13 @@ class _EnhancedCreateQuizScreenState extends State<EnhancedCreateQuizScreen> {
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                   borderSide: BorderSide(
-                    color: AppColors.lightGrey.withOpacity(0.5),
+                    color: AppColors.lightGrey.withValues(alpha: 0.5),
                   ),
                 ),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                   borderSide: BorderSide(
-                    color: AppColors.lightGrey.withOpacity(0.5),
+                    color: AppColors.lightGrey.withValues(alpha: 0.5),
                   ),
                 ),
                 focusedBorder: OutlineInputBorder(
@@ -571,7 +609,7 @@ class _EnhancedCreateQuizScreenState extends State<EnhancedCreateQuizScreen> {
                     padding: const EdgeInsets.symmetric(vertical: 12),
                     decoration: BoxDecoration(
                       color: isSelected
-                          ? AppColors.primary.withOpacity(0.1)
+                          ? AppColors.primary.withValues(alpha: 0.1)
                           : Colors.transparent,
                       borderRadius: BorderRadius.circular(8),
                       border: Border.all(

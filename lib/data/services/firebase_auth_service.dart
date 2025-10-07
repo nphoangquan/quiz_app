@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import '../models/user_model.dart';
 
 class FirebaseAuthService {
@@ -53,14 +54,17 @@ class FirebaseAuthService {
       await _saveUserToFirestore(userModel);
 
       return userModel;
+    } on FirebaseAuthException catch (e) {
+      debugPrint('❌ Firebase Auth error: ${e.code} - ${e.message}');
+      rethrow;
     } on Exception catch (e) {
-      // Handle specific exceptions
-      print('❌ Google Sign-In error: $e');
+      debugPrint('❌ Google Sign-In error: $e');
       rethrow;
     } catch (e) {
       // Handle type cast and other errors
-      print('❌ Google Sign-In error: $e');
-      rethrow;
+      debugPrint('❌ Google Sign-In error: $e');
+      // Return null instead of rethrowing to prevent app crash
+      return null;
     }
   }
 
@@ -73,7 +77,7 @@ class FirebaseAuthService {
       // Sign out from Firebase
       await _firebaseAuth.signOut();
     } catch (e) {
-      print('❌ Sign out error: $e');
+      debugPrint('❌ Sign out error: $e');
       rethrow;
     }
   }
@@ -117,7 +121,7 @@ class FirebaseAuthService {
       // Sign out from Google
       await _googleSignIn.signOut();
     } catch (e) {
-      print('❌ Delete account error: $e');
+      debugPrint('❌ Delete account error: $e');
       rethrow;
     }
   }
@@ -132,9 +136,9 @@ class FirebaseAuthService {
             user.toFirestore(),
             SetOptions(merge: true), // Merge to avoid overwriting existing data
           );
-      print('✅ User data saved to Firestore: ${user.uid}');
+      debugPrint('✅ User data saved to Firestore: ${user.uid}');
     } catch (e) {
-      print('❌ Save user to Firestore error: $e');
+      debugPrint('❌ Save user to Firestore error: $e');
       rethrow;
     }
   }
@@ -163,9 +167,9 @@ class FirebaseAuthService {
         await userDoc.update(updateData);
       }
 
-      print('✅ Profile updated successfully (Firestore only)');
+      debugPrint('✅ Profile updated successfully (Firestore only)');
     } catch (e) {
-      print('❌ Update profile error: $e');
+      debugPrint('❌ Update profile error: $e');
       rethrow;
     }
   }

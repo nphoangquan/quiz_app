@@ -132,7 +132,7 @@ class _AiQuizPreviewScreenState extends State<AiQuizPreviewScreen> {
           Icon(
             Icons.quiz_outlined,
             size: 80,
-            color: AppColors.textSecondary.withOpacity(0.5),
+            color: AppColors.textSecondary.withValues(alpha: 0.5),
           ),
           const SizedBox(height: 16),
           Text(
@@ -164,7 +164,7 @@ class _AiQuizPreviewScreenState extends State<AiQuizPreviewScreen> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -382,7 +382,7 @@ class _AiQuizPreviewScreenState extends State<AiQuizPreviewScreen> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -511,7 +511,7 @@ class _AiQuizPreviewScreenState extends State<AiQuizPreviewScreen> {
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
                 color: isCorrect
-                    ? AppColors.success.withOpacity(0.1)
+                    ? AppColors.success.withValues(alpha: 0.1)
                     : Colors.white,
                 borderRadius: BorderRadius.circular(8),
                 border: Border.all(
@@ -570,7 +570,7 @@ class _AiQuizPreviewScreenState extends State<AiQuizPreviewScreen> {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: AppColors.primary.withOpacity(0.05),
+                color: AppColors.primary.withValues(alpha: 0.05),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Row(
@@ -607,7 +607,7 @@ class _AiQuizPreviewScreenState extends State<AiQuizPreviewScreen> {
         color: Colors.white,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, -2),
           ),

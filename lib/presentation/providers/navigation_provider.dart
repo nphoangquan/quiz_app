@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 class NavigationProvider extends ChangeNotifier {
   int _currentIndex = 0;
-  PageController _pageController = PageController();
+  final PageController _pageController = PageController();
 
   int get currentIndex => _currentIndex;
   PageController get pageController => _pageController;

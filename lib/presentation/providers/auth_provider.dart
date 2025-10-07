@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import '../../domain/entities/user_entity.dart';
 import '../../domain/repositories/auth_repository.dart';
 
@@ -34,17 +35,17 @@ class AuthProvider extends ChangeNotifier {
         _user = user;
         if (user != null) {
           _status = AuthStatus.authenticated;
-          print('✅ User authenticated: ${user.name}');
+          debugPrint('✅ User authenticated: ${user.name}');
         } else {
           _status = AuthStatus.unauthenticated;
-          print('🚪 User signed out');
+          debugPrint('🚪 User signed out');
         }
         notifyListeners();
       },
       onError: (error) {
         _status = AuthStatus.error;
         _errorMessage = error.toString();
-        print('❌ Auth state error: $error');
+        debugPrint('❌ Auth state error: $error');
         notifyListeners();
       },
     );
@@ -56,30 +57,31 @@ class AuthProvider extends ChangeNotifier {
       _setLoading(true);
       _clearError();
 
-      print('🔑 Attempting Google Sign-In...');
+      debugPrint('🔑 Attempting Google Sign-In...');
 
       final user = await _authRepository.signInWithGoogle();
 
       if (user != null) {
         _user = user;
         _status = AuthStatus.authenticated;
-        print('🎉 Google Sign-In successful: ${user.name}');
+        debugPrint('🎉 Google Sign-In successful: ${user.name}');
       } else {
         _status = AuthStatus.unauthenticated;
       }
     } catch (e) {
       // Check if it's a type cast error (internal plugin issue)
       final errorString = e.toString();
-      if (errorString.contains('type') && errorString.contains('subtype')) {
+      if (errorString.contains('type') && errorString.contains('subtype') ||
+          errorString.contains('PigeonUserDetails')) {
         // This is likely a harmless internal plugin error
-        print('⚠️ Internal plugin error (ignored): $e');
+        debugPrint('⚠️ Internal plugin error (ignored): $e');
         // Don't set error status, wait for auth state listener
         return;
       }
 
       // For real errors, set error status with delay
       _setErrorWithDelay(errorString);
-      print('❌ Google Sign-In error: $e');
+      debugPrint('❌ Google Sign-In error: $e');
     } finally {
       _setLoading(false);
     }
@@ -95,11 +97,11 @@ class AuthProvider extends ChangeNotifier {
 
       _user = null;
       _status = AuthStatus.unauthenticated;
-      print('✅ Sign out successful');
+      debugPrint('✅ Sign out successful');
     } catch (e) {
       _status = AuthStatus.error;
       _errorMessage = _getErrorMessage(e.toString());
-      print('❌ Sign out error: $e');
+      debugPrint('❌ Sign out error: $e');
     } finally {
       _setLoading(false);
     }
@@ -115,11 +117,11 @@ class AuthProvider extends ChangeNotifier {
 
       _user = null;
       _status = AuthStatus.unauthenticated;
-      print('✅ Account deleted successfully');
+      debugPrint('✅ Account deleted successfully');
     } catch (e) {
       _status = AuthStatus.error;
       _errorMessage = _getErrorMessage(e.toString());
-      print('❌ Delete account error: $e');
+      debugPrint('❌ Delete account error: $e');
     } finally {
       _setLoading(false);
     }
@@ -209,10 +211,10 @@ class AuthProvider extends ChangeNotifier {
       }
 
       notifyListeners();
-      print('✅ Profile updated successfully');
+      debugPrint('✅ Profile updated successfully');
     } catch (e) {
       _errorMessage = e.toString();
-      print('❌ Profile update error: $e');
+      debugPrint('❌ Profile update error: $e');
       rethrow;
     } finally {
       _isLoading = false;

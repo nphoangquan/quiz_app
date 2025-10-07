@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
 class GeminiAiService {
@@ -58,7 +59,7 @@ class GeminiAiService {
 
       return quizData;
     } catch (e) {
-      print('❌ Gemini API Error: $e');
+      debugPrint('❌ Gemini API Error: $e');
       rethrow;
     }
   }
@@ -165,8 +166,8 @@ CHÚ Ý:
 
       return quizData;
     } catch (e) {
-      print('❌ JSON Parse Error: $e');
-      print('Generated text: $generatedText');
+      debugPrint('❌ JSON Parse Error: $e');
+      debugPrint('Generated text: $generatedText');
       throw Exception('Không thể parse JSON từ AI response: $e');
     }
   }
@@ -224,7 +225,7 @@ CHÚ Ý:
       }
     }
 
-    print('✅ Quiz data validation passed');
+    debugPrint('✅ Quiz data validation passed');
   }
 
   /// Check if API key is configured

@@ -46,11 +46,6 @@ class CategoryProvider with ChangeNotifier {
           debugPrint(
             '📦 Loaded ${categories.length} categories from Firestore',
           );
-          for (final cat in categories) {
-            debugPrint(
-              '  - ${cat.name} (${cat.categoryId}): ${cat.quizCount} quizzes',
-            );
-          }
           _categories = categories;
           _setState(CategoryState.success);
         },
@@ -167,7 +162,7 @@ class CategoryProvider with ChangeNotifier {
       // Categories will be automatically updated through the stream listener
     } catch (e) {
       debugPrint('Failed to create category: $e');
-      throw e;
+      rethrow;
     }
   }
 
@@ -178,7 +173,7 @@ class CategoryProvider with ChangeNotifier {
       // Categories will be automatically updated through the stream listener
     } catch (e) {
       debugPrint('Failed to update category: $e');
-      throw e;
+      rethrow;
     }
   }
 
@@ -188,7 +183,7 @@ class CategoryProvider with ChangeNotifier {
       return await _categoryRepository.isCategoryInUse(categoryId);
     } catch (e) {
       debugPrint('Failed to check category usage: $e');
-      throw e;
+      rethrow;
     }
   }
 
@@ -198,7 +193,7 @@ class CategoryProvider with ChangeNotifier {
       return await _categoryRepository.getCategoryUsageCount(categoryId);
     } catch (e) {
       debugPrint('Failed to get category usage count: $e');
-      throw e;
+      rethrow;
     }
   }
 
@@ -209,7 +204,7 @@ class CategoryProvider with ChangeNotifier {
       // Categories will be automatically updated through the stream listener
     } catch (e) {
       debugPrint('Failed to delete category: $e');
-      throw e;
+      rethrow;
     }
   }
 
@@ -220,7 +215,7 @@ class CategoryProvider with ChangeNotifier {
       // Categories will be automatically updated through the stream listener
     } catch (e) {
       debugPrint('Failed to disable category: $e');
-      throw e;
+      rethrow;
     }
   }
 

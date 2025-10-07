@@ -117,16 +117,16 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
                 boxShadow: [
                   BoxShadow(
                     color: isDarkMode
-                        ? Colors.black.withOpacity(0.3)
-                        : Colors.black.withOpacity(0.08),
+                        ? Colors.black.withValues(alpha: 0.3)
+                        : Colors.black.withValues(alpha: 0.08),
                     blurRadius: 12,
                     offset: const Offset(0, 4),
                     spreadRadius: 0,
                   ),
                   BoxShadow(
                     color: isDarkMode
-                        ? Colors.black.withOpacity(0.15)
-                        : Colors.black.withOpacity(0.04),
+                        ? Colors.black.withValues(alpha: 0.15)
+                        : Colors.black.withValues(alpha: 0.04),
                     blurRadius: 4,
                     offset: const Offset(0, 2),
                     spreadRadius: 0,
@@ -140,7 +140,7 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
                     Icons.search,
                     color: Theme.of(
                       context,
-                    ).textTheme.bodyLarge?.color?.withOpacity(0.6),
+                    ).textTheme.bodyLarge?.color?.withValues(alpha: 0.6),
                     size: 20,
                   ),
                   const SizedBox(width: 12),
@@ -149,7 +149,7 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
                     style: GoogleFonts.inter(
                       color: Theme.of(
                         context,
-                      ).textTheme.bodyLarge?.color?.withOpacity(0.6),
+                      ).textTheme.bodyLarge?.color?.withValues(alpha: 0.6),
                       fontSize: 16,
                     ),
                   ),
@@ -171,16 +171,16 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
             boxShadow: [
               BoxShadow(
                 color: isDarkMode
-                    ? Colors.black.withOpacity(0.3)
-                    : Colors.black.withOpacity(0.08),
+                    ? Colors.black.withValues(alpha: 0.3)
+                    : Colors.black.withValues(alpha: 0.08),
                 blurRadius: 12,
                 offset: const Offset(0, 4),
                 spreadRadius: 0,
               ),
               BoxShadow(
                 color: isDarkMode
-                    ? Colors.black.withOpacity(0.15)
-                    : Colors.black.withOpacity(0.04),
+                    ? Colors.black.withValues(alpha: 0.15)
+                    : Colors.black.withValues(alpha: 0.04),
                 blurRadius: 4,
                 offset: const Offset(0, 2),
                 spreadRadius: 0,

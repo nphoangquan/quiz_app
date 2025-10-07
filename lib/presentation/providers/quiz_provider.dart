@@ -327,7 +327,7 @@ class QuizProvider with ChangeNotifier {
     final effectiveSearchQuery =
         searchQuery ?? (_searchQuery.isEmpty ? null : _searchQuery);
 
-    print(
+    debugPrint(
       '🔍 Loading public quizzes with search: $effectiveSearchQuery, category: $effectiveCategory, difficulty: $effectiveDifficulty',
     );
 

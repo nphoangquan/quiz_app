@@ -73,10 +73,10 @@ class _AddQuestionsScreenState extends State<AddQuestionsScreen> {
       width: double.infinity,
       padding: const EdgeInsets.all(AppConstants.defaultPadding),
       decoration: BoxDecoration(
-        color: AppColors.primary.withOpacity(0.1),
+        color: AppColors.primary.withValues(alpha: 0.1),
         border: Border(
           bottom: BorderSide(
-            color: AppColors.primary.withOpacity(0.2),
+            color: AppColors.primary.withValues(alpha: 0.2),
             width: 1,
           ),
         ),
@@ -140,7 +140,7 @@ class _AddQuestionsScreenState extends State<AddQuestionsScreen> {
           width: 48,
           height: 48,
           decoration: BoxDecoration(
-            color: color.withOpacity(0.1),
+            color: color.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(12),
           ),
           child: Icon(icon, color: color, size: 24),
@@ -188,7 +188,7 @@ class _AddQuestionsScreenState extends State<AddQuestionsScreen> {
           Icon(
             Icons.quiz_outlined,
             size: 80,
-            color: AppColors.grey.withOpacity(0.5),
+            color: AppColors.grey.withValues(alpha: 0.5),
           ),
           const SizedBox(height: 24),
           Text(
@@ -256,7 +256,7 @@ class _AddQuestionsScreenState extends State<AddQuestionsScreen> {
                     width: 32,
                     height: 32,
                     decoration: BoxDecoration(
-                      color: AppColors.primary.withOpacity(0.1),
+                      color: AppColors.primary.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Center(
@@ -282,7 +282,7 @@ class _AddQuestionsScreenState extends State<AddQuestionsScreen> {
                     decoration: BoxDecoration(
                       color: _getQuestionTypeColor(
                         question.type,
-                      ).withOpacity(0.1),
+                      ).withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(6),
                     ),
                     child: Text(
@@ -300,7 +300,7 @@ class _AddQuestionsScreenState extends State<AddQuestionsScreen> {
                   // Drag handle
                   Icon(
                     Icons.drag_handle,
-                    color: AppColors.grey.withOpacity(0.7),
+                    color: AppColors.grey.withValues(alpha: 0.7),
                   ),
 
                   // More options

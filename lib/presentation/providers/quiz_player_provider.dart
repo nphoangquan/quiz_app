@@ -269,7 +269,7 @@ class QuizPlayerProvider with ChangeNotifier {
       final totalTimeSpent = DateTime.now()
           .difference(_quizStartTime!)
           .inSeconds;
-      final score = correctAnswers * 10; // 10 points per correct answer
+      final score = correctAnswers; // 1 point per correct answer
       final percentage = totalQuestions > 0
           ? (correctAnswers / totalQuestions) * 100
           : 0.0;

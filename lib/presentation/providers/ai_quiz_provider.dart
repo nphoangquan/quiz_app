@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import '../../data/services/gemini_ai_service.dart';
 import '../../domain/entities/question_entity.dart';
 // import '../../domain/entities/quiz_entity.dart';
@@ -42,9 +43,9 @@ class AiQuizProvider extends ChangeNotifier {
       _clearPreviousData();
       notifyListeners();
 
-      print('🤖 Starting AI quiz generation...');
-      print('Input: $input');
-      print(
+      debugPrint('🤖 Starting AI quiz generation...');
+      debugPrint('Input: $input');
+      debugPrint(
         'Questions: $numQuestions, Difficulty: $difficulty, Language: $language',
       );
 
@@ -59,11 +60,11 @@ class AiQuizProvider extends ChangeNotifier {
       _generatedQuizData = quizData;
       _processGeneratedData(quizData);
 
-      print('✅ AI quiz generation completed successfully');
-      print('Generated ${_generatedQuestions.length} questions');
+      debugPrint('✅ AI quiz generation completed successfully');
+      debugPrint('Generated ${_generatedQuestions.length} questions');
     } catch (e) {
       _error = _getErrorMessage(e);
-      print('❌ AI quiz generation failed: $_error');
+      debugPrint('❌ AI quiz generation failed: $_error');
     } finally {
       _isGenerating = false;
       notifyListeners();
@@ -110,12 +111,12 @@ class AiQuizProvider extends ChangeNotifier {
         );
       }).toList();
 
-      print('📊 Processed quiz data:');
-      print('Title: $_generatedTitle');
-      print('Category: $_generatedCategory');
-      print('Questions: ${_generatedQuestions.length}');
+      debugPrint('📊 Processed quiz data:');
+      debugPrint('Title: $_generatedTitle');
+      debugPrint('Category: $_generatedCategory');
+      debugPrint('Questions: ${_generatedQuestions.length}');
     } catch (e) {
-      throw Exception('Failed to process generated data: $e');
+      rethrow;
     }
   }
 

@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import '../models/category_model.dart';
 
 class FirebaseCategoryService {
@@ -317,10 +318,10 @@ class FirebaseCategoryService {
         for (final category in defaultCategories) {
           await createCategory(category);
         }
-        print('Default categories initialized successfully');
+        debugPrint('Default categories initialized successfully');
       }
     } catch (e) {
-      print('Failed to initialize default categories: $e');
+      debugPrint('Failed to initialize default categories: $e');
     }
   }
 }
