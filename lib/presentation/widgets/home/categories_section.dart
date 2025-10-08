@@ -6,6 +6,7 @@ import '../../../domain/entities/category_entity.dart';
 // import '../../../core/utils/category_mapper.dart';
 import '../../providers/category_provider.dart';
 import '../../screens/category/category_filter_screen.dart';
+import '../../../core/themes/app_colors.dart';
 
 class CategoriesSection extends StatelessWidget {
   const CategoriesSection({super.key});
@@ -188,7 +189,9 @@ class CategoriesSection extends StatelessWidget {
             color: isDarkMode ? Colors.grey[800] : Colors.grey[50],
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
-              color: isDarkMode ? Colors.grey[600]! : Colors.grey[200]!,
+              color: isDarkMode
+                  ? AppColors.borderDarkSubtle
+                  : Colors.grey[200]!,
             ),
           ),
           child: Column(

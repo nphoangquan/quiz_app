@@ -26,9 +26,16 @@ class AppColors {
 
   // Background Colors
   static const Color backgroundLight = Color(0xFFFFFFFF);
-  static const Color backgroundDark = Color(0xFF111827);
+  static const Color backgroundDark = Color(0xFF0F0F0F);
   static const Color surfaceLight = Color(0xFFF9FAFB);
-  static const Color surfaceDark = Color(0xFF1F2937);
+  static const Color surfaceDark = Color(0xFF1A1A1A);
+
+  // Additional Dark Mode Colors (Professional)
+  static const Color cardDark = Color(0xFF1A1A1A);
+  static const Color surfaceDarkElevated = Color(0xFF242424);
+  static const Color dividerDark = Color(0xFF2A2A2A);
+  static const Color borderDark = Color(0xFF2A2A2A);
+  static const Color borderDarkSubtle = Color(0xFF1E1E1E);
 
   // Quiz specific colors
   static const Color correctAnswer = Color(0xFF10B981);

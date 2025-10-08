@@ -503,7 +503,7 @@ class _DiscoverScreenState extends State<DiscoverScreen>
               height: 5,
               margin: const EdgeInsets.only(top: 12, bottom: 8),
               decoration: BoxDecoration(
-                color: isDarkMode ? Colors.grey[600] : Colors.grey[300],
+                color: isDarkMode ? AppColors.borderDark : Colors.grey[300],
                 borderRadius: BorderRadius.circular(3),
               ),
             ),
@@ -663,7 +663,7 @@ class _DiscoverScreenState extends State<DiscoverScreen>
                         color: _selectedFilterCategory == null
                             ? AppColors.primary
                             : isDarkMode
-                            ? Colors.grey[600]!
+                            ? AppColors.borderDarkSubtle
                             : Colors.grey[300]!,
                         width: 1,
                       ),
@@ -716,7 +716,7 @@ class _DiscoverScreenState extends State<DiscoverScreen>
                           color: isSelected
                               ? AppColors.primary
                               : isDarkMode
-                              ? Colors.grey[600]!
+                              ? AppColors.borderDarkSubtle
                               : Colors.grey[300]!,
                           width: 1,
                         ),
@@ -791,7 +791,7 @@ class _DiscoverScreenState extends State<DiscoverScreen>
                     color: isSelected
                         ? AppColors.primary
                         : isDarkMode
-                        ? Colors.grey[600]!
+                        ? AppColors.borderDarkSubtle
                         : Colors.grey[300]!,
                     width: 1,
                   ),

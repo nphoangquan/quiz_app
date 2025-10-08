@@ -36,7 +36,9 @@ class QuizCard extends StatelessWidget {
               : AppColors.white,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: AppColors.lightGrey.withOpacity(0.2),
+            color: Theme.of(context).brightness == Brightness.dark
+                ? AppColors.borderDarkSubtle
+                : AppColors.lightGrey.withValues(alpha: 0.2),
             width: 1,
           ),
           boxShadow: [
