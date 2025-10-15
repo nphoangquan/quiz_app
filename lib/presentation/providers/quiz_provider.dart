@@ -104,6 +104,9 @@ class QuizProvider with ChangeNotifier {
       isPublic: isPublic ?? _currentQuiz!.isPublic,
       questionCount: _currentQuestions.length,
       difficulty: difficulty ?? _currentQuiz!.difficulty,
+      hasTimedQuestions: _currentQuestions.any(
+        (q) => q.timeLimit > 0,
+      ), // Check if any question has time limit
       createdAt: _currentQuiz!.createdAt,
       updatedAt: DateTime.now(),
       stats: _currentQuiz!.stats,
@@ -136,7 +139,19 @@ class QuizProvider with ChangeNotifier {
   /// Update question at index
   void updateQuestion(int index, QuestionEntity question) {
     if (index >= 0 && index < _currentQuestions.length) {
-      _currentQuestions[index] = question;
+      _currentQuestions[index] = QuestionEntity(
+        questionId: question.questionId,
+        question: question.question,
+        type: question.type,
+        options: question.options,
+        correctAnswerIndex: question.correctAnswerIndex,
+        explanation: question.explanation,
+        imageUrl: question.imageUrl,
+        order: question.order,
+        points: question.points,
+        timeLimit: question.timeLimit,
+      );
+      updateQuizDetails();
       notifyListeners();
     }
   }
@@ -240,7 +255,22 @@ class QuizProvider with ChangeNotifier {
 
         // Load questions
         final questions = await _quizRepository.getQuizQuestionsOnce(quizId);
-        _currentQuestions = questions;
+        _currentQuestions = questions
+            .map(
+              (q) => QuestionEntity(
+                questionId: q.questionId,
+                question: q.question,
+                type: q.type,
+                options: q.options,
+                correctAnswerIndex: q.correctAnswerIndex,
+                explanation: q.explanation,
+                imageUrl: q.imageUrl,
+                order: q.order,
+                points: q.points,
+                timeLimit: q.timeLimit,
+              ),
+            )
+            .toList();
 
         _setState(QuizState.success);
       } else {
@@ -425,6 +455,7 @@ class QuizProvider with ChangeNotifier {
       tags: [],
       isPublic: true,
       questionCount: 0,
+      hasTimedQuestions: false, // New quiz starts with no timed questions
       createdAt: DateTime.now(),
       updatedAt: DateTime.now(),
       stats: const QuizStats(

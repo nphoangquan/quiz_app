@@ -24,6 +24,8 @@ class QuizEntity {
   final bool isPublic;
   final int questionCount;
   final QuizDifficulty difficulty;
+  final bool
+  hasTimedQuestions; // New property to track if quiz has timed questions
   final DateTime createdAt;
   final DateTime updatedAt;
   final QuizStats stats;
@@ -40,6 +42,7 @@ class QuizEntity {
     required this.isPublic,
     required this.questionCount,
     required this.difficulty,
+    required this.hasTimedQuestions, // New parameter
     required this.createdAt,
     required this.updatedAt,
     required this.stats,

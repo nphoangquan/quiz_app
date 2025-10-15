@@ -14,6 +14,7 @@ class QuizModel extends QuizEntity {
     required super.isPublic,
     required super.questionCount,
     required super.difficulty,
+    required super.hasTimedQuestions, // New parameter
     required super.createdAt,
     required super.updatedAt,
     required super.stats,
@@ -33,6 +34,7 @@ class QuizModel extends QuizEntity {
       isPublic: entity.isPublic,
       questionCount: entity.questionCount,
       difficulty: entity.difficulty,
+      hasTimedQuestions: entity.hasTimedQuestions, // New field
       createdAt: entity.createdAt,
       updatedAt: entity.updatedAt,
       stats: entity.stats,
@@ -58,6 +60,7 @@ class QuizModel extends QuizEntity {
         (diff) => diff.name == data['difficulty'],
         orElse: () => QuizDifficulty.beginner,
       ),
+      hasTimedQuestions: data['hasTimedQuestions'] ?? false, // New field
       createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
       updatedAt: (data['updatedAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
       stats: data['stats'] != null
@@ -79,6 +82,7 @@ class QuizModel extends QuizEntity {
       'isPublic': isPublic,
       'questionCount': questionCount,
       'difficulty': difficulty.name,
+      'hasTimedQuestions': hasTimedQuestions, // New field
       'createdAt': Timestamp.fromDate(createdAt),
       'updatedAt': FieldValue.serverTimestamp(),
       'stats': stats.toMap(),
@@ -98,6 +102,7 @@ class QuizModel extends QuizEntity {
     bool? isPublic,
     int? questionCount,
     QuizDifficulty? difficulty,
+    bool? hasTimedQuestions,
     DateTime? createdAt,
     DateTime? updatedAt,
     QuizStats? stats,
@@ -114,6 +119,7 @@ class QuizModel extends QuizEntity {
       isPublic: isPublic ?? this.isPublic,
       questionCount: questionCount ?? this.questionCount,
       difficulty: difficulty ?? this.difficulty,
+      hasTimedQuestions: hasTimedQuestions ?? this.hasTimedQuestions,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       stats: stats ?? this.stats,
@@ -133,6 +139,7 @@ class QuizModel extends QuizEntity {
       isPublic: false,
       questionCount: 0,
       difficulty: QuizDifficulty.beginner,
+      hasTimedQuestions: false, // Empty quiz has no timed questions
       createdAt: DateTime.now(),
       updatedAt: DateTime.now(),
       stats: const QuizStats(),

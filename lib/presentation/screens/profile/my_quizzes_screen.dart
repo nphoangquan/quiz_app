@@ -718,6 +718,8 @@ class _MyQuizzesScreenState extends State<MyQuizzesScreen>
         isPublic: false, // Duplicated quizzes are private by default
         questionCount: quiz.questionCount,
         difficulty: quiz.difficulty,
+        hasTimedQuestions:
+            quiz.hasTimedQuestions, // Copy timed questions status
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
         stats: QuizStats(averageScore: 0.0, totalAttempts: 0, rating: 0.0),

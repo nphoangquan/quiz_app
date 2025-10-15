@@ -302,7 +302,10 @@ class _AnimatedQuizCardState extends State<AnimatedQuizCard>
 
   String _getTimeStatus() {
     // Check if quiz has timed questions
-    return 'Tự do'; // For now, always show "Tự do"
+    if (widget.quiz.hasTimedQuestions) {
+      return 'Giới hạn';
+    }
+    return 'Tự do';
   }
 
   String _formatDate(DateTime date) {
