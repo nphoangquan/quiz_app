@@ -11,7 +11,6 @@ import '../../widgets/home/popular_quizzes_section.dart';
 import '../../providers/quiz_provider.dart';
 import '../../providers/navigation_provider.dart';
 import '../../../generated/l10n/app_localizations.dart';
-// import '../category/category_filter_screen.dart';
 
 class HomeTabScreen extends StatefulWidget {
   const HomeTabScreen({super.key});
@@ -45,8 +44,7 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
               },
               child: SingleChildScrollView(
                 physics: const AlwaysScrollableScrollPhysics(),
-                clipBehavior:
-                    Clip.none, // Allow shadows to extend beyond bounds
+                clipBehavior: Clip.none,
                 padding: const EdgeInsets.all(AppConstants.defaultPadding),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -58,6 +56,11 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
 
                     // Search Bar with Filter
                     _buildSearchBarWithFilter(),
+
+                    const SizedBox(height: 20),
+
+                    // Banner
+                    _buildBanner(),
 
                     const SizedBox(height: 24),
 
@@ -85,6 +88,11 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
                       isLoading: quizProvider.isLoading,
                       onViewAll: () => _navigateToPopularQuizzes(),
                     ),
+
+                    const SizedBox(height: 24),
+
+                    // HUTECH Campus Information
+                    _buildHutechInfo(),
 
                     const SizedBox(
                       height: 100,
@@ -237,5 +245,154 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
     final popularQuizzes = List<QuizEntity>.from(allQuizzes)
       ..sort((a, b) => b.stats.totalAttempts.compareTo(a.stats.totalAttempts));
     return popularQuizzes.take(5).toList();
+  }
+
+  Widget _buildBanner() {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
+    return Container(
+      height: 120,
+      margin: const EdgeInsets.symmetric(horizontal: 4),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: isDarkMode
+                ? Colors.black.withValues(alpha: 0.3)
+                : Colors.black.withValues(alpha: 0.08),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+            spreadRadius: 0,
+          ),
+          BoxShadow(
+            color: isDarkMode
+                ? Colors.black.withValues(alpha: 0.15)
+                : Colors.black.withValues(alpha: 0.04),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+            spreadRadius: 0,
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(16),
+        child: Image.asset(
+          'assets/images/banner1.png',
+          fit: BoxFit.cover,
+          width: double.infinity,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHutechInfo() {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 4),
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardColor,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: isDarkMode
+                ? Colors.black.withValues(alpha: 0.3)
+                : Colors.black.withValues(alpha: 0.08),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+            spreadRadius: 0,
+          ),
+          BoxShadow(
+            color: isDarkMode
+                ? Colors.black.withValues(alpha: 0.15)
+                : Colors.black.withValues(alpha: 0.04),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+            spreadRadius: 0,
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.school, color: AppColors.primary, size: 24),
+              const SizedBox(width: 12),
+              Text(
+                'Các cơ sở đào tạo HUTECH',
+                style: GoogleFonts.inter(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Theme.of(context).textTheme.headlineMedium?.color,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          _buildCampusInfo(
+            'Trụ sở chính',
+            '475A Điện Biên Phủ, P.25, Q. Bình Thạnh, TP.HCM',
+          ),
+          const SizedBox(height: 12),
+          _buildCampusInfo(
+            'Cơ sở Ung Văn Khiêm',
+            '31/36 Ung Văn Khiêm, P.25, Q. Bình Thạnh, TP.HCM',
+          ),
+          const SizedBox(height: 12),
+          _buildCampusInfo(
+            'Cơ sở 475B Điện Biên Phủ',
+            '475B Điện Biên Phủ, P.25, Q. Bình Thạnh',
+          ),
+          const SizedBox(height: 12),
+          _buildCampusInfo(
+            'Cơ sở tại Khu công nghệ cao TP.HCM',
+            'SHTP – gồm các tòa nhà của Trung tâm Đào tạo nhân lực chất lượng cao và Viện Công nghệ cao HUTECH',
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCampusInfo(String title, String address) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          width: 6,
+          height: 6,
+          margin: const EdgeInsets.only(top: 6, right: 12),
+          decoration: BoxDecoration(
+            color: AppColors.primary,
+            shape: BoxShape.circle,
+          ),
+        ),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: GoogleFonts.inter(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: Theme.of(context).textTheme.bodyLarge?.color,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                address,
+                style: GoogleFonts.inter(
+                  fontSize: 13,
+                  color: Theme.of(context).textTheme.bodyMedium?.color,
+                  height: 1.4,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
   }
 }

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../domain/entities/result_entity.dart';
 import '../../domain/entities/question_entity.dart';
@@ -197,7 +198,7 @@ class FirebaseResultService {
         'updatedAt': FieldValue.serverTimestamp(),
       });
     } catch (e) {
-      print('Failed to update quiz stats: $e');
+      debugPrint('Failed to update quiz stats: $e');
       // Don't throw error to avoid breaking result saving
     }
   }

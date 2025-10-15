@@ -205,24 +205,37 @@ class _CategoryFilterScreenState extends State<CategoryFilterScreen>
     VoidCallback onTap, {
     bool isAction = false,
   }) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
     return GestureDetector(
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
           color: isSelected
-              ? AppColors.primary.withValues(alpha: 0.1)
+              ? AppColors.primary
               : isAction
-              ? AppColors.error.withValues(alpha: 0.1)
-              : Colors.transparent,
-          border: Border.all(
-            color: isSelected
-                ? AppColors.primary
-                : isAction
-                ? AppColors.error
-                : AppColors.lightGrey,
-          ),
+              ? AppColors.error
+              : Theme.of(context).cardColor,
           borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: isDarkMode
+                  ? Colors.black.withValues(alpha: 0.3)
+                  : Colors.black.withValues(alpha: 0.08),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+              spreadRadius: 0,
+            ),
+            BoxShadow(
+              color: isDarkMode
+                  ? Colors.black.withValues(alpha: 0.15)
+                  : Colors.black.withValues(alpha: 0.04),
+              blurRadius: 4,
+              offset: const Offset(0, 1),
+              spreadRadius: 0,
+            ),
+          ],
         ),
         child: Text(
           label,
@@ -230,9 +243,9 @@ class _CategoryFilterScreenState extends State<CategoryFilterScreen>
             fontSize: 14,
             fontWeight: FontWeight.w500,
             color: isSelected
-                ? AppColors.primary
+                ? Colors.white
                 : isAction
-                ? AppColors.error
+                ? Colors.white
                 : Theme.of(context).textTheme.bodyMedium?.color,
           ),
         ),
@@ -554,6 +567,8 @@ class _CategoryFilterScreenState extends State<CategoryFilterScreen>
 
         return StatefulBuilder(
           builder: (context, setModalState) {
+            final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
             return Wrap(
               spacing: 8,
               runSpacing: 8,
@@ -573,14 +588,27 @@ class _CategoryFilterScreenState extends State<CategoryFilterScreen>
                     ),
                     decoration: BoxDecoration(
                       color: _selectedCategory == null
-                          ? AppColors.primary.withValues(alpha: 0.1)
-                          : Colors.transparent,
-                      border: Border.all(
-                        color: _selectedCategory == null
-                            ? AppColors.primary
-                            : AppColors.lightGrey,
-                      ),
+                          ? AppColors.primary
+                          : Theme.of(context).cardColor,
                       borderRadius: BorderRadius.circular(20),
+                      boxShadow: [
+                        BoxShadow(
+                          color: isDarkMode
+                              ? Colors.black.withValues(alpha: 0.3)
+                              : Colors.black.withValues(alpha: 0.08),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                          spreadRadius: 0,
+                        ),
+                        BoxShadow(
+                          color: isDarkMode
+                              ? Colors.black.withValues(alpha: 0.15)
+                              : Colors.black.withValues(alpha: 0.04),
+                          blurRadius: 4,
+                          offset: const Offset(0, 1),
+                          spreadRadius: 0,
+                        ),
+                      ],
                     ),
                     child: Text(
                       'Tất cả danh mục',
@@ -588,7 +616,7 @@ class _CategoryFilterScreenState extends State<CategoryFilterScreen>
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
                         color: _selectedCategory == null
-                            ? AppColors.primary
+                            ? Colors.white
                             : Theme.of(context).textTheme.bodyMedium?.color,
                       ),
                     ),
@@ -613,14 +641,27 @@ class _CategoryFilterScreenState extends State<CategoryFilterScreen>
                       ),
                       decoration: BoxDecoration(
                         color: isSelected
-                            ? AppColors.primary.withValues(alpha: 0.1)
-                            : Colors.transparent,
-                        border: Border.all(
-                          color: isSelected
-                              ? AppColors.primary
-                              : AppColors.lightGrey,
-                        ),
+                            ? AppColors.primary
+                            : Theme.of(context).cardColor,
                         borderRadius: BorderRadius.circular(20),
+                        boxShadow: [
+                          BoxShadow(
+                            color: isDarkMode
+                                ? Colors.black.withValues(alpha: 0.3)
+                                : Colors.black.withValues(alpha: 0.08),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                            spreadRadius: 0,
+                          ),
+                          BoxShadow(
+                            color: isDarkMode
+                                ? Colors.black.withValues(alpha: 0.15)
+                                : Colors.black.withValues(alpha: 0.04),
+                            blurRadius: 4,
+                            offset: const Offset(0, 1),
+                            spreadRadius: 0,
+                          ),
+                        ],
                       ),
                       child: Text(
                         cat.name,
@@ -628,7 +669,7 @@ class _CategoryFilterScreenState extends State<CategoryFilterScreen>
                           fontSize: 14,
                           fontWeight: FontWeight.w500,
                           color: isSelected
-                              ? AppColors.primary
+                              ? Colors.white
                               : Theme.of(context).textTheme.bodyMedium?.color,
                         ),
                       ),
@@ -653,6 +694,8 @@ class _CategoryFilterScreenState extends State<CategoryFilterScreen>
 
     return StatefulBuilder(
       builder: (context, setModalState) {
+        final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
         return Wrap(
           spacing: 8,
           runSpacing: 8,
@@ -675,12 +718,27 @@ class _CategoryFilterScreenState extends State<CategoryFilterScreen>
                 ),
                 decoration: BoxDecoration(
                   color: isSelected
-                      ? AppColors.primary.withValues(alpha: 0.1)
-                      : Colors.transparent,
-                  border: Border.all(
-                    color: isSelected ? AppColors.primary : AppColors.lightGrey,
-                  ),
+                      ? AppColors.primary
+                      : Theme.of(context).cardColor,
                   borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(
+                      color: isDarkMode
+                          ? Colors.black.withValues(alpha: 0.3)
+                          : Colors.black.withValues(alpha: 0.08),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                      spreadRadius: 0,
+                    ),
+                    BoxShadow(
+                      color: isDarkMode
+                          ? Colors.black.withValues(alpha: 0.15)
+                          : Colors.black.withValues(alpha: 0.04),
+                      blurRadius: 4,
+                      offset: const Offset(0, 1),
+                      spreadRadius: 0,
+                    ),
+                  ],
                 ),
                 child: Text(
                   name,
@@ -688,7 +746,7 @@ class _CategoryFilterScreenState extends State<CategoryFilterScreen>
                     fontSize: 14,
                     fontWeight: FontWeight.w500,
                     color: isSelected
-                        ? AppColors.primary
+                        ? Colors.white
                         : Theme.of(context).textTheme.bodyMedium?.color,
                   ),
                 ),

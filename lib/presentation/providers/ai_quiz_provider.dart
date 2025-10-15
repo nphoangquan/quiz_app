@@ -36,6 +36,8 @@ class AiQuizProvider extends ChangeNotifier {
     required String difficulty,
     required String language,
     String? category,
+    bool enableTimeLimit = false,
+    int timeLimitSeconds = 30,
   }) async {
     try {
       _isGenerating = true;
@@ -48,6 +50,9 @@ class AiQuizProvider extends ChangeNotifier {
       debugPrint(
         'Questions: $numQuestions, Difficulty: $difficulty, Language: $language',
       );
+      debugPrint(
+        'Time Limit: ${enableTimeLimit ? '${timeLimitSeconds}s' : 'None'}',
+      );
 
       final quizData = await _geminiService.generateQuiz(
         input: input,
@@ -58,7 +63,11 @@ class AiQuizProvider extends ChangeNotifier {
       );
 
       _generatedQuizData = quizData;
-      _processGeneratedData(quizData);
+      _processGeneratedData(
+        quizData,
+        enableTimeLimit: enableTimeLimit,
+        timeLimitSeconds: timeLimitSeconds,
+      );
 
       debugPrint('✅ AI quiz generation completed successfully');
       debugPrint('Generated ${_generatedQuestions.length} questions');
@@ -72,7 +81,11 @@ class AiQuizProvider extends ChangeNotifier {
   }
 
   /// Process the generated quiz data
-  void _processGeneratedData(Map<String, dynamic> quizData) {
+  void _processGeneratedData(
+    Map<String, dynamic> quizData, {
+    bool enableTimeLimit = false,
+    int timeLimitSeconds = 30,
+  }) {
     try {
       // Extract quiz metadata
       final quiz = quizData['quiz'] as Map<String, dynamic>;
@@ -106,7 +119,7 @@ class AiQuizProvider extends ChangeNotifier {
           correctAnswerIndex: correctIndex,
           explanation: explanation,
           order: 0, // Will be set when added to quiz
-          timeLimit: 0, // Can be set later
+          timeLimit: enableTimeLimit ? timeLimitSeconds : 0,
           imageUrl: null,
         );
       }).toList();
@@ -126,6 +139,59 @@ class AiQuizProvider extends ChangeNotifier {
       _generatedQuestions.removeAt(index);
       notifyListeners();
     }
+  }
+
+  /// Edit a generated question
+  void editGeneratedQuestion(int index, QuestionEntity updatedQuestion) {
+    if (index >= 0 && index < _generatedQuestions.length) {
+      _generatedQuestions[index] = updatedQuestion;
+      notifyListeners();
+    }
+  }
+
+  /// Add a new question to the generated quiz
+  void addGeneratedQuestion(QuestionEntity newQuestion) {
+    _generatedQuestions.add(newQuestion);
+    notifyListeners();
+  }
+
+  /// Update time limit for all questions
+  void updateAllQuestionsTimeLimit(int timeLimitSeconds) {
+    for (int i = 0; i < _generatedQuestions.length; i++) {
+      _generatedQuestions[i] = QuestionEntity(
+        questionId: _generatedQuestions[i].questionId,
+        question: _generatedQuestions[i].question,
+        type: _generatedQuestions[i].type,
+        options: _generatedQuestions[i].options,
+        correctAnswerIndex: _generatedQuestions[i].correctAnswerIndex,
+        explanation: _generatedQuestions[i].explanation,
+        order: _generatedQuestions[i].order,
+        timeLimit: timeLimitSeconds,
+        imageUrl: _generatedQuestions[i].imageUrl,
+      );
+    }
+    notifyListeners();
+  }
+
+  /// Toggle time limit for all questions
+  void toggleTimeLimitForAllQuestions(
+    bool enableTimeLimit,
+    int timeLimitSeconds,
+  ) {
+    for (int i = 0; i < _generatedQuestions.length; i++) {
+      _generatedQuestions[i] = QuestionEntity(
+        questionId: _generatedQuestions[i].questionId,
+        question: _generatedQuestions[i].question,
+        type: _generatedQuestions[i].type,
+        options: _generatedQuestions[i].options,
+        correctAnswerIndex: _generatedQuestions[i].correctAnswerIndex,
+        explanation: _generatedQuestions[i].explanation,
+        order: _generatedQuestions[i].order,
+        timeLimit: enableTimeLimit ? timeLimitSeconds : 0,
+        imageUrl: _generatedQuestions[i].imageUrl,
+      );
+    }
+    notifyListeners();
   }
 
   /// Update quiz metadata

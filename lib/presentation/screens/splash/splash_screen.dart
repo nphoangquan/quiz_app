@@ -79,10 +79,10 @@ class _SplashScreenState extends State<SplashScreen>
     try {
       final isConnected = await FirebaseTestService.testConnection();
       if (isConnected && mounted) {
-        print('🎉 Firebase setup completed successfully!');
+        debugPrint('🎉 Firebase setup completed successfully!');
       }
     } catch (e) {
-      print('❌ Firebase test failed: $e');
+      debugPrint('❌ Firebase test failed: $e');
     }
   }
 

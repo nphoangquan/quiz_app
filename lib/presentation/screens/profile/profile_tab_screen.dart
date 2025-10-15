@@ -145,86 +145,135 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
   }
 
   Widget _buildProfileCard(BuildContext context) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
     return Consumer<AuthProvider>(
       builder: (context, authProvider, child) {
         final user = authProvider.user;
 
-        return Card(
-          child: Padding(
-            padding: const EdgeInsets.all(20),
-            child: Row(
-              children: [
-                // Avatar
-                CircleAvatar(
-                  radius: 40,
-                  backgroundColor: AppColors.primary,
-                  backgroundImage: user?.photoUrl != null
-                      ? NetworkImage(user!.photoUrl!)
-                      : null,
-                  child: user?.photoUrl == null
-                      ? Text(
-                          user?.name.substring(0, 1).toUpperCase() ?? 'U',
-                          style: GoogleFonts.inter(
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.white,
-                          ),
-                        )
-                      : null,
-                ),
-
-                const SizedBox(width: 16),
-
-                // User Info
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        user?.name ?? 'User',
+        return Container(
+          margin: const EdgeInsets.symmetric(horizontal: 4),
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: Theme.of(context).cardColor,
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: isDarkMode
+                    ? Colors.black.withValues(alpha: 0.3)
+                    : Colors.black.withValues(alpha: 0.08),
+                blurRadius: 12,
+                offset: const Offset(0, 4),
+                spreadRadius: 0,
+              ),
+              BoxShadow(
+                color: isDarkMode
+                    ? Colors.black.withValues(alpha: 0.15)
+                    : Colors.black.withValues(alpha: 0.04),
+                blurRadius: 4,
+                offset: const Offset(0, 2),
+                spreadRadius: 0,
+              ),
+            ],
+          ),
+          child: Row(
+            children: [
+              // Avatar
+              CircleAvatar(
+                radius: 40,
+                backgroundColor: AppColors.primary.withValues(alpha: 0.1),
+                backgroundImage: user?.photoUrl != null
+                    ? NetworkImage(user!.photoUrl!)
+                    : null,
+                child: user?.photoUrl == null
+                    ? Text(
+                        user?.name.substring(0, 1).toUpperCase() ?? 'U',
                         style: GoogleFonts.inter(
-                          fontSize: 20,
+                          fontSize: 24,
                           fontWeight: FontWeight.bold,
+                          color: AppColors.primary,
+                        ),
+                      )
+                    : null,
+              ),
+
+              const SizedBox(width: 16),
+
+              // User Info
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      user?.name ?? 'User',
+                      style: GoogleFonts.inter(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Theme.of(
+                          context,
+                        ).textTheme.headlineMedium?.color,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      user?.email ?? '',
+                      style: GoogleFonts.inter(
+                        fontSize: 14,
+                        color: Theme.of(context).textTheme.bodyMedium?.color,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColors.primary.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: AppColors.primary.withValues(alpha: 0.2),
+                          width: 1,
                         ),
                       ),
-                      const SizedBox(height: 4),
-                      Text(
-                        user?.email ?? '',
+                      child: Text(
+                        'Level ${user?.stats.level ?? 1}',
                         style: GoogleFonts.inter(
-                          fontSize: 14,
-                          color: AppColors.grey,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.primary,
                         ),
                       ),
-                      const SizedBox(height: 8),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 4,
-                        ),
-                        decoration: BoxDecoration(
-                          color: AppColors.primary.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Text(
-                          'Level ${user?.stats.level ?? 1}',
-                          style: GoogleFonts.inter(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                            color: AppColors.primary,
-                          ),
-                        ),
-                      ),
-                    ],
+                    ),
+                  ],
+                ),
+              ),
+
+              // Edit Button
+              Container(
+                decoration: BoxDecoration(
+                  color: Theme.of(context).cardColor,
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                      color: isDarkMode
+                          ? Colors.black.withValues(alpha: 0.2)
+                          : Colors.black.withValues(alpha: 0.05),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                      spreadRadius: 0,
+                    ),
+                  ],
+                ),
+                child: IconButton(
+                  onPressed: () => _navigateToEditProfile(),
+                  icon: Icon(
+                    Icons.edit_outlined,
+                    color: Theme.of(context).textTheme.bodyLarge?.color,
                   ),
                 ),
-
-                // Edit Button
-                IconButton(
-                  onPressed: () => _navigateToEditProfile(),
-                  icon: const Icon(Icons.edit_outlined),
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
         );
       },
@@ -280,36 +329,62 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
     IconData icon,
     Color color,
   ) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: color.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Icon(icon, color: color, size: 24),
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardColor,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: isDarkMode
+                ? Colors.black.withValues(alpha: 0.3)
+                : Colors.black.withValues(alpha: 0.08),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+            spreadRadius: 0,
+          ),
+          BoxShadow(
+            color: isDarkMode
+                ? Colors.black.withValues(alpha: 0.15)
+                : Colors.black.withValues(alpha: 0.04),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+            spreadRadius: 0,
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: color.withValues(alpha: 0.2), width: 1),
             ),
-            const SizedBox(height: 12),
-            Text(
-              value,
-              style: GoogleFonts.inter(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: color,
-              ),
+            child: Icon(icon, color: color, size: 24),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            value,
+            style: GoogleFonts.inter(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: color,
             ),
-            const SizedBox(height: 4),
-            Text(
-              title,
-              style: GoogleFonts.inter(fontSize: 12, color: AppColors.grey),
-              textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 4),
+          Text(
+            title,
+            style: GoogleFonts.inter(
+              fontSize: 12,
+              color: Theme.of(context).textTheme.bodyMedium?.color,
             ),
-          ],
-        ),
+            textAlign: TextAlign.center,
+          ),
+        ],
       ),
     );
   }
@@ -320,7 +395,11 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
       children: [
         Text(
           'Thao tác nhanh',
-          style: GoogleFonts.inter(fontSize: 18, fontWeight: FontWeight.bold),
+          style: GoogleFonts.inter(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: Theme.of(context).textTheme.headlineMedium?.color,
+          ),
         ),
         const SizedBox(height: 12),
         Row(
@@ -360,74 +439,147 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
     Color color,
     VoidCallback onTap,
   ) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
     return GestureDetector(
       onTap: onTap,
-      child: Card(
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: color.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Theme.of(context).cardColor,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: isDarkMode
+                  ? Colors.black.withValues(alpha: 0.3)
+                  : Colors.black.withValues(alpha: 0.08),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+              spreadRadius: 0,
+            ),
+            BoxShadow(
+              color: isDarkMode
+                  ? Colors.black.withValues(alpha: 0.15)
+                  : Colors.black.withValues(alpha: 0.04),
+              blurRadius: 4,
+              offset: const Offset(0, 2),
+              spreadRadius: 0,
+            ),
+          ],
+        ),
+        child: Column(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: color.withValues(alpha: 0.2),
+                  width: 1,
                 ),
-                child: Icon(icon, color: color, size: 24),
               ),
-              const SizedBox(height: 12),
-              Text(
-                title,
-                style: GoogleFonts.inter(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                ),
-                textAlign: TextAlign.center,
+              child: Icon(icon, color: color, size: 24),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              title,
+              style: GoogleFonts.inter(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: Theme.of(context).textTheme.headlineMedium?.color,
               ),
-              const SizedBox(height: 4),
-              Text(
-                subtitle,
-                style: GoogleFonts.inter(fontSize: 12, color: AppColors.grey),
-                textAlign: TextAlign.center,
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 4),
+            Text(
+              subtitle,
+              style: GoogleFonts.inter(
+                fontSize: 12,
+                color: Theme.of(context).textTheme.bodyMedium?.color,
               ),
-            ],
-          ),
+              textAlign: TextAlign.center,
+            ),
+          ],
         ),
       ),
     );
   }
 
   Widget _buildSettings(BuildContext context) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           'Cài đặt',
-          style: GoogleFonts.inter(fontSize: 18, fontWeight: FontWeight.bold),
+          style: GoogleFonts.inter(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: Theme.of(context).textTheme.headlineMedium?.color,
+          ),
         ),
         const SizedBox(height: 12),
-        Card(
+        Container(
+          decoration: BoxDecoration(
+            color: Theme.of(context).cardColor,
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: isDarkMode
+                    ? Colors.black.withValues(alpha: 0.3)
+                    : Colors.black.withValues(alpha: 0.08),
+                blurRadius: 12,
+                offset: const Offset(0, 4),
+                spreadRadius: 0,
+              ),
+              BoxShadow(
+                color: isDarkMode
+                    ? Colors.black.withValues(alpha: 0.15)
+                    : Colors.black.withValues(alpha: 0.04),
+                blurRadius: 4,
+                offset: const Offset(0, 2),
+                spreadRadius: 0,
+              ),
+            ],
+          ),
           child: Column(
             children: [
               // Theme Toggle
               Consumer<ThemeProvider>(
                 builder: (context, themeProvider, child) {
                   return ListTile(
-                    leading: Icon(
-                      themeProvider.isDarkMode
-                          ? Icons.dark_mode
-                          : Icons.light_mode,
-                      color: AppColors.primary,
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 8,
+                    ),
+                    leading: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: AppColors.primary.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Icon(
+                        themeProvider.isDarkMode
+                            ? Icons.dark_mode
+                            : Icons.light_mode,
+                        color: AppColors.primary,
+                        size: 20,
+                      ),
                     ),
                     title: Text(
                       'Chế độ tối',
-                      style: GoogleFonts.inter(fontWeight: FontWeight.w600),
+                      style: GoogleFonts.inter(
+                        fontWeight: FontWeight.w600,
+                        color: Theme.of(context).textTheme.bodyLarge?.color,
+                      ),
                     ),
                     subtitle: Text(
                       themeProvider.isDarkMode ? 'Đang bật' : 'Đang tắt',
                       style: GoogleFonts.inter(
                         fontSize: 12,
-                        color: AppColors.grey,
+                        color: Theme.of(context).textTheme.bodyMedium?.color,
                       ),
                     ),
                     trailing: Switch(
@@ -439,23 +591,48 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
                 },
               ),
 
-              const Divider(height: 1),
+              Divider(
+                height: 1,
+                color: isDarkMode ? Colors.grey[700] : Colors.grey[200],
+              ),
 
               // About
               ListTile(
-                leading: const Icon(
-                  Icons.info_outline,
-                  color: AppColors.primary,
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 8,
+                ),
+                leading: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Icon(
+                    Icons.info_outline,
+                    color: AppColors.primary,
+                    size: 20,
+                  ),
                 ),
                 title: Text(
                   'Về ứng dụng',
-                  style: GoogleFonts.inter(fontWeight: FontWeight.w600),
+                  style: GoogleFonts.inter(
+                    fontWeight: FontWeight.w600,
+                    color: Theme.of(context).textTheme.bodyLarge?.color,
+                  ),
                 ),
                 subtitle: Text(
                   'Phiên bản 1.0.0',
-                  style: GoogleFonts.inter(fontSize: 12, color: AppColors.grey),
+                  style: GoogleFonts.inter(
+                    fontSize: 12,
+                    color: Theme.of(context).textTheme.bodyMedium?.color,
+                  ),
                 ),
-                trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                trailing: Icon(
+                  Icons.arrow_forward_ios,
+                  size: 16,
+                  color: Theme.of(context).textTheme.bodyMedium?.color,
+                ),
                 onTap: () {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
@@ -466,11 +643,29 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
                 },
               ),
 
-              const Divider(height: 1),
+              Divider(
+                height: 1,
+                color: isDarkMode ? Colors.grey[700] : Colors.grey[200],
+              ),
 
               // Logout
               ListTile(
-                leading: const Icon(Icons.logout, color: AppColors.error),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 8,
+                ),
+                leading: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: AppColors.error.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Icon(
+                    Icons.logout,
+                    color: AppColors.error,
+                    size: 20,
+                  ),
+                ),
                 title: Text(
                   'Đăng xuất',
                   style: GoogleFonts.inter(

@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../core/themes/app_colors.dart';
 import '../../../domain/entities/quiz_entity.dart';
 import '../quiz/quiz_card.dart';
+import '../common/shimmer_quiz_card.dart';
 
 class PopularQuizzesSection extends StatelessWidget {
   final List<QuizEntity> popularQuizzes;
@@ -54,7 +55,12 @@ class PopularQuizzesSection extends StatelessWidget {
           height:
               260, // Increased height to prevent overflow from AI-generated quiz
           child: isLoading
-              ? const Center(child: CircularProgressIndicator())
+              ? ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  itemCount: 3, // Show 3 shimmer cards
+                  itemBuilder: (context, index) => const ShimmerQuizCard(),
+                )
               : popularQuizzes.isEmpty
               ? Center(
                   child: Column(

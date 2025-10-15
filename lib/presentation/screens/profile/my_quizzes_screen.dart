@@ -215,20 +215,29 @@ class _MyQuizzesScreenState extends State<MyQuizzesScreen>
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(icon, size: 80, color: AppColors.grey.withOpacity(0.5)),
+          Icon(
+            icon,
+            size: 80,
+            color: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.color?.withValues(alpha: 0.5),
+          ),
           const SizedBox(height: 24),
           Text(
             title,
             style: GoogleFonts.inter(
               fontSize: 20,
               fontWeight: FontWeight.w600,
-              color: AppColors.grey,
+              color: Theme.of(context).textTheme.headlineMedium?.color,
             ),
           ),
           const SizedBox(height: 12),
           Text(
             subtitle,
-            style: GoogleFonts.inter(fontSize: 16, color: AppColors.grey),
+            style: GoogleFonts.inter(
+              fontSize: 16,
+              color: Theme.of(context).textTheme.bodyMedium?.color,
+            ),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 32),
@@ -256,15 +265,37 @@ class _MyQuizzesScreenState extends State<MyQuizzesScreen>
   }
 
   Widget _buildQuizCard(QuizEntity quiz) {
-    return Card(
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
+    return Container(
       margin: const EdgeInsets.only(bottom: 16),
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardColor,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: isDarkMode
+                ? Colors.black.withValues(alpha: 0.3)
+                : Colors.black.withValues(alpha: 0.08),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+            spreadRadius: 0,
+          ),
+          BoxShadow(
+            color: isDarkMode
+                ? Colors.black.withValues(alpha: 0.15)
+                : Colors.black.withValues(alpha: 0.04),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+            spreadRadius: 0,
+          ),
+        ],
+      ),
       child: InkWell(
         onTap: () => _navigateToQuizPreview(quiz),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(16),
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(20),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -274,12 +305,16 @@ class _MyQuizzesScreenState extends State<MyQuizzesScreen>
                   // Category badge
                   Container(
                     padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 4,
+                      horizontal: 12,
+                      vertical: 6,
                     ),
                     decoration: BoxDecoration(
-                      color: AppColors.primary.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(6),
+                      color: AppColors.primary.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: AppColors.primary.withValues(alpha: 0.2),
+                        width: 1,
+                      ),
                     ),
                     child: Consumer<CategoryProvider>(
                       builder: (context, categoryProvider, child) {
@@ -310,98 +345,126 @@ class _MyQuizzesScreenState extends State<MyQuizzesScreen>
                   const SizedBox(width: 8),
 
                   // Privacy indicator
-                  Icon(
-                    quiz.isPublic ? Icons.public : Icons.lock,
-                    size: 16,
-                    color: quiz.isPublic ? Colors.green : Colors.orange,
+                  Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: BoxDecoration(
+                      color: quiz.isPublic
+                          ? Colors.green.withValues(alpha: 0.1)
+                          : Colors.orange.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Icon(
+                      quiz.isPublic ? Icons.public : Icons.lock,
+                      size: 14,
+                      color: quiz.isPublic ? Colors.green : Colors.orange,
+                    ),
                   ),
 
                   const Spacer(),
 
                   // More options
-                  PopupMenuButton<String>(
-                    onSelected: (value) => _handleQuizAction(value, quiz),
-                    itemBuilder: (context) => [
-                      const PopupMenuItem(
-                        value: 'preview',
-                        child: Row(
-                          children: [
-                            Icon(Icons.preview, size: 20),
-                            SizedBox(width: 12),
-                            Text('Xem trước'),
-                          ],
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).cardColor,
+                      borderRadius: BorderRadius.circular(8),
+                      boxShadow: [
+                        BoxShadow(
+                          color: isDarkMode
+                              ? Colors.black.withValues(alpha: 0.2)
+                              : Colors.black.withValues(alpha: 0.05),
+                          blurRadius: 4,
+                          offset: const Offset(0, 1),
+                          spreadRadius: 0,
                         ),
-                      ),
-                      const PopupMenuItem(
-                        value: 'edit',
-                        child: Row(
-                          children: [
-                            Icon(Icons.edit, size: 20),
-                            SizedBox(width: 12),
-                            Text('Chỉnh sửa'),
-                          ],
+                      ],
+                    ),
+                    child: PopupMenuButton<String>(
+                      onSelected: (value) => _handleQuizAction(value, quiz),
+                      itemBuilder: (context) => [
+                        const PopupMenuItem(
+                          value: 'preview',
+                          child: Row(
+                            children: [
+                              Icon(Icons.preview, size: 20),
+                              SizedBox(width: 12),
+                              Text('Xem trước'),
+                            ],
+                          ),
                         ),
-                      ),
-                      const PopupMenuItem(
-                        value: 'duplicate',
-                        child: Row(
-                          children: [
-                            Icon(Icons.copy, size: 20),
-                            SizedBox(width: 12),
-                            Text('Nhân bản'),
-                          ],
+                        const PopupMenuItem(
+                          value: 'edit',
+                          child: Row(
+                            children: [
+                              Icon(Icons.edit, size: 20),
+                              SizedBox(width: 12),
+                              Text('Chỉnh sửa'),
+                            ],
+                          ),
                         ),
-                      ),
-                      const PopupMenuItem(
-                        value: 'share',
-                        child: Row(
-                          children: [
-                            Icon(Icons.share, size: 20),
-                            SizedBox(width: 12),
-                            Text('Chia sẻ'),
-                          ],
+                        const PopupMenuItem(
+                          value: 'duplicate',
+                          child: Row(
+                            children: [
+                              Icon(Icons.copy, size: 20),
+                              SizedBox(width: 12),
+                              Text('Nhân bản'),
+                            ],
+                          ),
                         ),
-                      ),
-                      const PopupMenuItem(
-                        value: 'stats',
-                        child: Row(
-                          children: [
-                            Icon(Icons.analytics, size: 20),
-                            SizedBox(width: 12),
-                            Text('Thống kê'),
-                          ],
+                        const PopupMenuItem(
+                          value: 'share',
+                          child: Row(
+                            children: [
+                              Icon(Icons.share, size: 20),
+                              SizedBox(width: 12),
+                              Text('Chia sẻ'),
+                            ],
+                          ),
                         ),
-                      ),
-                      const PopupMenuItem(
-                        value: 'delete',
-                        child: Row(
-                          children: [
-                            Icon(
-                              Icons.delete,
-                              size: 20,
-                              color: AppColors.error,
-                            ),
-                            SizedBox(width: 12),
-                            Text(
-                              'Xóa',
-                              style: TextStyle(color: AppColors.error),
-                            ),
-                          ],
+                        const PopupMenuItem(
+                          value: 'stats',
+                          child: Row(
+                            children: [
+                              Icon(Icons.analytics, size: 20),
+                              SizedBox(width: 12),
+                              Text('Thống kê'),
+                            ],
+                          ),
                         ),
+                        const PopupMenuItem(
+                          value: 'delete',
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.delete,
+                                size: 20,
+                                color: AppColors.error,
+                              ),
+                              SizedBox(width: 12),
+                              Text(
+                                'Xóa',
+                                style: TextStyle(color: AppColors.error),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                      icon: Icon(
+                        Icons.more_vert,
+                        color: Theme.of(context).textTheme.bodyLarge?.color,
                       ),
-                    ],
-                    icon: const Icon(Icons.more_vert),
+                    ),
                   ),
                 ],
               ),
 
-              const SizedBox(height: 12),
+              const SizedBox(height: 16),
 
               // Quiz title
               Text(
                 quiz.title,
                 style: GoogleFonts.inter(
-                  fontSize: 18,
+                  fontSize: 20,
                   fontWeight: FontWeight.bold,
                   color: Theme.of(context).textTheme.headlineMedium?.color,
                 ),
@@ -416,39 +479,45 @@ class _MyQuizzesScreenState extends State<MyQuizzesScreen>
                 quiz.description,
                 style: GoogleFonts.inter(
                   fontSize: 14,
-                  color: AppColors.grey,
+                  color: Theme.of(context).textTheme.bodyMedium?.color,
                   height: 1.4,
                 ),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
 
-              const SizedBox(height: 12),
+              const SizedBox(height: 16),
 
               // Quiz stats
               Row(
                 children: [
-                  _buildStatChip(
-                    Icons.quiz,
-                    '${quiz.questionCount} câu hỏi',
-                    AppColors.primary,
+                  Expanded(
+                    child: _buildStatChip(
+                      Icons.quiz,
+                      '${quiz.questionCount} câu hỏi',
+                      AppColors.primary,
+                    ),
                   ),
-                  const SizedBox(width: 12),
-                  _buildStatChip(
-                    Icons.people,
-                    '${quiz.stats.totalAttempts} lượt chơi',
-                    Colors.blue,
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: _buildStatChip(
+                      Icons.people,
+                      '${quiz.stats.totalAttempts} lượt chơi',
+                      Colors.blue,
+                    ),
                   ),
-                  const SizedBox(width: 12),
-                  _buildStatChip(
-                    Icons.star,
-                    '${quiz.stats.rating.toStringAsFixed(1)}★',
-                    Colors.amber,
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: _buildStatChip(
+                      Icons.star,
+                      '${quiz.stats.rating.toStringAsFixed(1)}★',
+                      Colors.amber,
+                    ),
                   ),
                 ],
               ),
 
-              const SizedBox(height: 12),
+              const SizedBox(height: 16),
 
               // Tags
               if (quiz.tags.isNotEmpty) ...[
@@ -458,24 +527,34 @@ class _MyQuizzesScreenState extends State<MyQuizzesScreen>
                   children: quiz.tags.take(3).map((tag) {
                     return Container(
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 6,
-                        vertical: 2,
+                        horizontal: 8,
+                        vertical: 4,
                       ),
                       decoration: BoxDecoration(
-                        color: AppColors.lightGrey.withOpacity(0.3),
-                        borderRadius: BorderRadius.circular(4),
+                        color: Theme.of(
+                          context,
+                        ).textTheme.bodyMedium?.color?.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(6),
+                        border: Border.all(
+                          color:
+                              Theme.of(context).textTheme.bodyMedium?.color
+                                  ?.withValues(alpha: 0.2) ??
+                              Colors.transparent,
+                          width: 1,
+                        ),
                       ),
                       child: Text(
                         '#$tag',
                         style: GoogleFonts.inter(
-                          fontSize: 10,
-                          color: AppColors.grey,
+                          fontSize: 11,
+                          color: Theme.of(context).textTheme.bodyMedium?.color,
+                          fontWeight: FontWeight.w500,
                         ),
                       ),
                     );
                   }).toList(),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 12),
               ],
 
               // Footer
@@ -485,20 +564,26 @@ class _MyQuizzesScreenState extends State<MyQuizzesScreen>
                     'Cập nhật: ${_formatDate(quiz.updatedAt)}',
                     style: GoogleFonts.inter(
                       fontSize: 12,
-                      color: AppColors.grey,
+                      color: Theme.of(context).textTheme.bodyMedium?.color,
                     ),
                   ),
                   const Spacer(),
                   Container(
                     padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 4,
+                      horizontal: 12,
+                      vertical: 6,
                     ),
                     decoration: BoxDecoration(
                       color: _getDifficultyColor(
                         quiz.difficulty,
-                      ).withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(6),
+                      ).withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: _getDifficultyColor(
+                          quiz.difficulty,
+                        ).withValues(alpha: 0.2),
+                        width: 1,
+                      ),
                     ),
                     child: Text(
                       _getDifficultyName(quiz.difficulty),
@@ -520,22 +605,26 @@ class _MyQuizzesScreenState extends State<MyQuizzesScreen>
 
   Widget _buildStatChip(IconData icon, String text, Color color) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(6),
+        color: color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: color.withValues(alpha: 0.2), width: 1),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 12, color: color),
-          const SizedBox(width: 4),
-          Text(
-            text,
-            style: GoogleFonts.inter(
-              fontSize: 12,
-              color: color,
-              fontWeight: FontWeight.w600,
+          Icon(icon, size: 14, color: color),
+          const SizedBox(width: 6),
+          Flexible(
+            child: Text(
+              text,
+              style: GoogleFonts.inter(
+                fontSize: 12,
+                color: color,
+                fontWeight: FontWeight.w600,
+              ),
+              overflow: TextOverflow.ellipsis,
             ),
           ),
         ],

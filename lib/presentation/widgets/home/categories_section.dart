@@ -7,6 +7,7 @@ import '../../../domain/entities/category_entity.dart';
 import '../../providers/category_provider.dart';
 import '../../screens/category/category_filter_screen.dart';
 import '../../../core/themes/app_colors.dart';
+import '../common/shimmer_category_card.dart' as category_shimmer;
 
 class CategoriesSection extends StatelessWidget {
   const CategoriesSection({super.key});
@@ -90,8 +91,6 @@ class CategoriesSection extends StatelessWidget {
   }
 
   Widget _buildLoadingState(BuildContext context) {
-    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -109,19 +108,8 @@ class CategoriesSection extends StatelessWidget {
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
             itemCount: 5, // Show 5 shimmer cards
-            itemBuilder: (context, index) {
-              return Padding(
-                padding: EdgeInsets.only(right: index == 4 ? 0 : 12),
-                child: Container(
-                  width: 120,
-                  height: 80,
-                  decoration: BoxDecoration(
-                    color: isDarkMode ? Colors.grey[700] : Colors.grey[300],
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-              );
-            },
+            itemBuilder: (context, index) =>
+                const category_shimmer.ShimmerCategoryCard(),
           ),
         ),
       ],

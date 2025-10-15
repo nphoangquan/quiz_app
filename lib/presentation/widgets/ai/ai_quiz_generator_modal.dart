@@ -20,6 +20,8 @@ class _AiQuizGeneratorModalState extends State<AiQuizGeneratorModal> {
   String _difficulty = 'medium';
   String _language = 'vi';
   String? _category;
+  bool _enableTimeLimit = false;
+  int _timeLimitSeconds = 30;
 
   @override
   void dispose() {
@@ -342,6 +344,10 @@ class _AiQuizGeneratorModalState extends State<AiQuizGeneratorModal> {
           {'value': 'vi', 'label': 'Tiếng Việt'},
           {'value': 'en', 'label': 'English'},
         ], (value) => setState(() => _language = value!)),
+        const SizedBox(height: 20),
+
+        // Time Limit Settings
+        _buildTimeLimitSection(),
       ],
     );
   }
@@ -455,6 +461,120 @@ class _AiQuizGeneratorModalState extends State<AiQuizGeneratorModal> {
     );
   }
 
+  Widget _buildTimeLimitSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Giới hạn thời gian',
+          style: GoogleFonts.inter(
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+            color: AppColors.textPrimary,
+          ),
+        ),
+        const SizedBox(height: 12),
+
+        // Enable/Disable Time Limit
+        Container(
+          decoration: BoxDecoration(
+            color: AppColors.background,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: AppColors.border),
+          ),
+          child: Column(
+            children: [
+              _buildTimeLimitOption(
+                'Tự do',
+                'Không giới hạn thời gian cho từng câu hỏi',
+                Icons.access_time_outlined,
+                false,
+              ),
+              const Divider(height: 1, color: AppColors.border),
+              _buildTimeLimitOption(
+                'Có giới hạn',
+                'Đặt thời gian cho mỗi câu hỏi',
+                Icons.timer_outlined,
+                true,
+              ),
+            ],
+          ),
+        ),
+
+        // Time Limit Slider (only show when enabled)
+        if (_enableTimeLimit) ...[
+          const SizedBox(height: 16),
+          _buildSliderOption(
+            'Thời gian mỗi câu (giây)',
+            '${_timeLimitSeconds}s',
+            _timeLimitSeconds.toDouble(),
+            10.0,
+            120.0,
+            11,
+            (value) => setState(() => _timeLimitSeconds = value.round()),
+          ),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildTimeLimitOption(
+    String title,
+    String subtitle,
+    IconData icon,
+    bool isEnabled,
+  ) {
+    final isSelected = _enableTimeLimit == isEnabled;
+
+    return InkWell(
+      onTap: () => setState(() => _enableTimeLimit = isEnabled),
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        child: Row(
+          children: [
+            Icon(
+              icon,
+              color: isSelected ? AppColors.primary : AppColors.textSecondary,
+              size: 24,
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: GoogleFonts.inter(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: isSelected
+                          ? AppColors.primary
+                          : AppColors.textPrimary,
+                    ),
+                  ),
+                  Text(
+                    subtitle,
+                    style: GoogleFonts.inter(
+                      fontSize: 14,
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Radio<bool>(
+              value: isEnabled,
+              groupValue: _enableTimeLimit,
+              onChanged: (val) => setState(() => _enableTimeLimit = val!),
+              activeColor: AppColors.primary,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildActionButtons(AiQuizProvider aiProvider) {
     return Row(
       children: [
@@ -551,6 +671,8 @@ class _AiQuizGeneratorModalState extends State<AiQuizGeneratorModal> {
         difficulty: _difficulty,
         language: _language,
         category: _category,
+        enableTimeLimit: _enableTimeLimit,
+        timeLimitSeconds: _timeLimitSeconds,
       );
 
       if (mounted && aiProvider.hasGeneratedQuiz) {

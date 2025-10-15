@@ -265,8 +265,8 @@ class _EnhancedCreateQuizScreenState extends State<EnhancedCreateQuizScreen> {
                               if (value == null || value.trim().isEmpty) {
                                 return 'Vui lòng nhập mô tả quiz';
                               }
-                              if (value.trim().length < 10) {
-                                return 'Mô tả phải có ít nhất 10 ký tự';
+                              if (value.trim().length < 5) {
+                                return 'Mô tả phải có ít nhất 5 ký tự';
                               }
                               return null;
                             },

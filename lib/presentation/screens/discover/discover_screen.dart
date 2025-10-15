@@ -6,6 +6,7 @@ import '../../../core/constants/app_constants.dart';
 import '../../../domain/entities/quiz_entity.dart';
 import '../../../domain/entities/category_entity.dart';
 import '../../widgets/quiz/quiz_card.dart';
+import '../../widgets/common/shimmer_quiz_card.dart';
 import '../../providers/quiz_provider.dart';
 import '../../providers/category_provider.dart';
 import '../quiz/quiz_player_screen.dart';
@@ -51,31 +52,37 @@ class _DiscoverScreenState extends State<DiscoverScreen>
       body: SafeArea(
         child: Consumer<QuizProvider>(
           builder: (context, quizProvider, child) {
-            return Column(
-              children: [
-                // Header
-                _buildHeader(),
+            return RefreshIndicator(
+              onRefresh: () async {
+                quizProvider.loadPublicQuizzes();
+                quizProvider.loadFeaturedQuizzes();
+              },
+              child: Column(
+                children: [
+                  // Header
+                  _buildHeader(),
 
-                // Search Bar
-                _buildSearchBar(),
+                  // Search Bar
+                  _buildSearchBar(),
 
-                // Filters
-                _buildFilters(),
+                  // Filters
+                  _buildFilters(),
 
-                // Tab Bar
-                _buildTabBar(),
+                  // Tab Bar
+                  _buildTabBar(),
 
-                // Tab Content
-                Expanded(
-                  child: TabBarView(
-                    controller: _tabController,
-                    children: [
-                      _buildAllQuizzes(quizProvider),
-                      _buildNewQuizzes(quizProvider),
-                    ],
+                  // Tab Content
+                  Expanded(
+                    child: TabBarView(
+                      controller: _tabController,
+                      children: [
+                        _buildAllQuizzes(quizProvider),
+                        _buildNewQuizzes(quizProvider),
+                      ],
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             );
           },
         ),
@@ -328,7 +335,15 @@ class _DiscoverScreenState extends State<DiscoverScreen>
 
   Widget _buildAllQuizzes(QuizProvider quizProvider) {
     if (quizProvider.isLoading) {
-      return const Center(child: CircularProgressIndicator());
+      return ListView.builder(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.all(AppConstants.defaultPadding),
+        itemCount: 5, // Show 5 shimmer cards
+        itemBuilder: (context, index) => Padding(
+          padding: const EdgeInsets.only(bottom: 16),
+          child: SizedBox(width: double.infinity, child: ShimmerQuizCard()),
+        ),
+      );
     }
 
     if (quizProvider.hasError) {
@@ -381,7 +396,15 @@ class _DiscoverScreenState extends State<DiscoverScreen>
 
   Widget _buildNewQuizzes(QuizProvider quizProvider) {
     if (quizProvider.isLoading) {
-      return const Center(child: CircularProgressIndicator());
+      return ListView.builder(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.all(AppConstants.defaultPadding),
+        itemCount: 5, // Show 5 shimmer cards
+        itemBuilder: (context, index) => Padding(
+          padding: const EdgeInsets.only(bottom: 16),
+          child: SizedBox(width: double.infinity, child: ShimmerQuizCard()),
+        ),
+      );
     }
 
     // Sort "Mới nhất" by creation date (newest first)
@@ -439,9 +462,12 @@ class _DiscoverScreenState extends State<DiscoverScreen>
 
     return RefreshIndicator(
       onRefresh: () async {
-        await Future.delayed(const Duration(seconds: 1));
+        final quizProvider = context.read<QuizProvider>();
+        quizProvider.loadPublicQuizzes();
+        quizProvider.loadFeaturedQuizzes();
       },
       child: ListView.builder(
+        physics: const AlwaysScrollableScrollPhysics(),
         padding: const EdgeInsets.all(AppConstants.defaultPadding),
         itemCount: filteredQuizzes.length,
         itemBuilder: (context, index) {
@@ -656,25 +682,25 @@ class _DiscoverScreenState extends State<DiscoverScreen>
                     decoration: BoxDecoration(
                       color: _selectedFilterCategory == null
                           ? AppColors.primary
-                          : isDarkMode
-                          ? Colors.grey[800]
-                          : Colors.grey[50],
-                      border: Border.all(
-                        color: _selectedFilterCategory == null
-                            ? AppColors.primary
-                            : isDarkMode
-                            ? AppColors.borderDarkSubtle
-                            : Colors.grey[300]!,
-                        width: 1,
-                      ),
+                          : Theme.of(context).cardColor,
                       borderRadius: BorderRadius.circular(12),
                       boxShadow: [
-                        if (_selectedFilterCategory == null)
-                          BoxShadow(
-                            color: AppColors.primary.withValues(alpha: 0.2),
-                            blurRadius: 6,
-                            offset: const Offset(0, 2),
-                          ),
+                        BoxShadow(
+                          color: isDarkMode
+                              ? Colors.black.withValues(alpha: 0.3)
+                              : Colors.black.withValues(alpha: 0.08),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                          spreadRadius: 0,
+                        ),
+                        BoxShadow(
+                          color: isDarkMode
+                              ? Colors.black.withValues(alpha: 0.15)
+                              : Colors.black.withValues(alpha: 0.04),
+                          blurRadius: 4,
+                          offset: const Offset(0, 1),
+                          spreadRadius: 0,
+                        ),
                       ],
                     ),
                     child: Text(
@@ -709,25 +735,25 @@ class _DiscoverScreenState extends State<DiscoverScreen>
                       decoration: BoxDecoration(
                         color: isSelected
                             ? AppColors.primary
-                            : isDarkMode
-                            ? Colors.grey[800]
-                            : Colors.grey[50],
-                        border: Border.all(
-                          color: isSelected
-                              ? AppColors.primary
-                              : isDarkMode
-                              ? AppColors.borderDarkSubtle
-                              : Colors.grey[300]!,
-                          width: 1,
-                        ),
+                            : Theme.of(context).cardColor,
                         borderRadius: BorderRadius.circular(12),
                         boxShadow: [
-                          if (isSelected)
-                            BoxShadow(
-                              color: AppColors.primary.withValues(alpha: 0.2),
-                              blurRadius: 6,
-                              offset: const Offset(0, 2),
-                            ),
+                          BoxShadow(
+                            color: isDarkMode
+                                ? Colors.black.withValues(alpha: 0.3)
+                                : Colors.black.withValues(alpha: 0.08),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                            spreadRadius: 0,
+                          ),
+                          BoxShadow(
+                            color: isDarkMode
+                                ? Colors.black.withValues(alpha: 0.15)
+                                : Colors.black.withValues(alpha: 0.04),
+                            blurRadius: 4,
+                            offset: const Offset(0, 1),
+                            spreadRadius: 0,
+                          ),
                         ],
                       ),
                       child: Text(
@@ -784,25 +810,25 @@ class _DiscoverScreenState extends State<DiscoverScreen>
                 decoration: BoxDecoration(
                   color: isSelected
                       ? AppColors.primary
-                      : isDarkMode
-                      ? Colors.grey[800]
-                      : Colors.grey[50],
-                  border: Border.all(
-                    color: isSelected
-                        ? AppColors.primary
-                        : isDarkMode
-                        ? AppColors.borderDarkSubtle
-                        : Colors.grey[300]!,
-                    width: 1,
-                  ),
+                      : Theme.of(context).cardColor,
                   borderRadius: BorderRadius.circular(12),
                   boxShadow: [
-                    if (isSelected)
-                      BoxShadow(
-                        color: AppColors.primary.withValues(alpha: 0.2),
-                        blurRadius: 6,
-                        offset: const Offset(0, 2),
-                      ),
+                    BoxShadow(
+                      color: isDarkMode
+                          ? Colors.black.withValues(alpha: 0.3)
+                          : Colors.black.withValues(alpha: 0.08),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                      spreadRadius: 0,
+                    ),
+                    BoxShadow(
+                      color: isDarkMode
+                          ? Colors.black.withValues(alpha: 0.15)
+                          : Colors.black.withValues(alpha: 0.04),
+                      blurRadius: 4,
+                      offset: const Offset(0, 1),
+                      spreadRadius: 0,
+                    ),
                   ],
                 ),
                 child: Text(

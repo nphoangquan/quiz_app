@@ -261,8 +261,8 @@ class _QuestionEditorScreenState extends State<QuestionEditorScreen> {
             if (value == null || value.trim().isEmpty) {
               return 'Vui lòng nhập nội dung câu hỏi';
             }
-            if (value.trim().length < 10) {
-              return 'Câu hỏi phải có ít nhất 10 ký tự';
+            if (value.trim().length < 5) {
+              return 'Câu hỏi phải có ít nhất 5 ký tự';
             }
             return null;
           },

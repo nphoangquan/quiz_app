@@ -8,6 +8,7 @@ import '../../../core/themes/app_colors.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../domain/entities/quiz_entity.dart';
 import '../../../domain/entities/category_entity.dart';
+import '../../../domain/entities/question_entity.dart';
 
 class AiQuizPreviewScreen extends StatefulWidget {
   const AiQuizPreviewScreen({super.key});
@@ -402,11 +403,31 @@ class _AiQuizPreviewScreenState extends State<AiQuizPreviewScreen> {
                   color: AppColors.textPrimary,
                 ),
               ),
-              TextButton.icon(
-                onPressed: () => _addNewQuestion(aiProvider),
-                icon: const Icon(Icons.add, size: 18),
-                label: const Text('Thêm câu hỏi'),
-                style: TextButton.styleFrom(foregroundColor: AppColors.primary),
+              Expanded(
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    children: [
+                      TextButton.icon(
+                        onPressed: () => _showTimeLimitDialog(aiProvider),
+                        icon: const Icon(Icons.timer_outlined, size: 18),
+                        label: const Text('Thời gian'),
+                        style: TextButton.styleFrom(
+                          foregroundColor: AppColors.primary,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      TextButton.icon(
+                        onPressed: () => _addNewQuestion(aiProvider),
+                        icon: const Icon(Icons.add, size: 18),
+                        label: const Text('Thêm câu hỏi'),
+                        style: TextButton.styleFrom(
+                          foregroundColor: AppColors.primary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
             ],
           ),
@@ -687,12 +708,16 @@ class _AiQuizPreviewScreenState extends State<AiQuizPreviewScreen> {
   }
 
   void _editQuestion(AiQuizProvider aiProvider, int index) {
-    // TODO: Implement question editing dialog
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text(
-          'Tính năng chỉnh sửa câu hỏi sẽ có trong phiên bản tiếp theo',
-        ),
+    final question = aiProvider.generatedQuestions[index];
+
+    showDialog(
+      context: context,
+      builder: (context) => _EditQuestionDialog(
+        question: question,
+        onQuestionUpdated: (updatedQuestion) {
+          aiProvider.editGeneratedQuestion(index, updatedQuestion);
+          Navigator.of(context).pop();
+        },
       ),
     );
   }
@@ -721,10 +746,77 @@ class _AiQuizPreviewScreenState extends State<AiQuizPreviewScreen> {
   }
 
   void _addNewQuestion(AiQuizProvider aiProvider) {
-    // TODO: Implement add new question dialog
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Tính năng thêm câu hỏi sẽ có trong phiên bản tiếp theo'),
+    showDialog(
+      context: context,
+      builder: (context) => _AddQuestionDialog(
+        onQuestionAdded: (question) {
+          aiProvider.addGeneratedQuestion(question);
+          Navigator.of(context).pop();
+        },
+      ),
+    );
+  }
+
+  void _showTimeLimitDialog(AiQuizProvider aiProvider) {
+    bool enableTimeLimit =
+        aiProvider.generatedQuestions.isNotEmpty &&
+        aiProvider.generatedQuestions.first.timeLimit > 0;
+    int timeLimitSeconds = enableTimeLimit
+        ? aiProvider.generatedQuestions.first.timeLimit
+        : 30;
+
+    showDialog(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) => AlertDialog(
+          title: const Text('Cài đặt thời gian'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              SwitchListTile(
+                title: const Text('Bật giới hạn thời gian'),
+                subtitle: const Text('Áp dụng cho tất cả câu hỏi'),
+                value: enableTimeLimit,
+                onChanged: (value) {
+                  setState(() {
+                    enableTimeLimit = value;
+                  });
+                },
+              ),
+              if (enableTimeLimit) ...[
+                const SizedBox(height: 16),
+                Text('Thời gian mỗi câu: ${timeLimitSeconds}s'),
+                Slider(
+                  value: timeLimitSeconds.toDouble(),
+                  min: 10,
+                  max: 120,
+                  divisions: 11,
+                  onChanged: (value) {
+                    setState(() {
+                      timeLimitSeconds = value.round();
+                    });
+                  },
+                ),
+              ],
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Hủy'),
+            ),
+            TextButton(
+              onPressed: () {
+                aiProvider.toggleTimeLimitForAllQuestions(
+                  enableTimeLimit,
+                  timeLimitSeconds,
+                );
+                Navigator.of(context).pop();
+              },
+              child: const Text('Áp dụng'),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -851,6 +943,369 @@ class _AiQuizPreviewScreenState extends State<AiQuizPreviewScreen> {
         // If still not found, return null
         return null;
       }
+    }
+  }
+}
+
+// Dialog for adding new questions
+class _AddQuestionDialog extends StatefulWidget {
+  final Function(QuestionEntity) onQuestionAdded;
+
+  const _AddQuestionDialog({required this.onQuestionAdded});
+
+  @override
+  State<_AddQuestionDialog> createState() => _AddQuestionDialogState();
+}
+
+class _AddQuestionDialogState extends State<_AddQuestionDialog> {
+  final _formKey = GlobalKey<FormState>();
+  final _questionController = TextEditingController();
+  final _explanationController = TextEditingController();
+  final List<TextEditingController> _optionControllers = [
+    TextEditingController(),
+    TextEditingController(),
+    TextEditingController(),
+    TextEditingController(),
+  ];
+  int _correctAnswerIndex = 0;
+  int _timeLimitSeconds = 30;
+  bool _enableTimeLimit = false;
+
+  @override
+  void dispose() {
+    _questionController.dispose();
+    _explanationController.dispose();
+    for (final controller in _optionControllers) {
+      controller.dispose();
+    }
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Thêm câu hỏi mới'),
+      content: SizedBox(
+        width: MediaQuery.of(context).size.width * 0.8,
+        height: MediaQuery.of(context).size.height * 0.7,
+        child: Form(
+          key: _formKey,
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Question text
+                TextFormField(
+                  controller: _questionController,
+                  decoration: const InputDecoration(
+                    labelText: 'Câu hỏi',
+                    border: OutlineInputBorder(),
+                  ),
+                  maxLines: 3,
+                  validator: (value) {
+                    if (value == null || value.trim().isEmpty) {
+                      return 'Vui lòng nhập câu hỏi';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 16),
+
+                // Options
+                ...List.generate(4, (index) {
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: Row(
+                      children: [
+                        Radio<int>(
+                          value: index,
+                          groupValue: _correctAnswerIndex,
+                          onChanged: (value) {
+                            setState(() {
+                              _correctAnswerIndex = value!;
+                            });
+                          },
+                        ),
+                        Expanded(
+                          child: TextFormField(
+                            controller: _optionControllers[index],
+                            decoration: InputDecoration(
+                              labelText: 'Lựa chọn ${index + 1}',
+                              border: const OutlineInputBorder(),
+                            ),
+                            validator: (value) {
+                              if (value == null || value.trim().isEmpty) {
+                                return 'Vui lòng nhập lựa chọn';
+                              }
+                              return null;
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }),
+
+                const SizedBox(height: 16),
+
+                // Explanation
+                TextFormField(
+                  controller: _explanationController,
+                  decoration: const InputDecoration(
+                    labelText: 'Giải thích (tùy chọn)',
+                    border: OutlineInputBorder(),
+                  ),
+                  maxLines: 2,
+                ),
+
+                const SizedBox(height: 16),
+
+                // Time limit
+                SwitchListTile(
+                  title: const Text('Giới hạn thời gian'),
+                  subtitle: Text(
+                    _enableTimeLimit ? '${_timeLimitSeconds}s' : 'Tự do',
+                  ),
+                  value: _enableTimeLimit,
+                  onChanged: (value) {
+                    setState(() {
+                      _enableTimeLimit = value;
+                    });
+                  },
+                ),
+
+                if (_enableTimeLimit) ...[
+                  const SizedBox(height: 8),
+                  Text('Thời gian: ${_timeLimitSeconds}s'),
+                  Slider(
+                    value: _timeLimitSeconds.toDouble(),
+                    min: 10,
+                    max: 120,
+                    divisions: 11,
+                    onChanged: (value) {
+                      setState(() {
+                        _timeLimitSeconds = value.round();
+                      });
+                    },
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('Hủy'),
+        ),
+        ElevatedButton(onPressed: _saveQuestion, child: const Text('Thêm')),
+      ],
+    );
+  }
+
+  void _saveQuestion() {
+    if (_formKey.currentState!.validate()) {
+      final question = QuestionEntity(
+        questionId: '',
+        question: _questionController.text.trim(),
+        type: QuestionType.multipleChoice,
+        options: _optionControllers.map((c) => c.text.trim()).toList(),
+        correctAnswerIndex: _correctAnswerIndex,
+        explanation: _explanationController.text.trim().isEmpty
+            ? null
+            : _explanationController.text.trim(),
+        order: 0,
+        timeLimit: _enableTimeLimit ? _timeLimitSeconds : 0,
+        imageUrl: null,
+      );
+
+      widget.onQuestionAdded(question);
+    }
+  }
+}
+
+// Dialog for editing questions
+class _EditQuestionDialog extends StatefulWidget {
+  final QuestionEntity question;
+  final Function(QuestionEntity) onQuestionUpdated;
+
+  const _EditQuestionDialog({
+    required this.question,
+    required this.onQuestionUpdated,
+  });
+
+  @override
+  State<_EditQuestionDialog> createState() => _EditQuestionDialogState();
+}
+
+class _EditQuestionDialogState extends State<_EditQuestionDialog> {
+  late final _formKey = GlobalKey<FormState>();
+  late final _questionController = TextEditingController(
+    text: widget.question.question,
+  );
+  late final _explanationController = TextEditingController(
+    text: widget.question.explanation ?? '',
+  );
+  late final List<TextEditingController> _optionControllers = widget
+      .question
+      .options
+      .map((option) => TextEditingController(text: option))
+      .toList();
+  late int _correctAnswerIndex = widget.question.correctAnswerIndex;
+  late int _timeLimitSeconds = widget.question.timeLimit;
+  late bool _enableTimeLimit = widget.question.timeLimit > 0;
+
+  @override
+  void dispose() {
+    _questionController.dispose();
+    _explanationController.dispose();
+    for (final controller in _optionControllers) {
+      controller.dispose();
+    }
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Chỉnh sửa câu hỏi'),
+      content: SizedBox(
+        width: MediaQuery.of(context).size.width * 0.8,
+        height: MediaQuery.of(context).size.height * 0.7,
+        child: Form(
+          key: _formKey,
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Question text
+                TextFormField(
+                  controller: _questionController,
+                  decoration: const InputDecoration(
+                    labelText: 'Câu hỏi',
+                    border: OutlineInputBorder(),
+                  ),
+                  maxLines: 3,
+                  validator: (value) {
+                    if (value == null || value.trim().isEmpty) {
+                      return 'Vui lòng nhập câu hỏi';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 16),
+
+                // Options
+                ...List.generate(4, (index) {
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: Row(
+                      children: [
+                        Radio<int>(
+                          value: index,
+                          groupValue: _correctAnswerIndex,
+                          onChanged: (value) {
+                            setState(() {
+                              _correctAnswerIndex = value!;
+                            });
+                          },
+                        ),
+                        Expanded(
+                          child: TextFormField(
+                            controller: _optionControllers[index],
+                            decoration: InputDecoration(
+                              labelText: 'Lựa chọn ${index + 1}',
+                              border: const OutlineInputBorder(),
+                            ),
+                            validator: (value) {
+                              if (value == null || value.trim().isEmpty) {
+                                return 'Vui lòng nhập lựa chọn';
+                              }
+                              return null;
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }),
+
+                const SizedBox(height: 16),
+
+                // Explanation
+                TextFormField(
+                  controller: _explanationController,
+                  decoration: const InputDecoration(
+                    labelText: 'Giải thích (tùy chọn)',
+                    border: OutlineInputBorder(),
+                  ),
+                  maxLines: 2,
+                ),
+
+                const SizedBox(height: 16),
+
+                // Time limit
+                SwitchListTile(
+                  title: const Text('Giới hạn thời gian'),
+                  subtitle: Text(
+                    _enableTimeLimit ? '${_timeLimitSeconds}s' : 'Tự do',
+                  ),
+                  value: _enableTimeLimit,
+                  onChanged: (value) {
+                    setState(() {
+                      _enableTimeLimit = value;
+                    });
+                  },
+                ),
+
+                if (_enableTimeLimit) ...[
+                  const SizedBox(height: 8),
+                  Text('Thời gian: ${_timeLimitSeconds}s'),
+                  Slider(
+                    value: _timeLimitSeconds.toDouble(),
+                    min: 10,
+                    max: 120,
+                    divisions: 11,
+                    onChanged: (value) {
+                      setState(() {
+                        _timeLimitSeconds = value.round();
+                      });
+                    },
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('Hủy'),
+        ),
+        ElevatedButton(onPressed: _saveQuestion, child: const Text('Lưu')),
+      ],
+    );
+  }
+
+  void _saveQuestion() {
+    if (_formKey.currentState!.validate()) {
+      final updatedQuestion = QuestionEntity(
+        questionId: widget.question.questionId,
+        question: _questionController.text.trim(),
+        type: widget.question.type,
+        options: _optionControllers.map((c) => c.text.trim()).toList(),
+        correctAnswerIndex: _correctAnswerIndex,
+        explanation: _explanationController.text.trim().isEmpty
+            ? null
+            : _explanationController.text.trim(),
+        order: widget.question.order,
+        timeLimit: _enableTimeLimit ? _timeLimitSeconds : 0,
+        imageUrl: widget.question.imageUrl,
+      );
+
+      widget.onQuestionUpdated(updatedQuestion);
     }
   }
 }
