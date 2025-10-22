@@ -5,6 +5,7 @@ import '../../../core/themes/app_colors.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../domain/entities/category_entity.dart';
 import '../../providers/category_provider.dart';
+import '../../providers/auth_provider.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -25,59 +26,111 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      appBar: AppBar(
-        title: Text(
-          'Dashboard',
-          style: GoogleFonts.inter(fontWeight: FontWeight.bold),
-        ),
-        centerTitle: true,
-        leading: IconButton(
-          onPressed: () => Navigator.of(context).pop(),
-          icon: const Icon(Icons.arrow_back_ios),
-        ),
-        actions: [
-          IconButton(
-            onPressed: _showAddCategoryDialog,
-            icon: const Icon(Icons.add_circle_outline),
-            tooltip: 'Thêm danh mục',
-          ),
-        ],
-      ),
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(AppConstants.defaultPadding),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Header Section
-              _buildHeaderSection(),
-
-              const SizedBox(height: 24),
-
-              // Categories Management
-              Text(
-                'Quản lý danh mục',
-                style: GoogleFonts.inter(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
+    return Consumer<AuthProvider>(
+      builder: (context, authProvider, child) {
+        // Double check admin access in build method
+        if (!authProvider.isAdmin) {
+          return Scaffold(
+            backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+            appBar: AppBar(
+              title: Text(
+                'Dashboard',
+                style: GoogleFonts.inter(fontWeight: FontWeight.bold),
               ),
+              centerTitle: true,
+              leading: IconButton(
+                onPressed: () => Navigator.of(context).pop(),
+                icon: const Icon(Icons.arrow_back_ios),
+              ),
+            ),
+            body: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.block,
+                    size: 80,
+                    color: AppColors.error.withValues(alpha: 0.5),
+                  ),
+                  const SizedBox(height: 24),
+                  Text(
+                    'Truy cập bị từ chối',
+                    style: GoogleFonts.inter(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.error,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    'Chỉ quản trị viên mới có quyền truy cập Dashboard',
+                    style: GoogleFonts.inter(
+                      fontSize: 16,
+                      color: Theme.of(context).textTheme.bodyMedium?.color,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              ),
+            ),
+          );
+        }
 
-              const SizedBox(height: 16),
-
-              // Categories List
-              Expanded(child: _buildCategoriesList()),
+        return Scaffold(
+          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+          appBar: AppBar(
+            title: Text(
+              'Dashboard',
+              style: GoogleFonts.inter(fontWeight: FontWeight.bold),
+            ),
+            centerTitle: true,
+            leading: IconButton(
+              onPressed: () => Navigator.of(context).pop(),
+              icon: const Icon(Icons.arrow_back_ios),
+            ),
+            actions: [
+              IconButton(
+                onPressed: _showAddCategoryDialog,
+                icon: const Icon(Icons.add_circle_outline),
+                tooltip: 'Thêm danh mục',
+              ),
             ],
           ),
-        ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _showAddCategoryDialog,
-        backgroundColor: AppColors.primary,
-        child: const Icon(Icons.add, color: Colors.white),
-      ),
+          body: SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.all(AppConstants.defaultPadding),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Header Section
+                  _buildHeaderSection(),
+
+                  const SizedBox(height: 24),
+
+                  // Categories Management
+                  Text(
+                    'Quản lý danh mục',
+                    style: GoogleFonts.inter(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  // Categories List
+                  Expanded(child: _buildCategoriesList()),
+                ],
+              ),
+            ),
+          ),
+          floatingActionButton: FloatingActionButton(
+            onPressed: _showAddCategoryDialog,
+            backgroundColor: AppColors.primary,
+            child: const Icon(Icons.add, color: Colors.white),
+          ),
+        );
+      },
     );
   }
 

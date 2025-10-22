@@ -190,16 +190,28 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
               const SizedBox(height: 16),
 
-              // Dashboard
-              _buildSettingItem(
-                icon: Icons.dashboard_outlined,
-                title: 'Dashboard',
-                subtitle: 'Quản lý danh mục và nội dung',
-                onTap: _navigateToDashboard,
-                iconColor: AppColors.primary,
+              // Dashboard (Admin only) - Ẩn hoàn toàn cho user thường
+              Consumer<AuthProvider>(
+                builder: (context, authProvider, child) {
+                  // Chỉ hiển thị Dashboard nếu người dùng là admin
+                  if (authProvider.isAdmin) {
+                    return Column(
+                      children: [
+                        _buildSettingItem(
+                          icon: Icons.dashboard_outlined,
+                          title: 'Dashboard',
+                          subtitle: 'Quản lý danh mục và nội dung',
+                          onTap: _navigateToDashboard,
+                          iconColor: AppColors.primary,
+                        ),
+                        const SizedBox(height: 8),
+                      ],
+                    );
+                  }
+                  // Ẩn hoàn toàn nếu không phải admin
+                  return const SizedBox.shrink();
+                },
               ),
-
-              const SizedBox(height: 8),
 
               // Sign Out
               _buildSettingItem(

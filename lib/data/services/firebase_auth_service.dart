@@ -3,6 +3,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import '../models/user_model.dart';
+import '../../domain/entities/user_role.dart';
 
 class FirebaseAuthService {
   final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
@@ -106,6 +107,35 @@ class FirebaseAuthService {
     }
   }
 
+  /// Check if user is admin
+  Future<bool> isUserAdmin(String uid) async {
+    try {
+      final doc = await _firestore.collection('users').doc(uid).get();
+      if (!doc.exists) return false;
+
+      final data = doc.data() as Map<String, dynamic>;
+      final role = data['role'] as String? ?? 'user';
+      return role == 'admin';
+    } catch (e) {
+      debugPrint('❌ Check admin status error: $e');
+      return false;
+    }
+  }
+
+  /// Update user role (Admin only function)
+  Future<void> updateUserRole(String uid, UserRole newRole) async {
+    try {
+      await _firestore.collection('users').doc(uid).update({
+        'role': newRole.value,
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+      debugPrint('✅ User role updated: $uid -> ${newRole.displayName}');
+    } catch (e) {
+      debugPrint('❌ Update user role error: $e');
+      rethrow;
+    }
+  }
+
   /// Delete user account
   Future<void> deleteAccount() async {
     try {
@@ -129,13 +159,29 @@ class FirebaseAuthService {
   /// Save user data to Firestore
   Future<void> _saveUserToFirestore(UserModel user) async {
     try {
-      await _firestore
-          .collection('users')
-          .doc(user.uid)
-          .set(
-            user.toFirestore(),
-            SetOptions(merge: true), // Merge to avoid overwriting existing data
-          );
+      // Check if user already exists to preserve role
+      final doc = await _firestore.collection('users').doc(user.uid).get();
+
+      if (doc.exists) {
+        // User exists, only update non-role fields
+        final existingData = doc.data() as Map<String, dynamic>;
+        final existingRole = existingData['role'] as String? ?? 'user';
+
+        final updateData = user.toFirestore();
+        updateData['role'] = existingRole; // Preserve existing role
+
+        await _firestore
+            .collection('users')
+            .doc(user.uid)
+            .set(updateData, SetOptions(merge: true));
+      } else {
+        // New user, save with default role
+        await _firestore
+            .collection('users')
+            .doc(user.uid)
+            .set(user.toFirestore());
+      }
+
       debugPrint('✅ User data saved to Firestore: ${user.uid}');
     } catch (e) {
       debugPrint('❌ Save user to Firestore error: $e');

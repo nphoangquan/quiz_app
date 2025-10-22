@@ -21,4 +21,7 @@ abstract class AuthRepository {
 
   /// Update user profile
   Future<void> updateProfile({String? displayName, String? photoUrl});
+
+  /// Check if user is admin
+  Future<bool> isUserAdmin(String uid);
 }

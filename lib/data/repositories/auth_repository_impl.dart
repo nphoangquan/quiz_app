@@ -45,4 +45,9 @@ class AuthRepositoryImpl implements AuthRepository {
       photoUrl: photoUrl,
     );
   }
+
+  @override
+  Future<bool> isUserAdmin(String uid) async {
+    return await _authService.isUserAdmin(uid);
+  }
 }
