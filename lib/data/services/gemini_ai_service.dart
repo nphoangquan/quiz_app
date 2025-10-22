@@ -3,7 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
 class GeminiAiService {
-  static const String _apiKey = 'AIzaSyBk5yuBSqbuy28ZEyu2gD8-oW5Km_kitsE';
+  static const String _apiKey = 'YOUR_API_KEY_HERE';
   static const String _baseUrl =
       'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
 
