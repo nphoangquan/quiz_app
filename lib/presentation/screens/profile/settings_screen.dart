@@ -7,7 +7,6 @@ import '../../providers/auth_provider.dart';
 import '../../providers/theme_provider.dart';
 import '../../providers/language_provider.dart';
 import '../../../generated/l10n/app_localizations.dart';
-import '../dashboard/dashboard_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -323,9 +322,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   void _navigateToDashboard() {
-    Navigator.of(
-      context,
-    ).push(MaterialPageRoute(builder: (context) => const DashboardScreen()));
+    Navigator.of(context).pushNamed('/admin');
   }
 
   void _showLanguageDialog(LanguageProvider languageProvider) {

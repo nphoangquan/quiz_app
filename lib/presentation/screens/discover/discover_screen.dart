@@ -58,30 +58,30 @@ class _DiscoverScreenState extends State<DiscoverScreen>
                 quizProvider.loadFeaturedQuizzes();
               },
               child: Column(
-                children: [
-                  // Header
-                  _buildHeader(),
+              children: [
+                // Header
+                _buildHeader(),
 
-                  // Search Bar
-                  _buildSearchBar(),
+                // Search Bar
+                _buildSearchBar(),
 
-                  // Filters
-                  _buildFilters(),
+                // Filters
+                _buildFilters(),
 
-                  // Tab Bar
-                  _buildTabBar(),
+                // Tab Bar
+                _buildTabBar(),
 
-                  // Tab Content
-                  Expanded(
-                    child: TabBarView(
-                      controller: _tabController,
-                      children: [
-                        _buildAllQuizzes(quizProvider),
-                        _buildNewQuizzes(quizProvider),
-                      ],
-                    ),
+                // Tab Content
+                Expanded(
+                  child: TabBarView(
+                    controller: _tabController,
+                    children: [
+                      _buildAllQuizzes(quizProvider),
+                      _buildNewQuizzes(quizProvider),
+                    ],
                   ),
-                ],
+                ),
+              ],
               ),
             );
           },
@@ -168,12 +168,12 @@ class _DiscoverScreenState extends State<DiscoverScreen>
               spreadRadius: 0,
             ),
           ],
-        ),
-        child: TextField(
-          onChanged: _onSearchChanged,
+      ),
+      child: TextField(
+        onChanged: _onSearchChanged,
           style: TextStyle(color: Theme.of(context).textTheme.bodyLarge?.color),
-          decoration: InputDecoration(
-            hintText: 'Tìm kiếm quiz...',
+        decoration: InputDecoration(
+          hintText: 'Tìm kiếm quiz...',
             hintStyle: GoogleFonts.inter(
               color: Theme.of(
                 context,
@@ -187,8 +187,8 @@ class _DiscoverScreenState extends State<DiscoverScreen>
               ).textTheme.bodyLarge?.color?.withOpacity(0.6),
               size: 20,
             ),
-            suffixIcon: _searchQuery.isNotEmpty
-                ? IconButton(
+          suffixIcon: _searchQuery.isNotEmpty
+              ? IconButton(
                     icon: Icon(
                       Icons.clear,
                       color: Theme.of(
@@ -196,13 +196,13 @@ class _DiscoverScreenState extends State<DiscoverScreen>
                       ).textTheme.bodyLarge?.color?.withOpacity(0.6),
                       size: 20,
                     ),
-                    onPressed: () {
-                      setState(() {
-                        _searchQuery = '';
-                      });
-                    },
-                  )
-                : null,
+                  onPressed: () {
+                    setState(() {
+                      _searchQuery = '';
+                    });
+                  },
+                )
+              : null,
             border: InputBorder.none,
             contentPadding: const EdgeInsets.symmetric(
               horizontal: 16,

@@ -606,7 +606,7 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
                   return ListTile(
                     contentPadding: const EdgeInsets.symmetric(
                       horizontal: 20,
-                      vertical: 8,
+                      vertical: 12,
                     ),
                     leading: Container(
                       padding: const EdgeInsets.all(8),
@@ -645,16 +645,11 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
                 },
               ),
 
-              Divider(
-                height: 1,
-                color: isDarkMode ? Colors.grey[700] : Colors.grey[200],
-              ),
-
               // About
               ListTile(
                 contentPadding: const EdgeInsets.symmetric(
                   horizontal: 20,
-                  vertical: 8,
+                  vertical: 12,
                 ),
                 leading: Container(
                   padding: const EdgeInsets.all(8),
@@ -697,92 +692,73 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
                 },
               ),
 
-              Divider(
-                height: 1,
-                color: isDarkMode ? Colors.grey[700] : Colors.grey[200],
-              ),
-
               // Dashboard (Admin only) - Ẩn hoàn toàn cho user thường
               Consumer<AuthProvider>(
                 builder: (context, authProvider, child) {
                   // Chỉ hiển thị Dashboard nếu người dùng là admin
                   if (authProvider.isAdmin) {
-                    return Column(
-                      children: [
-                        Divider(
-                          height: 1,
-                          color: isDarkMode
-                              ? Colors.grey[700]
-                              : Colors.grey[200],
+                    return ListTile(
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 12,
+                      ),
+                      leading: Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: Colors.orange.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(8),
                         ),
-                        ListTile(
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 20,
-                            vertical: 8,
-                          ),
-                          leading: Container(
-                            padding: const EdgeInsets.all(8),
-                            decoration: BoxDecoration(
-                              color: Colors.orange.withValues(alpha: 0.1),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Icon(
-                              Icons.dashboard,
-                              color: Colors.orange,
-                              size: 20,
-                            ),
-                          ),
-                          title: Row(
-                            children: [
-                              Text(
-                                'Dashboard',
-                                style: GoogleFonts.inter(
-                                  fontWeight: FontWeight.w600,
-                                  color: Theme.of(
-                                    context,
-                                  ).textTheme.bodyLarge?.color,
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 8,
-                                  vertical: 2,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: Colors.orange.withValues(alpha: 0.2),
-                                  borderRadius: BorderRadius.circular(4),
-                                ),
-                                child: Text(
-                                  'Admin only',
-                                  style: GoogleFonts.inter(
-                                    fontSize: 10,
-                                    color: Colors.orange[700],
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                          subtitle: Text(
-                            'Quản lý hệ thống',
+                        child: Icon(
+                          Icons.dashboard,
+                          color: Colors.orange,
+                          size: 20,
+                        ),
+                      ),
+                      title: Row(
+                        children: [
+                          Text(
+                            'Dashboard',
                             style: GoogleFonts.inter(
-                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
                               color: Theme.of(
                                 context,
-                              ).textTheme.bodyMedium?.color,
+                              ).textTheme.bodyLarge?.color,
                             ),
                           ),
-                          trailing: Icon(
-                            Icons.arrow_forward_ios,
-                            size: 16,
-                            color: isDarkMode
-                                ? Colors.grey[500]
-                                : Colors.grey[400],
+                          const SizedBox(width: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 2,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.orange.withValues(alpha: 0.2),
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: Text(
+                              'Admin only',
+                              style: GoogleFonts.inter(
+                                fontSize: 10,
+                                color: Colors.orange[700],
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
                           ),
-                          onTap: _navigateToDashboard,
+                        ],
+                      ),
+                      subtitle: Text(
+                        'Quản lý hệ thống',
+                        style: GoogleFonts.inter(
+                          fontSize: 12,
+                          color: Theme.of(context).textTheme.bodyMedium?.color,
                         ),
-                      ],
+                      ),
+                      trailing: Icon(
+                        Icons.arrow_forward_ios,
+                        size: 16,
+                        color: isDarkMode ? Colors.grey[500] : Colors.grey[400],
+                      ),
+                      onTap: _navigateToDashboard,
                     );
                   }
                   // Ẩn hoàn toàn nếu không phải admin
@@ -794,7 +770,7 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
               ListTile(
                 contentPadding: const EdgeInsets.symmetric(
                   horizontal: 20,
-                  vertical: 8,
+                  vertical: 12,
                 ),
                 leading: Container(
                   padding: const EdgeInsets.all(8),
@@ -1012,7 +988,7 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
   }
 
   void _navigateToDashboard() {
-    Navigator.of(context).pushNamed('/dashboard');
+    Navigator.of(context).pushNamed('/admin');
   }
 
   void _showLogoutDialog(BuildContext context) {
