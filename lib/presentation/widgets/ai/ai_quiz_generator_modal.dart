@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../providers/ai_quiz_provider.dart';
+import '../../providers/auth_provider.dart';
 import '../../../core/themes/app_colors.dart';
+import '../../../domain/entities/subscription_tier.dart';
 
 class AiQuizGeneratorModal extends StatefulWidget {
   const AiQuizGeneratorModal({super.key});
@@ -662,7 +664,14 @@ class _AiQuizGeneratorModalState extends State<AiQuizGeneratorModal> {
       return;
     }
 
+    final authProvider = context.read<AuthProvider>();
     final aiProvider = context.read<AiQuizProvider>();
+
+    // Check subscription limits for AI generation
+    if (!authProvider.canUseAIGeneration) {
+      _showUpgradeDialog(authProvider);
+      return;
+    }
 
     try {
       await aiProvider.generateQuiz(
@@ -690,5 +699,108 @@ class _AiQuizGeneratorModalState extends State<AiQuizGeneratorModal> {
         );
       }
     }
+  }
+
+  /// Show upgrade dialog when user hits AI generation limit
+  void _showUpgradeDialog(AuthProvider authProvider) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Row(
+          children: [
+            Icon(Icons.lock_outline, color: Colors.orange, size: 28),
+            const SizedBox(width: 12),
+            const Text('Đã đạt giới hạn AI'),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Bạn đã sử dụng ${authProvider.user!.usageLimits.aiGenerationsToday}/${authProvider.subscriptionTier.aiGenerationDailyLimit} AI generations hôm nay.',
+              style: GoogleFonts.inter(fontSize: 16),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'Nâng cấp lên Pro để sử dụng unlimited AI generation và nhiều tính năng khác!',
+              style: GoogleFonts.inter(fontSize: 14, color: Colors.grey[600]),
+            ),
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.orange.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(
+                  color: Colors.orange.withOpacity(0.3),
+                  width: 1,
+                ),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Pro Plan bao gồm:',
+                    style: GoogleFonts.inter(
+                      fontWeight: FontWeight.w600,
+                      color: Colors.orange[700],
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  _buildFeatureItem('AI generation: Unlimited'),
+                  _buildFeatureItem('Tạo unlimited quizzes'),
+                  _buildFeatureItem('Advanced analytics'),
+                  _buildFeatureItem('Export results (PDF)'),
+                  _buildFeatureItem('Priority support'),
+                ],
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text(
+              'Để sau',
+              style: GoogleFonts.inter(color: Colors.grey[600]),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              Navigator.pushNamed(context, '/pricing');
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.orange,
+              foregroundColor: Colors.white,
+            ),
+            child: Text(
+              'Nâng cấp ngay',
+              style: GoogleFonts.inter(fontWeight: FontWeight.w600),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Build feature item for upgrade dialog
+  Widget _buildFeatureItem(String text) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 4),
+      child: Row(
+        children: [
+          Icon(Icons.check_circle, color: Colors.orange[600], size: 16),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              text,
+              style: GoogleFonts.inter(fontSize: 14, color: Colors.orange[700]),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }

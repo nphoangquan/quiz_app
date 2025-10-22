@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import '../models/user_model.dart';
 import '../../domain/entities/user_role.dart';
+import '../../domain/entities/subscription_tier.dart';
 
 class FirebaseAuthService {
   final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
@@ -169,6 +170,16 @@ class FirebaseAuthService {
 
         final updateData = user.toFirestore();
         updateData['role'] = existingRole; // Preserve existing role
+
+        // Ensure usageLimits exists (for users who don't have it)
+        if (!existingData.containsKey('usageLimits')) {
+          updateData['usageLimits'] = user.usageLimits.toMap();
+        }
+
+        // Ensure subscriptionTier exists (for users who don't have it)
+        if (!existingData.containsKey('subscriptionTier')) {
+          updateData['subscriptionTier'] = user.subscriptionTier.value;
+        }
 
         await _firestore
             .collection('users')

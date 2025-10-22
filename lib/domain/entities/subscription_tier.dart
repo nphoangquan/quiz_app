@@ -79,11 +79,11 @@ extension SubscriptionTierExtension on SubscriptionTier {
     }
   }
 
-  /// Giới hạn số quiz có thể tạo
+  /// Giới hạn số quiz có thể tạo (unlimited cho cả Free và Pro)
   int get quizLimit {
     switch (this) {
       case SubscriptionTier.free:
-        return 10;
+        return -1; // unlimited - tạo quiz là tính năng cơ bản
       case SubscriptionTier.pro:
         return -1; // unlimited
     }
@@ -104,7 +104,7 @@ extension SubscriptionTierExtension on SubscriptionTier {
     switch (this) {
       case SubscriptionTier.free:
         return [
-          'Tạo tối đa 10 quizzes',
+          'Tạo unlimited quizzes',
           'Chơi unlimited quizzes',
           'AI quiz generation: 10/ngày',
           'Xem basic statistics',

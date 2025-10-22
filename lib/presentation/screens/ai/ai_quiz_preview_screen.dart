@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../providers/ai_quiz_provider.dart';
 import '../../providers/quiz_provider.dart';
 import '../../providers/category_provider.dart';
+import '../../providers/auth_provider.dart';
 import '../../../core/themes/app_colors.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../domain/entities/quiz_entity.dart';
@@ -878,6 +879,7 @@ class _AiQuizPreviewScreenState extends State<AiQuizPreviewScreen> {
   void _addToCurrentQuiz(AiQuizProvider aiProvider) async {
     try {
       final quizProvider = context.read<QuizProvider>();
+      final authProvider = context.read<AuthProvider>();
 
       // Store questions count before clearing
       final questionsCount = aiProvider.generatedQuestions.length;
@@ -896,6 +898,9 @@ class _AiQuizPreviewScreenState extends State<AiQuizPreviewScreen> {
       for (final question in aiProvider.generatedQuestions) {
         quizProvider.addQuestion(question);
       }
+
+      // Increment AI generation counter
+      await authProvider.incrementAIGeneration();
 
       // Clear generated data
       aiProvider.clearGeneratedData();

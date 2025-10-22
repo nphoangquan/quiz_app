@@ -17,6 +17,7 @@ import 'presentation/providers/ai_quiz_provider.dart';
 import 'presentation/screens/auth/auth_wrapper.dart';
 import 'presentation/screens/quiz/quiz_player_screen.dart';
 import 'presentation/screens/dashboard/dashboard_screen.dart';
+import 'presentation/screens/subscription/pricing_screen.dart';
 import 'data/services/firebase_auth_service.dart';
 import 'data/services/firebase_quiz_service.dart';
 import 'data/services/firebase_result_service.dart';
@@ -113,6 +114,7 @@ class MyApp extends StatelessWidget {
             routes: {
               '/auth': (context) => const AuthWrapper(),
               '/dashboard': (context) => const DashboardScreen(),
+              '/pricing': (context) => const PricingScreen(),
               '/quiz-play': (context) {
                 final args =
                     ModalRoute.of(context)!.settings.arguments

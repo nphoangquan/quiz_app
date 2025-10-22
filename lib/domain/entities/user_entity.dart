@@ -38,10 +38,9 @@ class UserEntity {
   /// Kiểm tra có phải Free user không
   bool get isFree => subscriptionTier.isFree;
 
-  /// Kiểm tra có thể tạo quiz không
+  /// Kiểm tra có thể tạo quiz không (luôn true - tạo quiz là tính năng cơ bản)
   bool get canCreateQuiz {
-    if (subscriptionTier.quizLimit == -1) return true; // Pro = unlimited
-    return stats.quizzesCreated < subscriptionTier.quizLimit;
+    return true; // Tạo quiz là tính năng cơ bản, không giới hạn
   }
 
   /// Kiểm tra có thể sử dụng AI generation không
@@ -52,10 +51,9 @@ class UserEntity {
         subscriptionTier.aiGenerationDailyLimit;
   }
 
-  /// Số quiz còn lại có thể tạo
+  /// Số quiz còn lại có thể tạo (luôn unlimited)
   int get remainingQuizzes {
-    if (subscriptionTier.quizLimit == -1) return -1; // unlimited
-    return subscriptionTier.quizLimit - stats.quizzesCreated;
+    return -1; // unlimited - tạo quiz là tính năng cơ bản
   }
 
   /// Số AI generation còn lại hôm nay

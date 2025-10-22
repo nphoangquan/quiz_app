@@ -6,7 +6,6 @@ import '../../../core/constants/app_constants.dart';
 import '../../../domain/entities/quiz_entity.dart';
 import '../../../domain/entities/question_entity.dart';
 import '../../../domain/entities/category_entity.dart';
-import '../../../domain/entities/subscription_tier.dart';
 import '../../providers/quiz_provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/category_provider.dart';
@@ -1075,16 +1074,6 @@ class _EnhancedCreateQuizScreenState extends State<EnhancedCreateQuizScreen> {
 
     final bool isEditMode = widget.editQuizId != null;
 
-    // Check quiz creation limit for new quizzes only
-    if (!isEditMode) {
-      final authProvider = context.read<AuthProvider>();
-
-      if (!authProvider.canCreateQuiz) {
-        _showUpgradeDialog(authProvider);
-        return;
-      }
-    }
-
     final quizId = isEditMode
         ? await quizProvider.updateQuiz()
         : await quizProvider.createQuiz();
@@ -1208,108 +1197,5 @@ class _EnhancedCreateQuizScreenState extends State<EnhancedCreateQuizScreen> {
         );
       }
     }
-  }
-
-  /// Show upgrade dialog when user hits quiz creation limit
-  void _showUpgradeDialog(AuthProvider authProvider) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Row(
-          children: [
-            Icon(Icons.lock_outline, color: Colors.orange, size: 28),
-            const SizedBox(width: 12),
-            const Text('Đã đạt giới hạn'),
-          ],
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Bạn đã tạo ${authProvider.user!.stats.quizzesCreated}/${authProvider.subscriptionTier.quizLimit} quizzes.',
-              style: GoogleFonts.inter(fontSize: 16),
-            ),
-            const SizedBox(height: 12),
-            Text(
-              'Nâng cấp lên Pro để tạo unlimited quizzes và mở khóa nhiều tính năng khác!',
-              style: GoogleFonts.inter(fontSize: 14, color: Colors.grey[600]),
-            ),
-            const SizedBox(height: 16),
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.orange.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(
-                  color: Colors.orange.withOpacity(0.3),
-                  width: 1,
-                ),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Pro Plan bao gồm:',
-                    style: GoogleFonts.inter(
-                      fontWeight: FontWeight.w600,
-                      color: Colors.orange[700],
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  _buildFeatureItem('Tạo unlimited quizzes'),
-                  _buildFeatureItem('AI generation: Unlimited'),
-                  _buildFeatureItem('Advanced analytics'),
-                  _buildFeatureItem('Export results (PDF)'),
-                  _buildFeatureItem('Priority support'),
-                ],
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: Text(
-              'Để sau',
-              style: GoogleFonts.inter(color: Colors.grey[600]),
-            ),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-              Navigator.pushNamed(context, '/pricing');
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.orange,
-              foregroundColor: Colors.white,
-            ),
-            child: Text(
-              'Nâng cấp ngay',
-              style: GoogleFonts.inter(fontWeight: FontWeight.w600),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  /// Build feature item for upgrade dialog
-  Widget _buildFeatureItem(String text) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 4),
-      child: Row(
-        children: [
-          Icon(Icons.check_circle, color: Colors.orange[600], size: 16),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              text,
-              style: GoogleFonts.inter(fontSize: 14, color: Colors.orange[700]),
-            ),
-          ),
-        ],
-      ),
-    );
   }
 }
