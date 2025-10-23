@@ -29,7 +29,10 @@ class UserModel extends UserEntity {
       stats: const UserStats(),
       role: UserRole.user, // Default role cho user mới
       subscriptionTier: SubscriptionTier.free, // Default FREE tier
-      usageLimits: UsageLimits(lastAiResetDate: DateTime.now()),
+      usageLimits: UsageLimits(
+        lastAiResetDate: DateTime.now(),
+        lastQuizResetDate: DateTime.now(),
+      ),
     );
   }
 
@@ -53,7 +56,10 @@ class UserModel extends UserEntity {
       ),
       usageLimits: data['usageLimits'] != null
           ? UsageLimits.fromMap(data['usageLimits'] as Map<String, dynamic>)
-          : UsageLimits(lastAiResetDate: DateTime.now()),
+          : UsageLimits(
+              lastAiResetDate: DateTime.now(),
+              lastQuizResetDate: DateTime.now(),
+            ),
     );
   }
 

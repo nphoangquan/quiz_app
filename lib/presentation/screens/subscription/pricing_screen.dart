@@ -145,24 +145,32 @@ class PricingScreen extends StatelessWidget {
               const SizedBox(height: 12),
               if (!isPro && user != null) ...[
                 Text(
-                  'Bạn đã sử dụng ${user.stats.quizzesCreated}/${SubscriptionTier.free.quizLimit} quizzes',
+                  'Quizzes đã tạo hôm nay: ${user.usageLimits.quizzesCreatedToday}/${SubscriptionTier.free.quizDailyLimit}',
                   style: GoogleFonts.inter(fontSize: 14),
                 ),
                 const SizedBox(height: 8),
                 LinearProgressIndicator(
                   value:
-                      user.stats.quizzesCreated /
-                      SubscriptionTier.free.quizLimit,
+                      user.usageLimits.quizzesCreatedToday /
+                      SubscriptionTier.free.quizDailyLimit,
                   backgroundColor: Colors.grey[300],
                   valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 12),
                 Text(
                   'AI generations hôm nay: ${user.usageLimits.aiGenerationsToday}/${SubscriptionTier.free.aiGenerationDailyLimit}',
                   style: GoogleFonts.inter(
                     fontSize: 14,
                     color: Colors.grey[600],
                   ),
+                ),
+                const SizedBox(height: 8),
+                LinearProgressIndicator(
+                  value:
+                      user.usageLimits.aiGenerationsToday /
+                      SubscriptionTier.free.aiGenerationDailyLimit,
+                  backgroundColor: Colors.grey[300],
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.orange),
                 ),
               ] else if (isPro) ...[
                 Text(

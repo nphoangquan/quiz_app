@@ -79,13 +79,13 @@ extension SubscriptionTierExtension on SubscriptionTier {
     }
   }
 
-  /// Giới hạn số quiz có thể tạo (unlimited cho cả Free và Pro)
-  int get quizLimit {
+  /// Giới hạn số quiz có thể tạo mỗi ngày
+  int get quizDailyLimit {
     switch (this) {
       case SubscriptionTier.free:
-        return -1; // unlimited - tạo quiz là tính năng cơ bản
+        return 20; // Free users: 20 quizzes/ngày
       case SubscriptionTier.pro:
-        return -1; // unlimited
+        return -1; // Pro users: unlimited
     }
   }
 
@@ -93,9 +93,9 @@ extension SubscriptionTierExtension on SubscriptionTier {
   int get aiGenerationDailyLimit {
     switch (this) {
       case SubscriptionTier.free:
-        return 10;
+        return 5; // Free users: 5 AI generations/ngày
       case SubscriptionTier.pro:
-        return -1; // unlimited
+        return -1; // Pro users: unlimited
     }
   }
 
@@ -104,9 +104,9 @@ extension SubscriptionTierExtension on SubscriptionTier {
     switch (this) {
       case SubscriptionTier.free:
         return [
-          'Tạo unlimited quizzes',
+          'Tạo 20 quizzes/ngày',
           'Chơi unlimited quizzes',
-          'AI quiz generation: 10/ngày',
+          'AI quiz generation: 5/ngày',
           'Xem basic statistics',
         ];
       case SubscriptionTier.pro:

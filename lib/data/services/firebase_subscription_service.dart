@@ -52,8 +52,8 @@ class FirebaseSubscriptionService {
       );
 
       // Reset if new day
-      final newLimits = usageLimits.needsReset()
-          ? usageLimits.resetForNewDay().incrementAIGeneration()
+      final newLimits = usageLimits.needsAiReset()
+          ? usageLimits.resetAiForNewDay().incrementAIGeneration()
           : usageLimits.incrementAIGeneration();
 
       await _usersCollection.doc(userId).update({
@@ -64,6 +64,37 @@ class FirebaseSubscriptionService {
       debugPrint('✅ AI generation count: ${newLimits.aiGenerationsToday}');
     } catch (e) {
       debugPrint('❌ Increment AI generation failed: $e');
+      rethrow;
+    }
+  }
+
+  /// Increment quiz creation counter
+  Future<void> incrementQuizCreation(String userId) async {
+    try {
+      final doc = await _usersCollection.doc(userId).get();
+      if (!doc.exists) {
+        throw Exception('User not found');
+      }
+
+      final data = doc.data() as Map<String, dynamic>;
+
+      final usageLimits = UsageLimits.fromMap(
+        data['usageLimits'] as Map<String, dynamic>? ?? {},
+      );
+
+      // Reset if new day
+      final newLimits = usageLimits.needsQuizReset()
+          ? usageLimits.resetQuizForNewDay().incrementQuizCreation()
+          : usageLimits.incrementQuizCreation();
+
+      await _usersCollection.doc(userId).update({
+        'usageLimits': newLimits.toMap(),
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+
+      debugPrint('✅ Quiz creation count: ${newLimits.quizzesCreatedToday}');
+    } catch (e) {
+      debugPrint('❌ Increment quiz creation failed: $e');
       rethrow;
     }
   }
@@ -81,10 +112,12 @@ class FirebaseSubscriptionService {
       final tier = SubscriptionTierExtension.fromString(
         data['subscriptionTier'] ?? 'free',
       );
-      final stats = UserStats.fromMap(data['stats'] as Map<String, dynamic>);
+      final usageLimits = UsageLimits.fromMap(
+        data['usageLimits'] as Map<String, dynamic>? ?? {},
+      );
 
-      if (tier.quizLimit == -1) return true; // Pro = unlimited
-      return stats.quizzesCreated < tier.quizLimit;
+      if (tier.quizDailyLimit == -1) return true; // Pro = unlimited
+      return usageLimits.quizzesCreatedToday < tier.quizDailyLimit;
     } catch (e) {
       debugPrint('❌ Check create quiz failed: $e');
       return false;
@@ -129,7 +162,6 @@ class FirebaseSubscriptionService {
       final tier = SubscriptionTierExtension.fromString(
         data['subscriptionTier'] ?? 'free',
       );
-      final stats = UserStats.fromMap(data['stats'] as Map<String, dynamic>);
       final usageLimits = UsageLimits.fromMap(
         data['usageLimits'] as Map<String, dynamic>? ?? {},
       );
@@ -137,17 +169,18 @@ class FirebaseSubscriptionService {
       return {
         'tier': tier,
         'canCreateQuiz':
-            tier.quizLimit == -1 || stats.quizzesCreated < tier.quizLimit,
+            tier.quizDailyLimit == -1 ||
+            usageLimits.quizzesCreatedToday < tier.quizDailyLimit,
         'canUseAI':
             tier.aiGenerationDailyLimit == -1 ||
             usageLimits.aiGenerationsToday < tier.aiGenerationDailyLimit,
-        'remainingQuizzes': tier.quizLimit == -1
+        'remainingQuizzes': tier.quizDailyLimit == -1
             ? -1
-            : tier.quizLimit - stats.quizzesCreated,
+            : tier.quizDailyLimit - usageLimits.quizzesCreatedToday,
         'remainingAI': tier.aiGenerationDailyLimit == -1
             ? -1
             : tier.aiGenerationDailyLimit - usageLimits.aiGenerationsToday,
-        'quizzesCreated': stats.quizzesCreated,
+        'quizzesCreatedToday': usageLimits.quizzesCreatedToday,
         'aiGenerationsToday': usageLimits.aiGenerationsToday,
       };
     } catch (e) {
@@ -159,7 +192,17 @@ class FirebaseSubscriptionService {
   /// Reset daily AI generation counter (for testing)
   Future<void> resetDailyAICounter(String userId) async {
     try {
-      final newLimits = UsageLimits(
+      final doc = await _usersCollection.doc(userId).get();
+      if (!doc.exists) {
+        throw Exception('User not found');
+      }
+
+      final data = doc.data() as Map<String, dynamic>;
+      final usageLimits = UsageLimits.fromMap(
+        data['usageLimits'] as Map<String, dynamic>? ?? {},
+      );
+
+      final newLimits = usageLimits.copyWith(
         aiGenerationsToday: 0,
         lastAiResetDate: DateTime.now(),
       );
@@ -186,7 +229,6 @@ class FirebaseSubscriptionService {
         final tier = SubscriptionTierExtension.fromString(
           data['subscriptionTier'] ?? 'free',
         );
-        final stats = UserStats.fromMap(data['stats'] as Map<String, dynamic>);
         final usageLimits = UsageLimits.fromMap(
           data['usageLimits'] as Map<String, dynamic>? ?? {},
         );
@@ -196,9 +238,10 @@ class FirebaseSubscriptionService {
           'name': data['name'] ?? '',
           'email': data['email'] ?? '',
           'tier': tier,
-          'quizzesCreated': stats.quizzesCreated,
+          'quizzesCreatedToday': usageLimits.quizzesCreatedToday,
           'aiGenerationsToday': usageLimits.aiGenerationsToday,
           'lastAiResetDate': usageLimits.lastAiResetDate,
+          'lastQuizResetDate': usageLimits.lastQuizResetDate,
         };
       }).toList();
     } catch (e) {

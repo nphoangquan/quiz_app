@@ -38,9 +38,10 @@ class UserEntity {
   /// Kiểm tra có phải Free user không
   bool get isFree => subscriptionTier.isFree;
 
-  /// Kiểm tra có thể tạo quiz không (luôn true - tạo quiz là tính năng cơ bản)
+  /// Kiểm tra có thể tạo quiz không
   bool get canCreateQuiz {
-    return true; // Tạo quiz là tính năng cơ bản, không giới hạn
+    if (subscriptionTier.quizDailyLimit == -1) return true; // Pro = unlimited
+    return usageLimits.quizzesCreatedToday < subscriptionTier.quizDailyLimit;
   }
 
   /// Kiểm tra có thể sử dụng AI generation không
@@ -51,9 +52,10 @@ class UserEntity {
         subscriptionTier.aiGenerationDailyLimit;
   }
 
-  /// Số quiz còn lại có thể tạo (luôn unlimited)
+  /// Số quiz còn lại có thể tạo hôm nay
   int get remainingQuizzes {
-    return -1; // unlimited - tạo quiz là tính năng cơ bản
+    if (subscriptionTier.quizDailyLimit == -1) return -1; // unlimited
+    return subscriptionTier.quizDailyLimit - usageLimits.quizzesCreatedToday;
   }
 
   /// Số AI generation còn lại hôm nay
@@ -81,18 +83,29 @@ class UserEntity {
 /// Track daily usage limits
 class UsageLimits {
   final int aiGenerationsToday;
+  final int quizzesCreatedToday;
   final DateTime lastAiResetDate;
+  final DateTime lastQuizResetDate;
 
   const UsageLimits({
     this.aiGenerationsToday = 0,
+    this.quizzesCreatedToday = 0,
     required this.lastAiResetDate,
+    required this.lastQuizResetDate,
   });
 
   /// Tạo copy với các field được update
-  UsageLimits copyWith({int? aiGenerationsToday, DateTime? lastAiResetDate}) {
+  UsageLimits copyWith({
+    int? aiGenerationsToday,
+    int? quizzesCreatedToday,
+    DateTime? lastAiResetDate,
+    DateTime? lastQuizResetDate,
+  }) {
     return UsageLimits(
       aiGenerationsToday: aiGenerationsToday ?? this.aiGenerationsToday,
+      quizzesCreatedToday: quizzesCreatedToday ?? this.quizzesCreatedToday,
       lastAiResetDate: lastAiResetDate ?? this.lastAiResetDate,
+      lastQuizResetDate: lastQuizResetDate ?? this.lastQuizResetDate,
     );
   }
 
@@ -100,7 +113,9 @@ class UsageLimits {
   Map<String, dynamic> toMap() {
     return {
       'aiGenerationsToday': aiGenerationsToday,
+      'quizzesCreatedToday': quizzesCreatedToday,
       'lastAiResetDate': lastAiResetDate.toIso8601String(),
+      'lastQuizResetDate': lastQuizResetDate.toIso8601String(),
     };
   }
 
@@ -108,28 +123,50 @@ class UsageLimits {
   factory UsageLimits.fromMap(Map<String, dynamic> map) {
     return UsageLimits(
       aiGenerationsToday: map['aiGenerationsToday']?.toInt() ?? 0,
+      quizzesCreatedToday: map['quizzesCreatedToday']?.toInt() ?? 0,
       lastAiResetDate: map['lastAiResetDate'] != null
           ? DateTime.parse(map['lastAiResetDate'])
+          : DateTime.now(),
+      lastQuizResetDate: map['lastQuizResetDate'] != null
+          ? DateTime.parse(map['lastQuizResetDate'])
           : DateTime.now(),
     );
   }
 
-  /// Kiểm tra có cần reset counter hàng ngày không
-  bool needsReset() {
+  /// Kiểm tra có cần reset AI counter hàng ngày không
+  bool needsAiReset() {
     final now = DateTime.now();
     return now.year != lastAiResetDate.year ||
         now.month != lastAiResetDate.month ||
         now.day != lastAiResetDate.day;
   }
 
-  /// Reset counter về 0 cho ngày mới
-  UsageLimits resetForNewDay() {
-    return UsageLimits(aiGenerationsToday: 0, lastAiResetDate: DateTime.now());
+  /// Kiểm tra có cần reset Quiz counter hàng ngày không
+  bool needsQuizReset() {
+    final now = DateTime.now();
+    return now.year != lastQuizResetDate.year ||
+        now.month != lastQuizResetDate.month ||
+        now.day != lastQuizResetDate.day;
+  }
+
+  /// Reset AI counter về 0 cho ngày mới
+  UsageLimits resetAiForNewDay() {
+    return copyWith(aiGenerationsToday: 0, lastAiResetDate: DateTime.now());
+  }
+
+  /// Reset Quiz counter về 0 cho ngày mới
+  UsageLimits resetQuizForNewDay() {
+    return copyWith(quizzesCreatedToday: 0, lastQuizResetDate: DateTime.now());
   }
 
   /// Increment AI generation counter
   UsageLimits incrementAIGeneration() {
     return copyWith(aiGenerationsToday: aiGenerationsToday + 1);
+  }
+
+  /// Increment Quiz creation counter
+  UsageLimits incrementQuizCreation() {
+    return copyWith(quizzesCreatedToday: quizzesCreatedToday + 1);
   }
 }
 
