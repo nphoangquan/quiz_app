@@ -766,6 +766,43 @@ class _ProfileTabScreenState extends State<ProfileTabScreen> {
                 },
               ),
 
+              // Payment History
+              ListTile(
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 12,
+                ),
+                leading: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.blue.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(Icons.receipt_long, color: Colors.blue, size: 20),
+                ),
+                title: Text(
+                  'Lịch sử thanh toán',
+                  style: GoogleFonts.inter(
+                    fontWeight: FontWeight.w600,
+                    color: Theme.of(context).textTheme.bodyLarge?.color,
+                  ),
+                ),
+                subtitle: Text(
+                  'Xem các giao dịch đã thực hiện',
+                  style: GoogleFonts.inter(
+                    fontSize: 12,
+                    color: Theme.of(context).textTheme.bodyMedium?.color,
+                  ),
+                ),
+                trailing: Icon(
+                  Icons.arrow_forward_ios,
+                  size: 16,
+                  color: isDarkMode ? Colors.grey[500] : Colors.grey[400],
+                ),
+                onTap: () =>
+                    Navigator.of(context).pushNamed('/payment-history'),
+              ),
+
               // Logout
               ListTile(
                 contentPadding: const EdgeInsets.symmetric(

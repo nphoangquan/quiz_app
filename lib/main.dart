@@ -14,10 +14,13 @@ import 'presentation/providers/quiz_provider.dart';
 import 'presentation/providers/quiz_player_provider.dart';
 import 'presentation/providers/result_provider.dart';
 import 'presentation/providers/ai_quiz_provider.dart';
+import 'presentation/providers/payment_provider.dart';
 import 'presentation/screens/auth/auth_wrapper.dart';
 import 'presentation/screens/quiz/quiz_player_screen.dart';
 import 'presentation/screens/dashboard/dashboard_screen.dart';
 import 'presentation/screens/subscription/pricing_screen.dart';
+import 'presentation/screens/payment/payment_screen.dart';
+import 'presentation/screens/payment/payment_history_screen.dart';
 import 'presentation/screens/admin/admin_dashboard_screen.dart';
 import 'data/services/firebase_auth_service.dart';
 import 'data/services/firebase_quiz_service.dart';
@@ -89,6 +92,7 @@ class MyApp extends StatelessWidget {
               ResultProvider(ResultRepositoryImpl(FirebaseResultService())),
         ),
         ChangeNotifierProvider(create: (_) => AiQuizProvider()),
+        ChangeNotifierProvider(create: (_) => PaymentProvider()),
       ],
       child: Consumer2<ThemeProvider, LanguageProvider>(
         builder: (context, themeProvider, languageProvider, child) {
@@ -116,6 +120,8 @@ class MyApp extends StatelessWidget {
               '/auth': (context) => const AuthWrapper(),
               '/dashboard': (context) => const DashboardScreen(),
               '/pricing': (context) => const PricingScreen(),
+              '/payment': (context) => const PaymentScreen(),
+              '/payment-history': (context) => const PaymentHistoryScreen(),
               '/admin': (context) => const AdminDashboardScreen(),
               '/quiz-play': (context) {
                 final args =

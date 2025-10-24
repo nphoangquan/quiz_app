@@ -113,9 +113,8 @@ extension SubscriptionTierExtension on SubscriptionTier {
         return [
           'Tạo unlimited quizzes',
           'Chơi unlimited quizzes',
+          'Xem basic statistics',
           'AI quiz generation: Unlimited',
-          'Advanced analytics',
-          'Export results (PDF)',
           'Priority support',
           'Remove ads',
         ];
