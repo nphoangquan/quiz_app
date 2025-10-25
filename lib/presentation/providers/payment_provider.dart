@@ -181,32 +181,50 @@ class PaymentProvider extends ChangeNotifier {
 
   /// Load payment history
   Future<void> loadPaymentHistory() async {
+    _isProcessing = true;
+    _error = null;
+    notifyListeners();
+
     try {
       final userId = _getCurrentUserId();
       if (userId == null) throw Exception('User not authenticated');
 
+      // Query all payments for user (no orderBy to avoid missing documents)
       final snapshot = await _firestore
           .collection('payments')
           .where('userId', isEqualTo: userId)
-          .orderBy('createdAt', descending: true)
           .get();
 
       _paymentHistory = snapshot.docs.map((doc) {
         final data = doc.data();
+        // Handle both createdAt (Mock payment) and timestamp (PayPal payment)
+        DateTime? paymentDate;
+        if (data['createdAt'] != null) {
+          paymentDate = (data['createdAt'] as Timestamp).toDate();
+        } else if (data['timestamp'] != null) {
+          paymentDate = (data['timestamp'] as Timestamp).toDate();
+        } else {
+          paymentDate = DateTime.now();
+        }
+
         return PaymentRecord(
           id: doc.id,
           amount: (data['amount'] as num).toDouble(),
           transactionId: data['transactionId'] ?? '',
-          cardLast4: data['cardLast4'] ?? '',
+          cardLast4: data['cardLast4'] ?? 'N/A',
           status: data['status'] ?? '',
-          createdAt:
-              (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
+          createdAt: paymentDate,
         );
       }).toList();
 
+      // Sort by date in memory (descending)
+      _paymentHistory.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+
+      _isProcessing = false;
       notifyListeners();
     } catch (e) {
       debugPrint('❌ Failed to load payment history: $e');
+      _isProcessing = false;
       _error = 'Không thể tải lịch sử thanh toán';
       notifyListeners();
     }

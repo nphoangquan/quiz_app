@@ -6,6 +6,9 @@ import '../../../core/constants/app_constants.dart';
 import '../../../domain/entities/subscription_tier.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/payment_provider.dart';
+import '../../providers/paypal_payment_provider.dart';
+
+enum PaymentMethod { creditCard, paypal }
 
 class PaymentScreen extends StatefulWidget {
   const PaymentScreen({super.key});
@@ -20,6 +23,9 @@ class _PaymentScreenState extends State<PaymentScreen> {
   final _expiryController = TextEditingController();
   final _cvvController = TextEditingController();
   final _cardholderController = TextEditingController();
+
+  // Payment method selection
+  PaymentMethod _selectedPaymentMethod = PaymentMethod.creditCard;
 
   @override
   void dispose() {
@@ -58,8 +64,14 @@ class _PaymentScreenState extends State<PaymentScreen> {
 
               const SizedBox(height: 32),
 
-              // Payment Form
-              _buildPaymentForm(),
+              // Payment Method Selection
+              _buildPaymentMethodSelection(),
+
+              const SizedBox(height: 24),
+
+              // Payment Form (only show for credit card)
+              if (_selectedPaymentMethod == PaymentMethod.creditCard)
+                _buildPaymentForm(),
 
               const SizedBox(height: 32),
 
@@ -72,6 +84,133 @@ class _PaymentScreenState extends State<PaymentScreen> {
               _buildSecurityNotice(),
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPaymentMethodSelection() {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardColor,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.payment, color: AppColors.primary, size: 24),
+              const SizedBox(width: 12),
+              Text(
+                'Phương thức thanh toán',
+                style: GoogleFonts.inter(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+
+          // Credit Card Option
+          _buildPaymentMethodOption(
+            PaymentMethod.creditCard,
+            'Thẻ tín dụng/ghi nợ',
+            'Thanh toán bằng thẻ Visa, Mastercard',
+            Icons.credit_card,
+          ),
+
+          const SizedBox(height: 12),
+
+          // PayPal Option
+          _buildPaymentMethodOption(
+            PaymentMethod.paypal,
+            'PayPal',
+            'Thanh toán an toàn qua PayPal',
+            Icons.account_balance_wallet,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPaymentMethodOption(
+    PaymentMethod method,
+    String title,
+    String subtitle,
+    IconData icon,
+  ) {
+    final isSelected = _selectedPaymentMethod == method;
+
+    return InkWell(
+      onTap: () => setState(() => _selectedPaymentMethod = method),
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? AppColors.primary.withOpacity(0.1)
+              : Colors.transparent,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isSelected ? AppColors.primary : Colors.grey[300]!,
+            width: isSelected ? 2 : 1,
+          ),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: isSelected ? AppColors.primary : Colors.grey[200],
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Icon(
+                icon,
+                color: isSelected ? Colors.white : Colors.grey[600],
+                size: 20,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: GoogleFonts.inter(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: isSelected ? AppColors.primary : Colors.black87,
+                    ),
+                  ),
+                  Text(
+                    subtitle,
+                    style: GoogleFonts.inter(
+                      fontSize: 12,
+                      color: Colors.grey[600],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Radio<PaymentMethod>(
+              value: method,
+              groupValue: _selectedPaymentMethod,
+              onChanged: (value) =>
+                  setState(() => _selectedPaymentMethod = value!),
+              activeColor: AppColors.primary,
+            ),
+          ],
         ),
       ),
     );
@@ -332,16 +471,22 @@ class _PaymentScreenState extends State<PaymentScreen> {
   }
 
   Widget _buildPaymentButton() {
-    return Consumer<PaymentProvider>(
-      builder: (context, paymentProvider, child) {
-        final isLoading = paymentProvider.isProcessing;
+    return Consumer2<PaymentProvider, PayPalPaymentProvider>(
+      builder: (context, paymentProvider, paypalProvider, child) {
+        final isLoading =
+            paymentProvider.isProcessing || paypalProvider.isProcessing;
+        final buttonText = _selectedPaymentMethod == PaymentMethod.creditCard
+            ? 'Thanh toán ${SubscriptionTier.pro.priceMonthly}'
+            : 'Thanh toán qua PayPal ${SubscriptionTier.pro.priceMonthly}';
 
         return SizedBox(
           width: double.infinity,
           child: ElevatedButton(
             onPressed: isLoading ? null : _processPayment,
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primary,
+              backgroundColor: _selectedPaymentMethod == PaymentMethod.paypal
+                  ? const Color(0xFF0070BA) // PayPal blue
+                  : AppColors.primary,
               foregroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(vertical: 16),
               shape: RoundedRectangleBorder(
@@ -373,12 +518,21 @@ class _PaymentScreenState extends State<PaymentScreen> {
                       ),
                     ],
                   )
-                : Text(
-                    'Thanh toán ${SubscriptionTier.pro.priceMonthly}',
-                    style: GoogleFonts.inter(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                    ),
+                : Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      if (_selectedPaymentMethod == PaymentMethod.paypal) ...[
+                        Icon(Icons.account_balance_wallet, size: 20),
+                        const SizedBox(width: 8),
+                      ],
+                      Text(
+                        buttonText,
+                        style: GoogleFonts.inter(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
                   ),
           ),
         );
@@ -410,33 +564,56 @@ class _PaymentScreenState extends State<PaymentScreen> {
   }
 
   void _processPayment() async {
-    if (!_formKey.currentState!.validate()) {
+    // Validate form only for credit card
+    if (_selectedPaymentMethod == PaymentMethod.creditCard &&
+        !_formKey.currentState!.validate()) {
       return;
     }
 
-    final paymentProvider = context.read<PaymentProvider>();
     final authProvider = context.read<AuthProvider>();
-
-    // Set current user ID for payment provider
-    if (authProvider.user != null) {
-      paymentProvider.setCurrentUserId(authProvider.user!.uid);
-    }
+    bool success = false;
 
     try {
-      // Process payment
-      final success = await paymentProvider.processPayment(
-        amount: 4.99, // Pro plan price
-        cardNumber: _cardNumberController.text.replaceAll(' ', ''),
-        cardholderName: _cardholderController.text,
-        expiryDate: _expiryController.text,
-        cvv: _cvvController.text,
-      );
+      if (_selectedPaymentMethod == PaymentMethod.creditCard) {
+        // Process Mock payment
+        final paymentProvider = context.read<PaymentProvider>();
+        if (authProvider.user != null) {
+          paymentProvider.setCurrentUserId(authProvider.user!.uid);
+        }
+
+        success = await paymentProvider.processPayment(
+          amount: SubscriptionTier.pro.priceMonthlyUSD / 100.0,
+          cardNumber: _cardNumberController.text.replaceAll(' ', ''),
+          cardholderName: _cardholderController.text,
+          expiryDate: _expiryController.text,
+          cvv: _cvvController.text,
+        );
+      } else {
+        // Process PayPal payment
+        final paypalProvider = context.read<PayPalPaymentProvider>();
+        if (authProvider.user != null) {
+          paypalProvider.setCurrentUserId(authProvider.user!.uid);
+        }
+
+        // Clear any previous errors before processing
+        paypalProvider.clearError();
+
+        success = await paypalProvider.processPayment(
+          amount: (SubscriptionTier.pro.priceMonthlyUSD / 100.0).toString(),
+          currency: 'USD',
+          description: 'QuizApp Pro Subscription - Monthly',
+          context: context,
+        );
+      }
 
       if (success && mounted) {
         // Upgrade user to Pro
         final upgradeSuccess = await authProvider.upgradeToPro();
 
         if (upgradeSuccess) {
+          // Refresh payment history to show new payment
+          final paymentProvider = context.read<PaymentProvider>();
+          await paymentProvider.loadPaymentHistory();
           // Show success dialog
           _showSuccessDialog();
         } else {
@@ -453,9 +630,18 @@ class _PaymentScreenState extends State<PaymentScreen> {
         }
       } else if (mounted) {
         // Show error message
+        String errorMessage = 'Thanh toán thất bại';
+        if (_selectedPaymentMethod == PaymentMethod.creditCard) {
+          final paymentProvider = context.read<PaymentProvider>();
+          errorMessage = paymentProvider.error ?? errorMessage;
+        } else {
+          final paypalProvider = context.read<PayPalPaymentProvider>();
+          errorMessage = paypalProvider.error ?? errorMessage;
+        }
+
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(paymentProvider.error ?? 'Thanh toán thất bại'),
+            content: Text(errorMessage),
             backgroundColor: AppColors.error,
             duration: const Duration(seconds: 4),
           ),
