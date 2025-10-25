@@ -219,6 +219,15 @@ class CategoryProvider with ChangeNotifier {
     }
   }
 
+  /// Get the next available order for new category (max order + 1)
+  int getNextOrder() {
+    if (_allCategories.isEmpty) return 1;
+    final maxOrder = _allCategories
+        .map((cat) => cat.order)
+        .reduce((a, b) => a > b ? a : b);
+    return maxOrder + 1;
+  }
+
   @override
   void dispose() {
     super.dispose();

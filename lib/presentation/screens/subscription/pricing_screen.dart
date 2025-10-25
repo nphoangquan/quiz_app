@@ -458,7 +458,7 @@ class PricingScreen extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            'Chúng tôi sử dụng Stripe để xử lý thanh toán một cách an toàn và bảo mật.',
+            'Chúng tôi sử dụng Paypal để xử lý thanh toán một cách an toàn và bảo mật.',
             style: GoogleFonts.inter(fontSize: 14, color: Colors.grey[600]),
             textAlign: TextAlign.center,
           ),

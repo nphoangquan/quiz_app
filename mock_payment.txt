@@ -1,0 +1,177 @@
+
+MOCK PAYMENT SYSTEM - HƯỚNG DẪN SỬ DỤNG
+
+
+MỤC ĐÍCH:
+- Mock payment system cho course project
+- Không sử dụng tiền thật
+- Demo đầy đủ payment flow
+
+
+CÁCH SỬ DỤNG:
+
+1. Vào Pricing Screen → Nhấn "Nâng cấp ngay"
+2. Điền thông tin thanh toán
+3. Nhấn "Thanh toán $4.99"
+4. Chờ 2 giây processing
+5. Xem kết quả
+
+
+TEST CARD NUMBERS:
+
+✅ THÀNH CÔNG:
+- 1234 5678 9012 3456
+- 9999 8888 7777 6666
+- 1111 2222 3333 4444
+- (Bất kỳ số nào KHÔNG bắt đầu 4000/5000)
+
+❌ THẤT BẠI:
+- 4000 1234 5678 9012 → "Thẻ bị từ chối"
+- 5000 1234 5678 9012 → "Số dư không đủ"
+
+THÔNG TIN CẦN NHẬP:
+
+Card Number:    1234 5678 9012 3456
+Cardholder:     NGUYEN VAN A
+Expiry:         12/25
+CVV:            123
+
+VALIDATION RULES:
+
+- Card Number: Tối thiểu 16 chữ số
+- Expiry: Format MM/YY, phải trong tương lai
+- CVV: Tối thiểu 3 chữ số
+- Cardholder: Không được để trống
+
+LƯU Ý QUAN TRỌNG:
+
+- ĐÂY LÀ MOCK SYSTEM - KHÔNG CÓ TIỀN THẬT
+- Chỉ để demo và học tập
+- Không kết nối với payment gateway thật
+- Tất cả transactions đều fake
+
+TESTING:
+
+1. SUCCESS FLOW:
+   Card: 1234 5678 9012 3456
+   Cardholder: NGUYEN VAN A
+   Expiry: 12/25
+   CVV: 123
+   → Upgrade to Pro ✅
+
+2. DECLINED CARD:
+   Card: 4000 1234 5678 9012
+   Cardholder: TRAN THI B
+   Expiry: 06/26
+   CVV: 456
+   → Error: "Thẻ bị từ chối" ❌
+
+3. INSUFFICIENT FUNDS:
+   Card: 5000 1234 5678 9012
+   Cardholder: LE VAN C
+   Expiry: 03/27
+   CVV: 789
+   → Error: "Số dư không đủ" ❌
+
+4. INVALID EXPIRY:
+   Card: 1234 5678 9012 3456
+   Cardholder: PHAM THI D
+   Expiry: 01/20 (quá hạn)
+   CVV: 123
+   → Error: "Ngày hết hạn không hợp lệ" ❌
+
+5. SHORT CVV:
+   Card: 1234 5678 9012 3456
+   Cardholder: HOANG VAN E
+   Expiry: 12/25
+   CVV: 12 (quá ngắn)
+   → Error: "CVV phải có ít nhất 3 chữ số" ❌
+
+CHI TIẾT TEST CASES:
+
+TEST CASE 1 - SUCCESSFUL PAYMENT:
+
+│ Card Number: 1234 5678 9012 3456        
+│ Cardholder: NGUYEN VAN A                
+│ Expiry: 12/25                           
+│ CVV: 123                                
+│                                         
+│ Expected: ✅ Payment Success            
+│ Result: User upgraded to Pro            
+│ Transaction ID: TXN_1234567890          
+
+
+TEST CASE 2 - DECLINED CARD:
+
+│ Card Number: 4000 1234 5678 9012        
+│ Cardholder: TRAN THI B                  
+│ Expiry: 06/26                           
+│ CVV: 456                                
+│                                         
+│ Expected: ❌ Payment Failed            
+│ Error: "Thẻ bị từ chối. Vui lòng thử    
+│        thẻ khác."                       
+
+
+TEST CASE 3 - INSUFFICIENT FUNDS:
+
+│ Card Number: 5000 1234 5678 9012        
+│ Cardholder: LE VAN C                    
+│ Expiry: 03/27                           
+│ CVV: 789                                
+│                                        
+│ Expected: ❌ Payment Failed             
+│ Error: "Số dư không đủ. Vui lòng kiểm  
+│        tra tài khoản."                   
+
+
+TEST CASE 4 - VALIDATION ERRORS:
+
+│ Card Number: 1234 (quá ngắn)           
+│ Cardholder: (để trống)                  
+│ Expiry: 13/25 (tháng không hợp lệ)    
+│ CVV: 12 (quá ngắn)                     
+│                                         
+│ Expected: ❌ Validation Errors          
+│ Errors: Multiple field validation       
+
+QUICK TEST:
+
+COPY & PASTE TEST DATA:
+
+✅ SUCCESS TEST:
+Card: 1234 5678 9012 3456
+Name: NGUYEN VAN A
+Expiry: 12/25
+CVV: 123
+
+❌ DECLINED TEST:
+Card: 4000 1234 5678 9012
+Name: TRAN THI B
+Expiry: 06/26
+CVV: 456
+
+❌ INSUFFICIENT TEST:
+Card: 5000 1234 5678 9012
+Name: LE VAN C
+Expiry: 03/27
+CVV: 789
+
+DEBUGGING:
+
+1. Check Console Logs:
+   - Look for "✅ Payment successful"
+   - Look for "❌ Payment failed"
+   - Check transaction IDs
+
+2. Firestore Database:
+   - Collection: 'payments'
+   - Check if records are saved
+   - Verify user subscription updates
+
+3. UI States:
+   - Loading spinner appears (2 seconds)
+   - Success dialog shows
+   - Error messages display correctly
+
+
