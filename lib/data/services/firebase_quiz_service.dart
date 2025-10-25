@@ -1,11 +1,15 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import '../../domain/entities/quiz_entity.dart';
 import '../../domain/entities/question_entity.dart';
 import '../models/quiz_model.dart';
 import '../models/question_model.dart';
+import '../../data/services/firebase_subscription_service.dart';
 
 class FirebaseQuizService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseSubscriptionService _subscriptionService =
+      FirebaseSubscriptionService();
 
   // Collections
   CollectionReference get _quizzesCollection =>
@@ -362,6 +366,17 @@ class FirebaseQuizService {
       }).toList();
     } catch (e) {
       throw Exception('Failed to search quizzes: $e');
+    }
+  }
+
+  /// Increment quiz creation counter for user stats
+  Future<void> incrementQuizCreation(String userId) async {
+    try {
+      await _subscriptionService.incrementQuizCreation(userId);
+      debugPrint('✅ Quiz creation counter incremented for user: $userId');
+    } catch (e) {
+      debugPrint('❌ Failed to increment quiz creation counter: $e');
+      rethrow;
     }
   }
 }

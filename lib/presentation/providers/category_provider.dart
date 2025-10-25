@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:async';
 import '../../domain/entities/category_entity.dart';
 import '../../domain/repositories/category_repository.dart';
 
@@ -17,6 +18,9 @@ class CategoryProvider with ChangeNotifier {
   List<CategoryEntity> _categories = [];
   List<CategoryEntity> _allCategories = [];
   CategoryEntity? _selectedCategory;
+
+  // Stream subscriptions to avoid multiple listeners
+  StreamSubscription<List<CategoryEntity>>? _allCategoriesSubscription;
 
   // Getters
   CategoryState get state => _state;
@@ -61,8 +65,11 @@ class CategoryProvider with ChangeNotifier {
 
   /// Load all categories (including inactive) for admin dashboard
   void loadAllCategories() {
+    // Cancel existing subscription to avoid multiple listeners
+    _allCategoriesSubscription?.cancel();
+
     try {
-      _categoryRepository.getAllCategories().listen(
+      _allCategoriesSubscription = _categoryRepository.getAllCategories().listen(
         (allCategories) {
           debugPrint(
             '📦 Loaded ${allCategories.length} total categories (including inactive)',
@@ -221,6 +228,7 @@ class CategoryProvider with ChangeNotifier {
 
   @override
   void dispose() {
+    _allCategoriesSubscription?.cancel();
     super.dispose();
   }
 }

@@ -87,12 +87,20 @@ class FirebaseSubscriptionService {
           ? usageLimits.resetQuizForNewDay().incrementQuizCreation()
           : usageLimits.incrementQuizCreation();
 
+      // Also increment total quiz count in UserStats
+      final currentStats = data['stats'] as Map<String, dynamic>? ?? {};
+      final currentQuizzesCreated =
+          currentStats['quizzesCreated']?.toInt() ?? 0;
+
       await _usersCollection.doc(userId).update({
         'usageLimits': newLimits.toMap(),
+        'stats.quizzesCreated': currentQuizzesCreated + 1,
         'updatedAt': FieldValue.serverTimestamp(),
       });
 
-      debugPrint('✅ Quiz creation count: ${newLimits.quizzesCreatedToday}');
+      debugPrint(
+        '✅ Quiz creation count: ${newLimits.quizzesCreatedToday} (Total: ${currentQuizzesCreated + 1})',
+      );
     } catch (e) {
       debugPrint('❌ Increment quiz creation failed: $e');
       rethrow;
@@ -185,6 +193,51 @@ class FirebaseSubscriptionService {
       };
     } catch (e) {
       debugPrint('❌ Get subscription info failed: $e');
+      rethrow;
+    }
+  }
+
+  /// Check and reset daily counters if needed (called on login)
+  Future<void> checkAndResetDailyCounters(String userId) async {
+    try {
+      final doc = await _usersCollection.doc(userId).get();
+      if (!doc.exists) {
+        throw Exception('User not found');
+      }
+
+      final data = doc.data() as Map<String, dynamic>;
+      final usageLimits = UsageLimits.fromMap(
+        data['usageLimits'] as Map<String, dynamic>? ?? {},
+      );
+
+      // Check if reset is needed
+      bool needsReset = false;
+      var newLimits = usageLimits;
+
+      if (usageLimits.needsAiReset()) {
+        newLimits = newLimits.resetAiForNewDay();
+        needsReset = true;
+        debugPrint('🔄 AI counter reset for user: $userId');
+      }
+
+      if (usageLimits.needsQuizReset()) {
+        newLimits = newLimits.resetQuizForNewDay();
+        needsReset = true;
+        debugPrint('🔄 Quiz counter reset for user: $userId');
+      }
+
+      // Update Firestore if reset was needed
+      if (needsReset) {
+        await _usersCollection.doc(userId).update({
+          'usageLimits': newLimits.toMap(),
+          'updatedAt': FieldValue.serverTimestamp(),
+        });
+        debugPrint(
+          '✅ Daily counters reset: AI=${newLimits.aiGenerationsToday}, Quiz=${newLimits.quizzesCreatedToday}',
+        );
+      }
+    } catch (e) {
+      debugPrint('❌ Check and reset daily counters failed: $e');
       rethrow;
     }
   }

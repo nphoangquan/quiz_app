@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../core/themes/app_colors.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../providers/payment_provider.dart';
+import '../../providers/paypal_payment_provider.dart';
 import '../../providers/auth_provider.dart';
 
 class PaymentHistoryScreen extends StatefulWidget {
@@ -23,17 +24,19 @@ class _PaymentHistoryScreenState extends State<PaymentHistoryScreen> {
     });
   }
 
-  void _loadPaymentHistoryWithUser() {
+  void _loadPaymentHistoryWithUser() async {
     final authProvider = context.read<AuthProvider>();
     final paymentProvider = context.read<PaymentProvider>();
+    final paypalProvider = context.read<PayPalPaymentProvider>();
 
-    // Set current user ID for payment provider
+    // Set current user ID for both payment providers
     if (authProvider.user != null) {
       paymentProvider.setCurrentUserId(authProvider.user!.uid);
+      paypalProvider.setCurrentUserId(authProvider.user!.uid);
     }
 
-    // Load payment history
-    paymentProvider.loadPaymentHistory();
+    // Load payment history from PaymentProvider (includes both Mock and PayPal)
+    await paymentProvider.loadPaymentHistory();
   }
 
   @override

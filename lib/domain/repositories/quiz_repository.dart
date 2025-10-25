@@ -13,6 +13,9 @@ abstract class QuizRepository {
   Future<void> deleteQuiz(String quizId);
   Future<QuizEntity?> getQuiz(String quizId);
 
+  // User stats operations
+  Future<void> incrementQuizCreation(String userId);
+
   // Quiz queries
   Stream<List<QuizEntity>> getPublicQuizzes({
     QuizCategory? category,
