@@ -124,9 +124,4 @@ class QuizRepositoryImpl implements QuizRepository {
       ratingCount: ratingCount,
     );
   }
-
-  @override
-  Future<void> incrementQuizCreation(String userId) {
-    return _quizService.incrementQuizCreation(userId);
-  }
 }

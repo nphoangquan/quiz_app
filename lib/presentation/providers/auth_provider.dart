@@ -278,12 +278,6 @@ class AuthProvider extends ChangeNotifier {
       if (refreshedUser != null) {
         _user = refreshedUser;
         _status = AuthStatus.authenticated;
-
-        // Check and reset daily counters if needed
-        await _subscriptionService.checkAndResetDailyCounters(
-          refreshedUser.uid,
-        );
-
         debugPrint(
           '✅ User data refreshed: ${refreshedUser.name} (${refreshedUser.role.displayName})',
         );

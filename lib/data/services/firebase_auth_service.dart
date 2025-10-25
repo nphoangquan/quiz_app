@@ -5,7 +5,6 @@ import 'package:flutter/foundation.dart';
 import '../models/user_model.dart';
 import '../../domain/entities/user_role.dart';
 import '../../domain/entities/subscription_tier.dart';
-import '../../domain/entities/user_entity.dart';
 
 class FirebaseAuthService {
   final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
@@ -175,32 +174,6 @@ class FirebaseAuthService {
         // Ensure usageLimits exists (for users who don't have it)
         if (!existingData.containsKey('usageLimits')) {
           updateData['usageLimits'] = user.usageLimits.toMap();
-        } else {
-          // Check if daily reset is needed for existing users
-          final existingUsageLimits = UsageLimits.fromMap(
-            existingData['usageLimits'] as Map<String, dynamic>? ?? {},
-          );
-
-          // Auto-reset if new day
-          if (existingUsageLimits.needsAiReset() ||
-              existingUsageLimits.needsQuizReset()) {
-            debugPrint(
-              '🔄 Auto-resetting daily counters for user: ${user.uid}',
-            );
-
-            var newLimits = existingUsageLimits;
-            if (existingUsageLimits.needsAiReset()) {
-              newLimits = newLimits.resetAiForNewDay();
-            }
-            if (existingUsageLimits.needsQuizReset()) {
-              newLimits = newLimits.resetQuizForNewDay();
-            }
-
-            updateData['usageLimits'] = newLimits.toMap();
-            debugPrint(
-              '✅ Daily counters reset: AI=${newLimits.aiGenerationsToday}, Quiz=${newLimits.quizzesCreatedToday}',
-            );
-          }
         }
 
         // Ensure subscriptionTier exists (for users who don't have it)

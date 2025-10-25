@@ -6,8 +6,6 @@ import '../../../core/constants/app_constants.dart';
 import '../../../domain/entities/subscription_tier.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/payment_provider.dart';
-import '../../providers/paypal_payment_provider.dart';
-import '../../../data/services/paypal_config_service.dart';
 
 class PaymentScreen extends StatefulWidget {
   const PaymentScreen({super.key});
@@ -16,16 +14,12 @@ class PaymentScreen extends StatefulWidget {
   State<PaymentScreen> createState() => _PaymentScreenState();
 }
 
-enum PaymentMethod { mock, paypal }
-
 class _PaymentScreenState extends State<PaymentScreen> {
   final _formKey = GlobalKey<FormState>();
   final _cardNumberController = TextEditingController();
   final _expiryController = TextEditingController();
   final _cvvController = TextEditingController();
   final _cardholderController = TextEditingController();
-
-  PaymentMethod _selectedPaymentMethod = PaymentMethod.mock;
 
   @override
   void dispose() {
@@ -64,14 +58,8 @@ class _PaymentScreenState extends State<PaymentScreen> {
 
               const SizedBox(height: 32),
 
-              // Payment Method Selection
-              _buildPaymentMethodSelection(),
-
-              const SizedBox(height: 24),
-
-              // Payment Form (only show for mock payment)
-              if (_selectedPaymentMethod == PaymentMethod.mock)
-                _buildPaymentForm(),
+              // Payment Form
+              _buildPaymentForm(),
 
               const SizedBox(height: 32),
 
@@ -177,163 +165,6 @@ class _PaymentScreenState extends State<PaymentScreen> {
             style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600),
           ),
       ],
-    );
-  }
-
-  Widget _buildPaymentMethodSelection() {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(Icons.payment, color: AppColors.primary, size: 24),
-              const SizedBox(width: 12),
-              Text(
-                'Phương thức thanh toán',
-                style: GoogleFonts.inter(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 20),
-
-          // Mock Payment Option
-          _buildPaymentMethodOption(
-            PaymentMethod.mock,
-            'Mock Payment',
-            'Thanh toán demo (không tính phí)',
-            Icons.credit_card,
-            Colors.blue,
-          ),
-
-          const SizedBox(height: 12),
-
-          // PayPal Option
-          _buildPaymentMethodOption(
-            PaymentMethod.paypal,
-            'PayPal',
-            'Thanh toán qua PayPal (${PayPalConfigService.environmentName})',
-            Icons.account_balance_wallet,
-            const Color(0xFF0070BA),
-          ),
-
-          if (!PayPalConfigService.isConfigured) ...[
-            const SizedBox(height: 12),
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.orange[50],
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.orange[200]!),
-              ),
-              child: Row(
-                children: [
-                  Icon(Icons.warning, color: Colors.orange[600], size: 16),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      'PayPal chưa được cấu hình. Vui lòng thêm Client ID và Secret.',
-                      style: GoogleFonts.inter(
-                        fontSize: 12,
-                        color: Colors.orange[700],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ],
-      ),
-    );
-  }
-
-  Widget _buildPaymentMethodOption(
-    PaymentMethod method,
-    String title,
-    String subtitle,
-    IconData icon,
-    Color color,
-  ) {
-    final isSelected = _selectedPaymentMethod == method;
-    final isDisabled =
-        method == PaymentMethod.paypal && !PayPalConfigService.isConfigured;
-
-    return GestureDetector(
-      onTap: isDisabled
-          ? null
-          : () {
-              setState(() {
-                _selectedPaymentMethod = method;
-              });
-            },
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: isSelected ? color.withOpacity(0.1) : Colors.transparent,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: isSelected ? color : Colors.grey[300]!,
-            width: isSelected ? 2 : 1,
-          ),
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                color: isSelected ? color : Colors.grey[200],
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Icon(
-                icon,
-                color: isSelected ? Colors.white : Colors.grey[600],
-                size: 20,
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: GoogleFonts.inter(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: isDisabled ? Colors.grey[400] : null,
-                    ),
-                  ),
-                  Text(
-                    subtitle,
-                    style: GoogleFonts.inter(
-                      fontSize: 12,
-                      color: isDisabled ? Colors.grey[400] : Colors.grey[600],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            if (isSelected) Icon(Icons.check_circle, color: color, size: 20),
-          ],
-        ),
-      ),
     );
   }
 
@@ -543,9 +374,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                     ],
                   )
                 : Text(
-                    _selectedPaymentMethod == PaymentMethod.paypal
-                        ? 'Thanh toán qua PayPal ${SubscriptionTier.pro.priceMonthly}'
-                        : 'Thanh toán ${SubscriptionTier.pro.priceMonthly}',
+                    'Thanh toán ${SubscriptionTier.pro.priceMonthly}',
                     style: GoogleFonts.inter(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
@@ -581,25 +410,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
   }
 
   void _processPayment() async {
-    // Validate form only for mock payment
-    if (_selectedPaymentMethod == PaymentMethod.mock) {
-      if (!_formKey.currentState!.validate()) {
-        return;
-      }
-    }
-
-    // Check PayPal configuration
-    if (_selectedPaymentMethod == PaymentMethod.paypal &&
-        !PayPalConfigService.isConfigured) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text(
-            'PayPal chưa được cấu hình. Vui lòng liên hệ admin.',
-          ),
-          backgroundColor: AppColors.error,
-          duration: const Duration(seconds: 4),
-        ),
-      );
+    if (!_formKey.currentState!.validate()) {
       return;
     }
 
@@ -612,31 +423,14 @@ class _PaymentScreenState extends State<PaymentScreen> {
     }
 
     try {
-      bool success = false;
-
-      if (_selectedPaymentMethod == PaymentMethod.mock) {
-        // Process mock payment
-        success = await paymentProvider.processPayment(
-          amount: 4.99, // Pro plan price
-          cardNumber: _cardNumberController.text.replaceAll(' ', ''),
-          cardholderName: _cardholderController.text,
-          expiryDate: _expiryController.text,
-          cvv: _cvvController.text,
-        );
-      } else if (_selectedPaymentMethod == PaymentMethod.paypal) {
-        // Process PayPal payment
-        final paypalProvider = context.read<PayPalPaymentProvider>();
-        if (authProvider.user != null) {
-          paypalProvider.setCurrentUserId(authProvider.user!.uid);
-        }
-
-        success = await paypalProvider.processPayment(
-          amount: '4.99',
-          currency: 'USD',
-          description: 'QuizApp Pro Subscription - Monthly',
-          context: context,
-        );
-      }
+      // Process payment
+      final success = await paymentProvider.processPayment(
+        amount: 4.99, // Pro plan price
+        cardNumber: _cardNumberController.text.replaceAll(' ', ''),
+        cardholderName: _cardholderController.text,
+        expiryDate: _expiryController.text,
+        cvv: _cvvController.text,
+      );
 
       if (success && mounted) {
         // Upgrade user to Pro
