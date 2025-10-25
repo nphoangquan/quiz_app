@@ -228,6 +228,11 @@ class QuizProvider with ChangeNotifier {
         await _quizRepository.addQuestion(quizId, question);
       }
 
+      // Increment quiz creation counter for user stats
+      if (_currentQuiz!.ownerId.isNotEmpty) {
+        await _quizRepository.incrementQuizCreation(_currentQuiz!.ownerId);
+      }
+
       _setState(QuizState.success);
 
       // Refresh public quizzes to show the new quiz
