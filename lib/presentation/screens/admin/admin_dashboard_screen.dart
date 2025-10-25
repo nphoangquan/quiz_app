@@ -3,7 +3,6 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../widgets/admin/user_management_widget.dart';
 import '../../widgets/admin/subscription_management_widget.dart';
 import '../../widgets/admin/analytics_widget.dart';
-import '../../widgets/admin/category_management_widget.dart';
 
 class AdminDashboardScreen extends StatefulWidget {
   const AdminDashboardScreen({super.key});
@@ -19,7 +18,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 4, vsync: this);
+    _tabController = TabController(length: 3, vsync: this);
   }
 
   @override
@@ -83,7 +82,6 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
           tabs: const [
             Tab(text: 'Users'),
             Tab(text: 'Subscriptions'),
-            Tab(text: 'Categories'),
             Tab(text: 'Analytics'),
           ],
         ),
@@ -93,7 +91,6 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen>
         children: [
           const UserManagementWidget(),
           const SubscriptionManagementWidget(),
-          const CategoryManagementWidget(),
           const AnalyticsWidget(),
         ],
       ),

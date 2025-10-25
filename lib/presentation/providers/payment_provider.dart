@@ -56,6 +56,7 @@ class PaymentProvider extends ChangeNotifier {
           status: 'completed',
         );
 
+        debugPrint('✅ Payment successful: ${paymentResult['transactionId']}');
         _isProcessing = false;
         notifyListeners();
         return true;
@@ -154,10 +155,11 @@ class PaymentProvider extends ChangeNotifier {
         'transactionId': transactionId,
         'cardLast4': cardLast4,
         'status': status,
-        'timestamp': FieldValue.serverTimestamp(),
-        'paymentMethod': 'Mock',
+        'createdAt': FieldValue.serverTimestamp(),
         'updatedAt': FieldValue.serverTimestamp(),
       });
+
+      debugPrint('✅ Payment record saved: $transactionId');
     } catch (e) {
       debugPrint('❌ Failed to save payment record: $e');
       throw e;
@@ -186,35 +188,19 @@ class PaymentProvider extends ChangeNotifier {
       final snapshot = await _firestore
           .collection('payments')
           .where('userId', isEqualTo: userId)
-          .orderBy('timestamp', descending: true)
+          .orderBy('createdAt', descending: true)
           .get();
 
       _paymentHistory = snapshot.docs.map((doc) {
         final data = doc.data();
-
-        // Handle both Mock payments (createdAt) and PayPal payments (timestamp)
-        DateTime createdAt;
-        if (data['timestamp'] != null) {
-          createdAt = (data['timestamp'] as Timestamp).toDate();
-        } else if (data['createdAt'] != null) {
-          createdAt = (data['createdAt'] as Timestamp).toDate();
-        } else {
-          createdAt = DateTime.now();
-        }
-
-        // Handle cardLast4 for both Mock and PayPal
-        String cardLast4 = data['cardLast4'] ?? '';
-        if (cardLast4.isEmpty && data['paymentMethod'] == 'PayPal') {
-          cardLast4 = 'PayPal';
-        }
-
         return PaymentRecord(
           id: doc.id,
           amount: (data['amount'] as num).toDouble(),
           transactionId: data['transactionId'] ?? '',
-          cardLast4: cardLast4,
+          cardLast4: data['cardLast4'] ?? '',
           status: data['status'] ?? '',
-          createdAt: createdAt,
+          createdAt:
+              (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
         );
       }).toList();
 
@@ -224,12 +210,6 @@ class PaymentProvider extends ChangeNotifier {
       _error = 'Không thể tải lịch sử thanh toán';
       notifyListeners();
     }
-  }
-
-  /// Add a payment record to the history (for merging PayPal payments)
-  void addPaymentRecord(PaymentRecord payment) {
-    _paymentHistory.add(payment);
-    notifyListeners();
   }
 
   /// Clear error
