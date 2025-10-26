@@ -49,5 +49,66 @@ app.*.map.json
 !README.md
 !**/README.md
 
-*.txt
+# Environment and config files
 *.env
+*.env.local
+*.env.production
+*.env.development
+.env*
+
+# Config files with sensitive data
+**/config.dart
+**/api_keys.dart
+**/secrets.dart
+**/credentials.dart
+
+# Firebase
+**/google-services.json
+**/GoogleService-Info.plist
+**/firebase_options.dart
+**/flutterfire.json
+firebase_options.dart
+
+# Payment credentials
+**/paypal_config.dart
+**/stripe_config.dart
+**/payment_config.dart
+
+# API keys and secrets
+lib/data/services/paypal_config_service.dart
+
+# Build files
+*.apk
+*.ipa
+*.aab
+*.app
+*.zip
+
+# Test coverage
+coverage/
+test/.test_coverage.dart
+
+# IDE specific
+.vscode/
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Temporary files
+*.tmp
+*.temp
+*~
+
+*.txt
