@@ -7,7 +7,7 @@ class PayPalConfigService {
   static const String _sandboxSecret = '';
 
   // Production credentials (for future use)
-  static const String _productionClientId = 'YOUR_PRODUCTION_CLIENT_ID';
+  static const String _productionClientId = '';
   static const String _productionSecret = 'YOUR_PRODUCTION_SECRET';
 
   /// Get PayPal configuration based on environment
