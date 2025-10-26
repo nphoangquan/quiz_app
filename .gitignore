@@ -56,26 +56,8 @@ app.*.map.json
 *.env.development
 .env*
 
-# Config files with sensitive data
-**/config.dart
-**/api_keys.dart
-**/secrets.dart
-**/credentials.dart
-
 # Firebase
 **/google-services.json
-**/GoogleService-Info.plist
-**/firebase_options.dart
-**/flutterfire.json
-firebase_options.dart
-
-# Payment credentials
-**/paypal_config.dart
-**/stripe_config.dart
-**/payment_config.dart
-
-# API keys and secrets
-lib/data/services/paypal_config_service.dart
 
 # Build files
 *.apk
@@ -110,5 +92,4 @@ yarn-error.log*
 *.tmp
 *.temp
 *~
-
 *.txt
