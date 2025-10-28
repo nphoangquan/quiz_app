@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'firebase_options.dart';
 
 import 'core/themes/app_theme.dart';
@@ -35,6 +36,9 @@ import 'generated/l10n/app_localizations.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Load environment variables
+  await dotenv.load(fileName: ".env");
 
   // Initialize Firebase with generated options
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);

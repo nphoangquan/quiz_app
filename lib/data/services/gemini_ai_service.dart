@@ -1,9 +1,10 @@
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class GeminiAiService {
-  static const String _apiKey = 'YOUR_API_KEY_HERE';
+  static String get _apiKey => dotenv.env['GEMINI_API_KEY'] ?? '';
   static const String _baseUrl =
       'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
 
@@ -230,5 +231,5 @@ CHÚ Ý:
 
   /// Check if API key is configured
   static bool get isConfigured =>
-      _apiKey.isNotEmpty && _apiKey != 'YOUR_API_KEY_HERE';
+      _apiKey.isNotEmpty && _apiKey != 'YOUR_API_KEY_HERE' && _apiKey != '';
 }

@@ -1,14 +1,18 @@
 import 'package:flutter/foundation.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 /// PayPal Configuration Service
 /// Manages PayPal SDK configuration and credentials
 class PayPalConfigService {
-  static const String _sandboxClientId = '';
-  static const String _sandboxSecret = '';
+  static String get _sandboxClientId =>
+      dotenv.env['PAYPAL_SANDBOX_CLIENT_ID'] ?? '';
+  static String get _sandboxSecret => dotenv.env['PAYPAL_SANDBOX_SECRET'] ?? '';
 
-  // Production credentials (for future use)
-  static const String _productionClientId = 'YOUR_PRODUCTION_CLIENT_ID';
-  static const String _productionSecret = 'YOUR_PRODUCTION_SECRET';
+  // Production credentials
+  static String get _productionClientId =>
+      dotenv.env['PAYPAL_PRODUCTION_CLIENT_ID'] ?? '';
+  static String get _productionSecret =>
+      dotenv.env['PAYPAL_PRODUCTION_SECRET'] ?? '';
 
   /// Get PayPal configuration based on environment
   static PayPalConfig getConfig() {
